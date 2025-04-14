@@ -13,7 +13,21 @@ import {
   TrendingUp 
 } from "lucide-react";
 import { AnalyticsData } from "@/types";
-import { Recharts, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Line, Bar, Pie, Cell, ResponsiveContainer } from "recharts";
+import { 
+  LineChart as RechartsLineChart, 
+  BarChart as RechartsBarChart, 
+  PieChart as RechartsPieChart,
+  CartesianGrid, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  Legend, 
+  Line, 
+  Bar, 
+  Pie, 
+  Cell, 
+  ResponsiveContainer 
+} from "recharts";
 
 const Analytics = () => {
   // Sample analytics data
@@ -117,7 +131,7 @@ const Analytics = () => {
               <CardContent>
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <Recharts.LineChart
+                    <RechartsLineChart
                       data={analyticsData.sessionsPerDay}
                       margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                     >
@@ -127,7 +141,7 @@ const Analytics = () => {
                       <Tooltip />
                       <Legend />
                       <Line type="monotone" dataKey="count" name="Sessions" stroke="#7C3AED" activeDot={{ r: 8 }} />
-                    </Recharts.LineChart>
+                    </RechartsLineChart>
                   </ResponsiveContainer>
                 </div>
               </CardContent>
@@ -141,7 +155,7 @@ const Analytics = () => {
               <CardContent>
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <Recharts.BarChart
+                    <RechartsBarChart
                       data={analyticsData.sessionsPerType}
                       margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                     >
@@ -151,7 +165,7 @@ const Analytics = () => {
                       <Tooltip />
                       <Legend />
                       <Bar dataKey="count" name="Sessions" fill="#7C3AED" />
-                    </Recharts.BarChart>
+                    </RechartsBarChart>
                   </ResponsiveContainer>
                 </div>
               </CardContent>
@@ -167,7 +181,7 @@ const Analytics = () => {
               <CardContent>
                 <div className="h-[300px] flex items-center justify-center">
                   <ResponsiveContainer width="100%" height="100%">
-                    <Recharts.PieChart>
+                    <RechartsPieChart>
                       <Pie
                         data={sessionStatusData}
                         cx="50%"
@@ -183,7 +197,7 @@ const Analytics = () => {
                         ))}
                       </Pie>
                       <Tooltip />
-                    </Recharts.PieChart>
+                    </RechartsPieChart>
                   </ResponsiveContainer>
                 </div>
               </CardContent>
@@ -197,7 +211,7 @@ const Analytics = () => {
               <CardContent>
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <Recharts.BarChart
+                    <RechartsBarChart
                       layout="vertical"
                       data={[
                         { name: "Jane Smith", sessions: 42, rating: 4.9 },
@@ -215,7 +229,7 @@ const Analytics = () => {
                       <Legend />
                       <Bar dataKey="sessions" name="Sessions" fill="#7C3AED" />
                       <Bar dataKey="rating" name="Rating" fill="#0EA5E9" />
-                    </Recharts.BarChart>
+                    </RechartsBarChart>
                   </ResponsiveContainer>
                 </div>
               </CardContent>

@@ -10,8 +10,22 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, ChevronDown, Filter, MoreHorizontal, Search } from "lucide-react";
 import { Session, SessionStatus } from "@/types";
 
+// Define an extended user type with name for the sample data
+interface ExtendedUser {
+  id: string;
+  email: string;
+  role: string;
+  name: string;
+}
+
+// Define extended session type with the extended user
+interface ExtendedSession extends Omit<Session, 'mentor' | 'student'> {
+  mentor?: ExtendedUser;
+  student?: ExtendedUser;
+}
+
 const AdminSessions = () => {
-  const [sessions, setSessions] = useState<Session[]>([
+  const [sessions, setSessions] = useState<ExtendedSession[]>([
     {
       id: "s1",
       sessionTypeId: "1",
