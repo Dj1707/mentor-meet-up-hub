@@ -5,11 +5,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Filter, AlertCircle, CheckCircle, DollarSign, Info, Search, Calendar, User, Settings } from "lucide-react";
+import { Filter, AlertCircle, CheckCircle, DollarSign, Info, Search, Calendar, User, Settings, IndianRupee } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { MentorRate, Payout } from "@/types";
+import InvoiceDialog from "@/components/admin/payouts/InvoiceDialog";
 
 const Payouts = () => {
   const { toast } = useToast();
@@ -82,6 +83,10 @@ const Payouts = () => {
     open: false,
     mentorId: null
   });
+  const [invoiceDialog, setInvoiceDialog] = useState<{ open: boolean; payout: Payout | null }>({
+    open: false,
+    payout: null
+  });
 
   const sessionTypes = [
     { id: "1", name: "Career Guidance", baseRate: 80 },
@@ -152,6 +157,10 @@ const Payouts = () => {
     });
   };
 
+  const formatCurrency = (amount: number) => {
+    return `₹${amount.toFixed(2)}`;
+  };
+
   return (
     <MainLayout title="Mentor Payouts">
       <Card className="mb-6">
@@ -163,7 +172,7 @@ const Payouts = () => {
             </CardDescription>
           </div>
           <Button>
-            <DollarSign className="mr-2 h-4 w-4" />
+            <IndianRupee className="mr-2 h-4 w-4" />
             Generate New Payouts
           </Button>
         </CardHeader>
@@ -214,7 +223,7 @@ const Payouts = () => {
                     <TableCell className="font-medium">
                       {mentors[payout.mentorId].name}
                     </TableCell>
-                    <TableCell>${payout.amount.toFixed(2)}</TableCell>
+                    <TableCell>{formatCurrency(payout.amount)}</TableCell>
                     <TableCell>{payout.sessionIds.length}</TableCell>
                     <TableCell>{formatDate(payout.createdAt)}</TableCell>
                     <TableCell>
@@ -233,10 +242,10 @@ const Payouts = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleViewDetails(payout)}
+                          onClick={() => setInvoiceDialog({ open: true, payout })}
                         >
-                          <Info className="mr-2 h-4 w-4" />
-                          Details
+                          <IndianRupee className="mr-2 h-4 w-4" />
+                          Invoice
                         </Button>
                         {payout.status === "pending" && (
                           <Button
@@ -299,17 +308,24 @@ const Payouts = () => {
         </DialogContent>
       </Dialog>
 
+      <InvoiceDialog 
+        open={invoiceDialog.open}
+        onOpenChange={(open) => setInvoiceDialog({ ...invoiceDialog, open })}
+        payout={invoiceDialog.payout}
+        mentor={invoiceDialog.payout ? mentors[invoiceDialog.payout.mentorId] : { id: "", name: "" }}
+      />
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <PayoutStatCard 
           title="Total Outstanding" 
-          value="$1,040.00" 
+          value={formatCurrency(1040.00)}
           description="Pending payouts to process"
-          icon={DollarSign}
+          icon={IndianRupee}
           color="text-amber-500"
         />
         <PayoutStatCard 
           title="Processed (Month)" 
-          value="$2,480.00" 
+          value={formatCurrency(2480.00)}
           description="Processed in April 2025"
           icon={CheckCircle}
           color="text-green-500"
