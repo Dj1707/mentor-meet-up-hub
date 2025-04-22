@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
 
 const SessionCard = ({ 
   title, 
@@ -28,6 +30,30 @@ const SessionCard = ({
   meetingLink?: string | null;
 }) => {
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
+  const [confirmCancelDialog, setConfirmCancelDialog] = useState(false);
+  const [rescheduleDialog, setRescheduleDialog] = useState(false);
+  const { toast } = useToast();
+  
+  const generateMeetingLink = () => {
+    // In a real app, this would call an API to create a meeting
+    const randomId = Math.random().toString(36).substring(2, 10);
+    return `https://meet.google.com/${randomId}`;
+  };
+  
+  const handleStartSession = () => {
+    // Generate a meeting link if one doesn't exist
+    if (!meetingLink) {
+      const newMeetingLink = generateMeetingLink();
+      toast({
+        title: "Meeting Created",
+        description: "Your video meeting has been created and added to your calendar."
+      });
+      // In a real app, we would update the database here
+      window.open(newMeetingLink, "_blank");
+    } else {
+      window.open(meetingLink, "_blank");
+    }
+  };
   
   return (
     <Card className={`${isPast ? "opacity-70" : ""}`}>
@@ -62,15 +88,35 @@ const SessionCard = ({
                 </Button>
               </a>
             ) : (
-              <Button variant="outline" size="sm" className="text-xs">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs"
+                onClick={handleStartSession}
+              >
                 <Calendar className="w-3 h-3 mr-1" /> Start Session
               </Button>
             )
           )}
           {!isPast && (
-            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
-              Reschedule
-            </Button>
+            <div className="space-x-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-xs text-muted-foreground"
+                onClick={() => setRescheduleDialog(true)}
+              >
+                Reschedule
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-xs text-destructive"
+                onClick={() => setConfirmCancelDialog(true)}
+              >
+                Cancel
+              </Button>
+            </div>
           )}
         </div>
 
@@ -117,8 +163,86 @@ const SessionCard = ({
                 <Button variant="outline" onClick={() => setFeedbackDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={() => setFeedbackDialogOpen(false)}>
+                <Button onClick={() => {
+                  setFeedbackDialogOpen(false);
+                  toast({
+                    title: "Feedback Submitted",
+                    description: "Your feedback has been sent to the student."
+                  });
+                }}>
                   Submit Feedback
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Reschedule Dialog */}
+        <Dialog open={rescheduleDialog} onOpenChange={setRescheduleDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Reschedule Session</DialogTitle>
+              <DialogDescription>Select a new date and time for this session</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-date">New Date</Label>
+                <Input id="new-date" type="date" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-time">New Time</Label>
+                <Input id="new-time" type="time" />
+              </div>
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button variant="outline" onClick={() => setRescheduleDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={() => {
+                  setRescheduleDialog(false);
+                  toast({
+                    title: "Session Rescheduled",
+                    description: "The student has been notified of the change."
+                  });
+                }}>
+                  Confirm Reschedule
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Cancel Confirmation Dialog */}
+        <Dialog open={confirmCancelDialog} onOpenChange={setConfirmCancelDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Cancel Session</DialogTitle>
+              <DialogDescription>Are you sure you want to cancel this session?</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <p>This action cannot be undone and the student will be notified.</p>
+              <div className="space-y-2">
+                <Label htmlFor="cancel-reason">Reason for cancellation</Label>
+                <textarea 
+                  id="cancel-reason"
+                  className="w-full min-h-[60px] p-2 border rounded-md"
+                  placeholder="Please provide a reason for cancellation"
+                />
+              </div>
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button variant="outline" onClick={() => setConfirmCancelDialog(false)}>
+                  Keep Session
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={() => {
+                    setConfirmCancelDialog(false);
+                    toast({
+                      title: "Session Cancelled",
+                      description: "The student has been notified of the cancellation."
+                    });
+                  }}
+                >
+                  Confirm Cancellation
                 </Button>
               </div>
             </div>
@@ -130,8 +254,24 @@ const SessionCard = ({
 };
 
 const AddAvailabilityDialog = ({ open, setOpen }) => {
+  const [meetingLink, setMeetingLink] = useState("");
+  const [notifyCalendar, setNotifyCalendar] = useState(true);
+  const { toast } = useToast();
+  
+  const generateMeetingLink = () => {
+    // In a real app, this would call an API to create a meeting
+    const randomId = Math.random().toString(36).substring(2, 10);
+    setMeetingLink(`https://meet.google.com/${randomId}`);
+  };
+  
   const handleSave = () => {
-    // Handle save logic
+    // In a real app, this would save to the database
+    toast({
+      title: "Availability Added",
+      description: notifyCalendar ? 
+        "Your calendar has been updated with these time slots." : 
+        "Time slots have been added to your availability."
+    });
     setOpen(false);
   };
   
@@ -192,9 +332,38 @@ const AddAvailabilityDialog = ({ open, setOpen }) => {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="meeting-link">Meeting Link (optional)</Label>
-            <Input id="meeting-link" type="url" placeholder="https://meet.google.com/..." />
+            <div className="flex justify-between items-center">
+              <Label htmlFor="meeting-link">Meeting Link</Label>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={generateMeetingLink}
+                type="button"
+              >
+                Generate Link
+              </Button>
+            </div>
+            <Input 
+              id="meeting-link" 
+              type="url" 
+              placeholder="https://meet.google.com/..." 
+              value={meetingLink}
+              onChange={(e) => setMeetingLink(e.target.value)}
+            />
             <p className="text-sm text-muted-foreground">Add a link to your virtual meeting room</p>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <input 
+              id="notify-calendar" 
+              type="checkbox" 
+              className="h-4 w-4" 
+              checked={notifyCalendar}
+              onChange={(e) => setNotifyCalendar(e.target.checked)}
+            />
+            <Label htmlFor="notify-calendar" className="text-sm cursor-pointer">
+              Add to calendar
+            </Label>
           </div>
           
           <div className="flex justify-end space-x-2 pt-4">

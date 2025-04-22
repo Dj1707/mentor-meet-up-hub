@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
 
 const SessionCard = ({ 
   title, 
@@ -29,6 +30,7 @@ const SessionCard = ({
 }) => {
   const [viewFeedbackDialog, setViewFeedbackDialog] = useState(false);
   const [viewMentorDialog, setViewMentorDialog] = useState(false);
+  const { toast } = useToast();
   
   return (
     <Card className={`${isPast ? "opacity-70" : ""}`}>
@@ -79,13 +81,20 @@ const SessionCard = ({
             )
           )}
           {!isPast && (
-            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-xs text-muted-foreground"
+              onClick={() => toast({
+                title: "Reschedule Request Sent",
+                description: "We will contact you shortly to reschedule this session."
+              })}
+            >
               Reschedule
             </Button>
           )}
         </div>
 
-        {/* View Mentor Profile Dialog */}
         <Dialog open={viewMentorDialog} onOpenChange={setViewMentorDialog}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
@@ -132,12 +141,22 @@ const SessionCard = ({
                   and helped dozens of mentees land jobs at top tech companies.
                 </p>
               </div>
-              <Button className="w-full mt-2">Book a Session</Button>
+              <Button 
+                className="w-full mt-2"
+                onClick={() => {
+                  setViewMentorDialog(false);
+                  toast({
+                    title: "Session Request Sent",
+                    description: "You'll be notified once the mentor confirms your booking."
+                  });
+                }}
+              >
+                Book a Session
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
 
-        {/* View Feedback Dialog */}
         <Dialog open={viewFeedbackDialog} onOpenChange={setViewFeedbackDialog}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
@@ -174,7 +193,18 @@ const SessionCard = ({
                 </ul>
               </div>
               <div className="pt-2">
-                <Button className="w-full">Book Follow-up Session</Button>
+                <Button 
+                  className="w-full"
+                  onClick={() => {
+                    setViewFeedbackDialog(false);
+                    toast({
+                      title: "Follow-up Session Requested",
+                      description: "You'll be notified once the mentor confirms your follow-up session."
+                    });
+                  }}
+                >
+                  Book Follow-up Session
+                </Button>
               </div>
             </div>
           </DialogContent>
@@ -186,6 +216,9 @@ const SessionCard = ({
 
 const AvailableSessionsDialog = ({ open, setOpen }) => {
   const [selectedMentor, setSelectedMentor] = useState(null);
+  const [selectedType, setSelectedType] = useState(null);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
+  const { toast } = useToast();
   
   const availableMentors = [
     {
@@ -198,7 +231,8 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
       availability: [
         { date: "Apr 22, 2025", slots: ["10:00 AM", "2:00 PM", "4:00 PM"] },
         { date: "Apr 23, 2025", slots: ["11:00 AM", "3:00 PM"] },
-      ]
+      ],
+      sessionTypes: ["Career Guidance", "Technical Interview Prep"]
     },
     {
       id: "2",
@@ -210,7 +244,8 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
       availability: [
         { date: "Apr 22, 2025", slots: ["9:00 AM", "1:00 PM"] },
         { date: "Apr 24, 2025", slots: ["2:00 PM", "5:00 PM"] },
-      ]
+      ],
+      sessionTypes: ["System Design", "Career Guidance"]
     },
     {
       id: "3",
@@ -222,9 +257,33 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
       availability: [
         { date: "Apr 23, 2025", slots: ["10:00 AM", "1:00 PM", "4:00 PM"] },
         { date: "Apr 25, 2025", slots: ["11:00 AM", "3:00 PM"] },
-      ]
+      ],
+      sessionTypes: ["Resume Review", "Interview Prep"]
     }
   ];
+  
+  const sessionTypes = [
+    { id: "1", name: "Career Guidance", duration: 45, price: 30, description: "Get personalized career advice from experienced professionals." },
+    { id: "2", name: "Technical Interview Prep", duration: 60, price: 40, description: "Practice technical interviews with experienced engineers." },
+    { id: "3", name: "Resume Review", duration: 30, price: 25, description: "Get your resume reviewed by industry professionals." },
+    { id: "4", name: "System Design", duration: 60, price: 45, description: "Learn system design principles for senior-level interviews." }
+  ];
+  
+  const handleBookSession = () => {
+    toast({
+      title: "Session Booked Successfully!",
+      description: `Your ${selectedType ? sessionTypes.find(type => type.id === selectedType)?.name : 'session'} has been scheduled.`,
+    });
+    setOpen(false);
+    setSelectedMentor(null);
+    setSelectedType(null);
+    setSelectedTimeSlot(null);
+  };
+  
+  const filteredMentors = selectedType 
+    ? availableMentors.filter(mentor => 
+        mentor.sessionTypes.includes(sessionTypes.find(type => type.id === selectedType)?.name || ""))
+    : availableMentors;
   
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -243,7 +302,7 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
           </TabsList>
           
           <TabsContent value="mentors" className="space-y-6">
-            {availableMentors.map((mentor) => (
+            {filteredMentors.map((mentor) => (
               <Card key={mentor.id} className="overflow-hidden">
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row gap-4">
@@ -295,9 +354,10 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
                                 {day.slots.map((slot, slotIndex) => (
                                   <Button 
                                     key={slotIndex} 
-                                    variant="outline" 
+                                    variant={selectedTimeSlot === `${mentor.id}-${day.date}-${slot}` ? "default" : "outline"}
                                     size="sm" 
                                     className="text-xs"
+                                    onClick={() => setSelectedTimeSlot(`${mentor.id}-${day.date}-${slot}`)}
                                   >
                                     {slot}
                                   </Button>
@@ -307,7 +367,13 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
                           ))}
                         </div>
                         <div className="mt-4 pt-4 border-t">
-                          <Button className="w-full">Book Session</Button>
+                          <Button 
+                            className="w-full" 
+                            disabled={!selectedTimeSlot}
+                            onClick={handleBookSession}
+                          >
+                            Book Session
+                          </Button>
                         </div>
                       </div>
                     )}
@@ -318,47 +384,31 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
           </TabsContent>
           
           <TabsContent value="sessions" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Career Guidance</CardTitle>
-                <CardDescription>45 minutes • $30</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm mb-4">
-                  Get personalized career advice from experienced professionals. Discuss your career goals,
-                  growth opportunities, and develop a roadmap for your professional development.
-                </p>
-                <Button className="w-full">Find Available Mentors</Button>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Technical Interview Prep</CardTitle>
-                <CardDescription>60 minutes • $40</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm mb-4">
-                  Practice technical interviews with experienced engineers. Get feedback on your problem-solving
-                  approach, coding skills, and communication during interviews.
-                </p>
-                <Button className="w-full">Find Available Mentors</Button>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Resume Review</CardTitle>
-                <CardDescription>30 minutes • $25</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm mb-4">
-                  Get your resume reviewed by industry professionals. Receive actionable feedback to
-                  make your resume stand out to recruiters and hiring managers.
-                </p>
-                <Button className="w-full">Find Available Mentors</Button>
-              </CardContent>
-            </Card>
+            {sessionTypes.map((type) => (
+              <Card 
+                key={type.id} 
+                className={`${selectedType === type.id ? "border-mentor" : ""} cursor-pointer transition-all`}
+                onClick={() => setSelectedType(type.id === selectedType ? null : type.id)}
+              >
+                <CardHeader>
+                  <CardTitle>{type.name}</CardTitle>
+                  <CardDescription>{type.duration} minutes • ${type.price}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm mb-4">{type.description}</p>
+                  <Button 
+                    className="w-full"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedType(type.id);
+                      document.querySelector('[value="mentors"]')?.click();
+                    }}
+                  >
+                    Find Available Mentors
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
           </TabsContent>
         </Tabs>
       </DialogContent>
@@ -368,6 +418,7 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
 
 const StudentDashboard = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const studentName = user?.studentProfile?.name || "Student";
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   
@@ -526,7 +577,16 @@ const StudentDashboard = () => {
                     <p className="font-medium text-sm">Taylor Smith</p>
                     <p className="text-xs text-muted-foreground">Career Guidance • 4.9 ★</p>
                   </div>
-                  <Button variant="outline" size="sm" className="ml-auto text-xs">View</Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="ml-auto text-xs"
+                    onClick={() => {
+                      setBookingDialogOpen(true);
+                    }}
+                  >
+                    View
+                  </Button>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Avatar>
@@ -536,7 +596,16 @@ const StudentDashboard = () => {
                     <p className="font-medium text-sm">Jordan Lee</p>
                     <p className="text-xs text-muted-foreground">Technical Interviews • 4.8 ★</p>
                   </div>
-                  <Button variant="outline" size="sm" className="ml-auto text-xs">View</Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="ml-auto text-xs"
+                    onClick={() => {
+                      setBookingDialogOpen(true);
+                    }}
+                  >
+                    View
+                  </Button>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Avatar>
@@ -546,7 +615,16 @@ const StudentDashboard = () => {
                     <p className="font-medium text-sm">Morgan Jones</p>
                     <p className="text-xs text-muted-foreground">Resume Review • 4.7 ★</p>
                   </div>
-                  <Button variant="outline" size="sm" className="ml-auto text-xs">View</Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="ml-auto text-xs"
+                    onClick={() => {
+                      setBookingDialogOpen(true);
+                    }}
+                  >
+                    View
+                  </Button>
                 </div>
               </div>
             </CardContent>
