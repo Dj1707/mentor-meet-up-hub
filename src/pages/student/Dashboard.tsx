@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -280,9 +281,12 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
     setSelectedTimeSlot(null);
   };
   
+  // Fix the filtering logic to properly filter mentors based on selected session type
   const filteredMentors = selectedType 
-    ? availableMentors.filter(mentor => 
-        mentor.sessionTypes.includes(sessionTypes.find(type => type.id === selectedType)?.name || ""))
+    ? availableMentors.filter(mentor => {
+        const sessionTypeName = sessionTypes.find(type => type.id === selectedType)?.name;
+        return mentor.sessionTypes.includes(sessionTypeName);
+      })
     : availableMentors;
   
   return (
@@ -302,85 +306,99 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
           </TabsList>
           
           <TabsContent value="mentors" className="space-y-6">
-            {filteredMentors.map((mentor) => (
-              <Card key={mentor.id} className="overflow-hidden">
-                <CardContent className="p-6">
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <div className="md:w-1/3">
-                      <div className="flex items-center space-x-4 mb-4">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src="" />
-                          <AvatarFallback className="bg-mentor text-white">
-                            {mentor.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h3 className="font-medium">{mentor.name}</h3>
-                          <p className="text-sm text-muted-foreground">{mentor.role}</p>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-1">
-                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                          <span className="text-sm">{mentor.rating} ({mentor.reviews} reviews)</span>
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium mb-1">Expertise</h4>
-                          <div className="flex flex-wrap gap-1">
-                            {mentor.expertise.map((skill, i) => (
-                              <Badge key={i} variant="secondary" className="text-xs">{skill}</Badge>
-                            ))}
+            {filteredMentors.length > 0 ? (
+              filteredMentors.map((mentor) => (
+                <Card key={mentor.id} className="overflow-hidden">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col md:flex-row gap-4">
+                      <div className="md:w-1/3">
+                        <div className="flex items-center space-x-4 mb-4">
+                          <Avatar className="h-12 w-12">
+                            <AvatarImage src="" />
+                            <AvatarFallback className="bg-mentor text-white">
+                              {mentor.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h3 className="font-medium">{mentor.name}</h3>
+                            <p className="text-sm text-muted-foreground">{mentor.role}</p>
                           </div>
                         </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="w-full mt-2"
-                          onClick={() => setSelectedMentor(mentor.id === selectedMentor ? null : mentor.id)}
-                        >
-                          {mentor.id === selectedMentor ? "Hide Availability" : "View Availability"}
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    {mentor.id === selectedMentor && (
-                      <div className="md:w-2/3 border-l pl-4">
-                        <h4 className="font-medium mb-3">Available Time Slots</h4>
-                        <div className="space-y-4">
-                          {mentor.availability.map((day, dayIndex) => (
-                            <div key={dayIndex}>
-                              <h5 className="text-sm font-medium mb-2">{day.date}</h5>
-                              <div className="grid grid-cols-3 gap-2">
-                                {day.slots.map((slot, slotIndex) => (
-                                  <Button 
-                                    key={slotIndex} 
-                                    variant={selectedTimeSlot === `${mentor.id}-${day.date}-${slot}` ? "default" : "outline"}
-                                    size="sm" 
-                                    className="text-xs"
-                                    onClick={() => setSelectedTimeSlot(`${mentor.id}-${day.date}-${slot}`)}
-                                  >
-                                    {slot}
-                                  </Button>
-                                ))}
-                              </div>
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-1">
+                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                            <span className="text-sm">{mentor.rating} ({mentor.reviews} reviews)</span>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium mb-1">Expertise</h4>
+                            <div className="flex flex-wrap gap-1">
+                              {mentor.expertise.map((skill, i) => (
+                                <Badge key={i} variant="secondary" className="text-xs">{skill}</Badge>
+                              ))}
                             </div>
-                          ))}
-                        </div>
-                        <div className="mt-4 pt-4 border-t">
+                          </div>
                           <Button 
-                            className="w-full" 
-                            disabled={!selectedTimeSlot}
-                            onClick={handleBookSession}
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full mt-2"
+                            onClick={() => setSelectedMentor(mentor.id === selectedMentor ? null : mentor.id)}
                           >
-                            Book Session
+                            {mentor.id === selectedMentor ? "Hide Availability" : "View Availability"}
                           </Button>
                         </div>
                       </div>
-                    )}
-                  </div>
+                      
+                      {mentor.id === selectedMentor && (
+                        <div className="md:w-2/3 border-l pl-4">
+                          <h4 className="font-medium mb-3">Available Time Slots</h4>
+                          <div className="space-y-4">
+                            {mentor.availability.map((day, dayIndex) => (
+                              <div key={dayIndex}>
+                                <h5 className="text-sm font-medium mb-2">{day.date}</h5>
+                                <div className="grid grid-cols-3 gap-2">
+                                  {day.slots.map((slot, slotIndex) => (
+                                    <Button 
+                                      key={slotIndex} 
+                                      variant={selectedTimeSlot === `${mentor.id}-${day.date}-${slot}` ? "default" : "outline"}
+                                      size="sm" 
+                                      className="text-xs"
+                                      onClick={() => setSelectedTimeSlot(`${mentor.id}-${day.date}-${slot}`)}
+                                    >
+                                      {slot}
+                                    </Button>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="mt-4 pt-4 border-t">
+                            <Button 
+                              className="w-full" 
+                              disabled={!selectedTimeSlot}
+                              onClick={handleBookSession}
+                            >
+                              Book Session
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <p className="text-muted-foreground py-4">No mentors available for the selected session type</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setSelectedType(null)}
+                  >
+                    Clear Selection
+                  </Button>
                 </CardContent>
               </Card>
-            ))}
+            )}
           </TabsContent>
           
           <TabsContent value="sessions" className="space-y-4">
