@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,11 +5,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Filter, AlertCircle, CheckCircle, DollarSign, Info, Search, Calendar, User } from "lucide-react";
+import { Filter, AlertCircle, CheckCircle, DollarSign, Info, Search, Calendar, User, Settings } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { Payout } from "@/types";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { MentorRate, Payout } from "@/types";
 
 const Payouts = () => {
   const { toast } = useToast();
@@ -60,7 +59,6 @@ const Payouts = () => {
     }
   ]);
   
-  // Mock mentor data (in a real app, this would come from the database)
   const mentors = {
     "m1": { id: "m1", name: "Jane Smith" },
     "m2": { id: "m2", name: "David Wilson" },
@@ -74,7 +72,23 @@ const Payouts = () => {
     open: false,
     payout: null
   });
-  
+  const [mentorRates, setMentorRates] = useState<MentorRate[]>([
+    { mentorId: "m1", sessionTypeId: "1", rate: 80 },
+    { mentorId: "m1", sessionTypeId: "2", rate: 90 },
+    { mentorId: "m2", sessionTypeId: "1", rate: 75 },
+    { mentorId: "m2", sessionTypeId: "2", rate: 85 }
+  ]);
+  const [rateDialog, setRateDialog] = useState<{ open: boolean; mentorId: string | null }>({
+    open: false,
+    mentorId: null
+  });
+
+  const sessionTypes = [
+    { id: "1", name: "Career Guidance", baseRate: 80 },
+    { id: "2", name: "Technical Interview Prep", baseRate: 90 },
+    { id: "3", name: "Resume Review", baseRate: 70 }
+  ];
+
   const handleProcessPayout = (payoutId: string) => {
     setPayouts(payouts.map(payout => {
       if (payout.id === payoutId) {
@@ -114,7 +128,30 @@ const Payouts = () => {
     
     return matchesSearch && matchesStatus;
   });
-  
+
+  const getMentorRate = (mentorId: string, sessionTypeId: string) => {
+    const rate = mentorRates.find(
+      rate => rate.mentorId === mentorId && rate.sessionTypeId === sessionTypeId
+    );
+    return rate?.rate || sessionTypes.find(type => type.id === sessionTypeId)?.baseRate || 0;
+  };
+
+  const handleUpdateRate = (mentorId: string, sessionTypeId: string, newRate: number) => {
+    setMentorRates(prevRates => {
+      const existingRateIndex = prevRates.findIndex(
+        rate => rate.mentorId === mentorId && rate.sessionTypeId === sessionTypeId
+      );
+
+      if (existingRateIndex >= 0) {
+        const updatedRates = [...prevRates];
+        updatedRates[existingRateIndex].rate = newRate;
+        return updatedRates;
+      }
+
+      return [...prevRates, { mentorId, sessionTypeId, rate: newRate }];
+    });
+  };
+
   return (
     <MainLayout title="Mentor Payouts">
       <Card className="mb-6">
@@ -188,6 +225,14 @@ const Payouts = () => {
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={() => setRateDialog({ open: true, mentorId: payout.mentorId })}
+                        >
+                          <Settings className="mr-2 h-4 w-4" />
+                          Rates
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => handleViewDetails(payout)}
                         >
                           <Info className="mr-2 h-4 w-4" />
@@ -219,6 +264,41 @@ const Payouts = () => {
         </CardContent>
       </Card>
       
+      <Dialog open={rateDialog.open} onOpenChange={(open) => setRateDialog({ ...rateDialog, open })}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage Mentor Rates</DialogTitle>
+            <DialogDescription>
+              Set custom rates for each session type for {rateDialog.mentorId ? mentors[rateDialog.mentorId].name : ''}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {sessionTypes.map(sessionType => (
+              <div key={sessionType.id} className="flex items-center justify-between space-x-4">
+                <div>
+                  <p className="font-medium">{sessionType.name}</p>
+                  <p className="text-sm text-muted-foreground">Base rate: ${sessionType.baseRate}/session</p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span>$</span>
+                  <Input
+                    type="number"
+                    className="w-20"
+                    value={getMentorRate(rateDialog.mentorId || '', sessionType.id)}
+                    onChange={(e) => {
+                      if (rateDialog.mentorId) {
+                        handleUpdateRate(rateDialog.mentorId, sessionType.id, Number(e.target.value));
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <PayoutStatCard 
           title="Total Outstanding" 

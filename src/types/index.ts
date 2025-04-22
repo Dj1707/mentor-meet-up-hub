@@ -1,4 +1,3 @@
-
 import { User, UserRole } from "@/context/AuthContext";
 
 // Session Types
@@ -76,7 +75,14 @@ export interface FeedbackResponse {
   submittedAt: Date;
 }
 
-// Payout
+// MentorRate - New type for mentor-specific session rates
+export interface MentorRate {
+  mentorId: string;
+  sessionTypeId: string;
+  rate: number;
+}
+
+// Payout - Update the existing interface
 export interface Payout {
   id: string;
   mentorId: string;
@@ -85,6 +91,7 @@ export interface Payout {
   sessionIds: string[];
   createdAt: Date;
   processedAt?: Date;
+  rates?: MentorRate[]; // Add rates field to track the rates used for this payout
 }
 
 // Analytics
