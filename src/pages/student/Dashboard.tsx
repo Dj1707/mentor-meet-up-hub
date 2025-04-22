@@ -1,11 +1,15 @@
 
-import React from "react";
+import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, BookOpen, Check } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Calendar, Clock, BookOpen, Check, Link, Star } from "lucide-react";
+import { Link as RouterLink } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const SessionCard = ({ 
   title, 
@@ -13,7 +17,8 @@ const SessionCard = ({
   time, 
   mentor,
   type,
-  isPast = false 
+  isPast = false,
+  meetingLink = null
 }: { 
   title: string; 
   date: string; 
@@ -21,44 +26,359 @@ const SessionCard = ({
   mentor: string;
   type: string;
   isPast?: boolean;
-}) => (
-  <Card className={`${isPast ? "opacity-70" : ""}`}>
-    <CardHeader className="pb-2">
-      <CardTitle className="flex justify-between items-center text-lg">
-        <span>{title}</span>
-        <span className="text-xs bg-mentor-muted text-mentor px-2 py-1 rounded-full">{type}</span>
-      </CardTitle>
-      <CardDescription className="flex items-center">
-        <Calendar className="w-4 h-4 mr-1" /> {date}
-        <span className="mx-2">•</span>
-        <Clock className="w-4 h-4 mr-1" /> {time}
-      </CardDescription>
-    </CardHeader>
-    <CardContent>
-      <p className="text-sm mb-4">Mentor: {mentor}</p>
-      <div className="flex justify-between">
-        {isPast ? (
-          <Button variant="outline" size="sm" className="text-xs">
-            <Check className="w-3 h-3 mr-1" /> Completed
+  meetingLink?: string | null;
+}) => {
+  const [viewFeedbackDialog, setViewFeedbackDialog] = useState(false);
+  const [viewMentorDialog, setViewMentorDialog] = useState(false);
+  
+  return (
+    <Card className={`${isPast ? "opacity-70" : ""}`}>
+      <CardHeader className="pb-2">
+        <CardTitle className="flex justify-between items-center text-lg">
+          <span>{title}</span>
+          <span className="text-xs bg-mentor-muted text-mentor px-2 py-1 rounded-full">{type}</span>
+        </CardTitle>
+        <CardDescription className="flex items-center">
+          <Calendar className="w-4 h-4 mr-1" /> {date}
+          <span className="mx-2">•</span>
+          <Clock className="w-4 h-4 mr-1" /> {time}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm mb-2 flex justify-between">
+          <span>Mentor: {mentor}</span>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-xs h-6 px-2" 
+            onClick={() => setViewMentorDialog(true)}
+          >
+            View Profile
           </Button>
-        ) : (
-          <Button variant="outline" size="sm" className="text-xs">
-            <Calendar className="w-3 h-3 mr-1" /> Join Session
-          </Button>
-        )}
-        {!isPast && (
-          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
-            Reschedule
-          </Button>
-        )}
-      </div>
-    </CardContent>
-  </Card>
-);
+        </p>
+        <div className="flex justify-between mt-4">
+          {isPast ? (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-xs"
+              onClick={() => setViewFeedbackDialog(true)}
+            >
+              <Check className="w-3 h-3 mr-1" /> View Feedback
+            </Button>
+          ) : (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-xs"
+              as={meetingLink ? "a" : undefined}
+              href={meetingLink || undefined}
+              target={meetingLink ? "_blank" : undefined}
+            >
+              {meetingLink ? (
+                <>
+                  <Link className="w-3 h-3 mr-1" /> Join Session
+                </>
+              ) : (
+                <>
+                  <Calendar className="w-3 h-3 mr-1" /> Join Session
+                </>
+              )}
+            </Button>
+          )}
+          {!isPast && (
+            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
+              Reschedule
+            </Button>
+          )}
+        </div>
+
+        {/* View Mentor Profile Dialog */}
+        <Dialog open={viewMentorDialog} onOpenChange={setViewMentorDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Mentor Profile</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="flex items-center space-x-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src="" />
+                  <AvatarFallback className="bg-mentor text-white text-xl">
+                    {mentor.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="font-medium">{mentor}</h3>
+                  <p className="text-sm text-muted-foreground">Senior Software Engineer at Tech Co.</p>
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center space-x-1 mb-2">
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <span className="text-sm ml-1">5.0 (24 reviews)</span>
+                </div>
+                <p className="text-sm">7 years experience in software development and technical interviewing</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-1">Expertise</h4>
+                <div className="flex flex-wrap gap-1">
+                  <Badge variant="secondary">JavaScript</Badge>
+                  <Badge variant="secondary">React</Badge>
+                  <Badge variant="secondary">System Design</Badge>
+                  <Badge variant="secondary">Career Guidance</Badge>
+                </div>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-1">About</h4>
+                <p className="text-sm">
+                  Experienced software engineer specializing in frontend development and helping
+                  junior developers navigate their career. I've conducted 200+ technical interviews
+                  and helped dozens of mentees land jobs at top tech companies.
+                </p>
+              </div>
+              <Button className="w-full mt-2">Book a Session</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* View Feedback Dialog */}
+        <Dialog open={viewFeedbackDialog} onOpenChange={setViewFeedbackDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Session Feedback</DialogTitle>
+              <DialogDescription>Feedback from your mentor</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <h3 className="font-medium">Rating</h3>
+                <div className="flex items-center">
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-4 h-4 text-gray-300" />
+                </div>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-1">Mentor Notes</h4>
+                <div className="bg-secondary p-3 rounded-md text-sm">
+                  <p>
+                    Great session overall! You showed a good understanding of the fundamentals.
+                    Your problem-solving approach was methodical, but you could improve on
+                    articulating your thought process more clearly during coding exercises.
+                  </p>
+                </div>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-1">Action Items</h4>
+                <ul className="list-disc pl-5 text-sm space-y-1">
+                  <li>Practice more medium-level algorithm questions</li>
+                  <li>Review system design concepts we discussed</li>
+                  <li>Schedule a follow-up session to work on mock interview skills</li>
+                </ul>
+              </div>
+              <div className="pt-2">
+                <Button className="w-full">Book Follow-up Session</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </CardContent>
+    </Card>
+  );
+};
+
+const AvailableSessionsDialog = ({ open, setOpen }) => {
+  const [selectedMentor, setSelectedMentor] = useState(null);
+  
+  // Sample data for available sessions
+  const availableMentors = [
+    {
+      id: "1",
+      name: "Taylor Smith",
+      role: "Senior Software Engineer",
+      expertise: ["Career Guidance", "Technical Interviews"],
+      rating: 4.9,
+      reviews: 32,
+      availability: [
+        { date: "Apr 22, 2025", slots: ["10:00 AM", "2:00 PM", "4:00 PM"] },
+        { date: "Apr 23, 2025", slots: ["11:00 AM", "3:00 PM"] },
+      ]
+    },
+    {
+      id: "2",
+      name: "Jordan Lee", 
+      role: "Engineering Manager",
+      expertise: ["System Design", "Career Growth"],
+      rating: 4.8,
+      reviews: 24,
+      availability: [
+        { date: "Apr 22, 2025", slots: ["9:00 AM", "1:00 PM"] },
+        { date: "Apr 24, 2025", slots: ["2:00 PM", "5:00 PM"] },
+      ]
+    },
+    {
+      id: "3",
+      name: "Morgan Jones",
+      role: "Technical Recruiter",
+      expertise: ["Resume Review", "Interview Prep"],
+      rating: 4.7,
+      reviews: 18,
+      availability: [
+        { date: "Apr 23, 2025", slots: ["10:00 AM", "1:00 PM", "4:00 PM"] },
+        { date: "Apr 25, 2025", slots: ["11:00 AM", "3:00 PM"] },
+      ]
+    }
+  ];
+  
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-auto">
+        <DialogHeader>
+          <DialogTitle>Available Sessions</DialogTitle>
+          <DialogDescription>
+            Browse available mentors and their open time slots
+          </DialogDescription>
+        </DialogHeader>
+        
+        <Tabs defaultValue="mentors" className="mt-4">
+          <TabsList className="mb-4">
+            <TabsTrigger value="mentors">Browse Mentors</TabsTrigger>
+            <TabsTrigger value="sessions">Session Types</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="mentors" className="space-y-6">
+            {availableMentors.map((mentor) => (
+              <Card key={mentor.id} className="overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <div className="md:w-1/3">
+                      <div className="flex items-center space-x-4 mb-4">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src="" />
+                          <AvatarFallback className="bg-mentor text-white">
+                            {mentor.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <h3 className="font-medium">{mentor.name}</h3>
+                          <p className="text-sm text-muted-foreground">{mentor.role}</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-1">
+                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          <span className="text-sm">{mentor.rating} ({mentor.reviews} reviews)</span>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium mb-1">Expertise</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {mentor.expertise.map((skill, i) => (
+                              <Badge key={i} variant="secondary" className="text-xs">{skill}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full mt-2"
+                          onClick={() => setSelectedMentor(mentor.id === selectedMentor ? null : mentor.id)}
+                        >
+                          {mentor.id === selectedMentor ? "Hide Availability" : "View Availability"}
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {mentor.id === selectedMentor && (
+                      <div className="md:w-2/3 border-l pl-4">
+                        <h4 className="font-medium mb-3">Available Time Slots</h4>
+                        <div className="space-y-4">
+                          {mentor.availability.map((day, dayIndex) => (
+                            <div key={dayIndex}>
+                              <h5 className="text-sm font-medium mb-2">{day.date}</h5>
+                              <div className="grid grid-cols-3 gap-2">
+                                {day.slots.map((slot, slotIndex) => (
+                                  <Button 
+                                    key={slotIndex} 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="text-xs"
+                                  >
+                                    {slot}
+                                  </Button>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mt-4 pt-4 border-t">
+                          <Button className="w-full">Book Session</Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </TabsContent>
+          
+          <TabsContent value="sessions" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Career Guidance</CardTitle>
+                <CardDescription>45 minutes • $30</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm mb-4">
+                  Get personalized career advice from experienced professionals. Discuss your career goals,
+                  growth opportunities, and develop a roadmap for your professional development.
+                </p>
+                <Button className="w-full">Find Available Mentors</Button>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Technical Interview Prep</CardTitle>
+                <CardDescription>60 minutes • $40</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm mb-4">
+                  Practice technical interviews with experienced engineers. Get feedback on your problem-solving
+                  approach, coding skills, and communication during interviews.
+                </p>
+                <Button className="w-full">Find Available Mentors</Button>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Resume Review</CardTitle>
+                <CardDescription>30 minutes • $25</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm mb-4">
+                  Get your resume reviewed by industry professionals. Receive actionable feedback to
+                  make your resume stand out to recruiters and hiring managers.
+                </p>
+                <Button className="w-full">Find Available Mentors</Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 const StudentDashboard = () => {
   const { user } = useAuth();
   const studentName = user?.studentProfile?.name || "Student";
+  const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   
   // Sample session data
   const upcomingSessions = [
@@ -68,7 +388,8 @@ const StudentDashboard = () => {
       date: "Apr 16, 2025",
       time: "3:00 PM - 3:45 PM",
       mentor: "Taylor Smith",
-      type: "Career Guidance"
+      type: "Career Guidance",
+      meetingLink: "https://meet.google.com/abc-defg-hij"
     },
     {
       id: "2",
@@ -76,7 +397,8 @@ const StudentDashboard = () => {
       date: "Apr 18, 2025",
       time: "11:00 AM - 12:00 PM",
       mentor: "Jordan Lee",
-      type: "Interview Prep"
+      type: "Interview Prep",
+      meetingLink: null
     }
   ];
   
@@ -107,13 +429,14 @@ const StudentDashboard = () => {
                     time={session.time}
                     mentor={session.mentor}
                     type={session.type}
+                    meetingLink={session.meetingLink}
                   />
                 ))
               ) : (
                 <Card>
                   <CardContent className="p-6 text-center">
                     <p className="text-muted-foreground">You have no upcoming sessions</p>
-                    <Button className="mt-4">Book a Session</Button>
+                    <Button className="mt-4" onClick={() => setBookingDialogOpen(true)}>Book a Session</Button>
                   </CardContent>
                 </Card>
               )}
@@ -156,7 +479,10 @@ const StudentDashboard = () => {
               <CardDescription>Find a mentor and schedule a session</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full bg-mentor hover:bg-mentor/90">
+              <Button 
+                className="w-full bg-mentor hover:bg-mentor/90"
+                onClick={() => setBookingDialogOpen(true)}
+              >
                 Browse Available Sessions
               </Button>
             </CardContent>
@@ -189,13 +515,57 @@ const StudentDashboard = () => {
                   <div className="w-4 h-4 mr-2 rounded-full border border-muted-foreground"></div> LinkedIn profile
                 </li>
               </ul>
-              <Link to="/student/profile">
+              <RouterLink to="/student/profile">
                 <Button variant="outline" className="w-full">Complete Profile</Button>
-              </Link>
+              </RouterLink>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Popular Mentors</CardTitle>
+              <CardDescription>Highly rated mentors in your areas of interest</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    <AvatarFallback className="bg-mentor text-white">TS</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium text-sm">Taylor Smith</p>
+                    <p className="text-xs text-muted-foreground">Career Guidance • 4.9 ★</p>
+                  </div>
+                  <Button variant="outline" size="sm" className="ml-auto text-xs">View</Button>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    <AvatarFallback className="bg-mentor text-white">JL</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium text-sm">Jordan Lee</p>
+                    <p className="text-xs text-muted-foreground">Technical Interviews • 4.8 ★</p>
+                  </div>
+                  <Button variant="outline" size="sm" className="ml-auto text-xs">View</Button>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    <AvatarFallback className="bg-mentor text-white">MJ</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium text-sm">Morgan Jones</p>
+                    <p className="text-xs text-muted-foreground">Resume Review • 4.7 ★</p>
+                  </div>
+                  <Button variant="outline" size="sm" className="ml-auto text-xs">View</Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
       </div>
+      
+      {/* Available Sessions Dialog */}
+      <AvailableSessionsDialog open={bookingDialogOpen} setOpen={setBookingDialogOpen} />
     </MainLayout>
   );
 };
