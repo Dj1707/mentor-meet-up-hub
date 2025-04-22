@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,24 +66,17 @@ const SessionCard = ({
               <Check className="w-3 h-3 mr-1" /> View Feedback
             </Button>
           ) : (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="text-xs"
-              as={meetingLink ? "a" : undefined}
-              href={meetingLink || undefined}
-              target={meetingLink ? "_blank" : undefined}
-            >
-              {meetingLink ? (
-                <>
+            meetingLink ? (
+              <a href={meetingLink} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" size="sm" className="text-xs">
                   <Link className="w-3 h-3 mr-1" /> Join Session
-                </>
-              ) : (
-                <>
-                  <Calendar className="w-3 h-3 mr-1" /> Join Session
-                </>
-              )}
-            </Button>
+                </Button>
+              </a>
+            ) : (
+              <Button variant="outline" size="sm" className="text-xs">
+                <Calendar className="w-3 h-3 mr-1" /> Join Session
+              </Button>
+            )
           )}
           {!isPast && (
             <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
@@ -195,7 +187,6 @@ const SessionCard = ({
 const AvailableSessionsDialog = ({ open, setOpen }) => {
   const [selectedMentor, setSelectedMentor] = useState(null);
   
-  // Sample data for available sessions
   const availableMentors = [
     {
       id: "1",
@@ -380,7 +371,6 @@ const StudentDashboard = () => {
   const studentName = user?.studentProfile?.name || "Student";
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   
-  // Sample session data
   const upcomingSessions = [
     {
       id: "1",
@@ -564,7 +554,6 @@ const StudentDashboard = () => {
         </div>
       </div>
       
-      {/* Available Sessions Dialog */}
       <AvailableSessionsDialog open={bookingDialogOpen} setOpen={setBookingDialogOpen} />
     </MainLayout>
   );

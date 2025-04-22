@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,24 +55,17 @@ const SessionCard = ({
               <Check className="w-3 h-3 mr-1" /> Submit Feedback
             </Button>
           ) : (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="text-xs"
-              as={meetingLink ? "a" : undefined}
-              href={meetingLink || undefined}
-              target={meetingLink ? "_blank" : undefined}
-            >
-              {meetingLink ? (
-                <>
+            meetingLink ? (
+              <a href={meetingLink} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" size="sm" className="text-xs">
                   <Link className="w-3 h-3 mr-1" /> Join Meeting
-                </>
-              ) : (
-                <>
-                  <Calendar className="w-3 h-3 mr-1" /> Start Session
-                </>
-              )}
-            </Button>
+                </Button>
+              </a>
+            ) : (
+              <Button variant="outline" size="sm" className="text-xs">
+                <Calendar className="w-3 h-3 mr-1" /> Start Session
+              </Button>
+            )
           )}
           {!isPast && (
             <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
@@ -220,7 +212,6 @@ const MentorDashboard = () => {
   const mentorName = user?.mentorProfile?.name || "Mentor";
   const [availabilityDialogOpen, setAvailabilityDialogOpen] = useState(false);
   
-  // Sample session data
   const upcomingSessions = [
     {
       id: "1",
@@ -253,7 +244,6 @@ const MentorDashboard = () => {
     }
   ];
   
-  // Stats
   const stats = [
     { label: "Total Sessions", value: 24 },
     { label: "This Month", value: 8 },
@@ -403,7 +393,6 @@ const MentorDashboard = () => {
         </div>
       </div>
       
-      {/* Add Availability Dialog */}
       <AddAvailabilityDialog open={availabilityDialogOpen} setOpen={setAvailabilityDialogOpen} />
     </MainLayout>
   );
