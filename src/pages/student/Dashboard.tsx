@@ -1,8 +1,9 @@
+
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, BookOpen, Check, Link, Star } from "lucide-react";
+import { Calendar, Clock, BookOpen, Check, Link as LinkIcon, Star } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -401,7 +402,11 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedType(type.id);
-                      document.querySelector('[value="mentors"]')?.click();
+                      // Fix the TypeScript error by properly casting the element to HTMLElement
+                      const mentorsTab = document.querySelector('[value="mentors"]');
+                      if (mentorsTab && mentorsTab instanceof HTMLElement) {
+                        mentorsTab.click();
+                      }
                     }}
                   >
                     Find Available Mentors
