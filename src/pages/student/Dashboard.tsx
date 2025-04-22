@@ -219,6 +219,7 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
   const [selectedMentor, setSelectedMentor] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
+  const [activeTab, setActiveTab] = useState("mentors");
   const { toast } = useToast();
   
   const availableMentors = [
@@ -289,6 +290,12 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
       })
     : availableMentors;
   
+  const handleFindMentors = (e, typeId) => {
+    e.stopPropagation();
+    setSelectedType(typeId);
+    setActiveTab("mentors");
+  };
+  
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-auto">
@@ -299,7 +306,7 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs defaultValue="mentors" className="mt-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="mentors" className="mt-4">
           <TabsList className="mb-4">
             <TabsTrigger value="mentors">Browse Mentors</TabsTrigger>
             <TabsTrigger value="sessions">Session Types</TabsTrigger>
@@ -416,14 +423,7 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
                   <p className="text-sm mb-4">{type.description}</p>
                   <Button 
                     className="w-full"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedType(type.id);
-                      const mentorsTab = document.querySelector('[value="mentors"]');
-                      if (mentorsTab && mentorsTab instanceof HTMLElement) {
-                        mentorsTab.click();
-                      }
-                    }}
+                    onClick={(e) => handleFindMentors(e, type.id)}
                   >
                     Find Available Mentors
                   </Button>
