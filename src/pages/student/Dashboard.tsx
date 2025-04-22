@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,11 +69,11 @@ const SessionCard = ({
             </Button>
           ) : (
             meetingLink ? (
-              <a href={meetingLink} target="_blank" rel="noopener noreferrer">
+              <RouterLink to={meetingLink} target="_blank">
                 <Button variant="outline" size="sm" className="text-xs">
-                  <Link className="w-3 h-3 mr-1" /> Join Session
+                  <LinkIcon className="w-3 h-3 mr-1" /> Join Session
                 </Button>
-              </a>
+              </RouterLink>
             ) : (
               <Button variant="outline" size="sm" className="text-xs">
                 <Calendar className="w-3 h-3 mr-1" /> Join Session
@@ -402,7 +401,6 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedType(type.id);
-                      // Fix the TypeScript error by properly casting the element to HTMLElement
                       const mentorsTab = document.querySelector('[value="mentors"]');
                       if (mentorsTab && mentorsTab instanceof HTMLElement) {
                         mentorsTab.click();
