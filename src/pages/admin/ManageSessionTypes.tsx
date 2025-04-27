@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Edit, Trash, Plus, FilePdf, FileSpreadsheet, FileCsv } from "lucide-react";
+import { Edit, Trash, Plus, FileText, FileSpreadsheet, File } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { SessionType, SessionTypeResource } from "@/types";
 
@@ -185,9 +186,9 @@ const ManageSessionTypes = () => {
   const getResourceIcon = (type: 'pdf' | 'csv' | 'spreadsheet') => {
     switch (type) {
       case 'pdf':
-        return <FilePdf className="h-4 w-4" />;
+        return <FileText className="h-4 w-4" />;
       case 'csv':
-        return <FileCsv className="h-4 w-4" />;
+        return <File className="h-4 w-4" />;
       case 'spreadsheet':
         return <FileSpreadsheet className="h-4 w-4" />;
     }
@@ -332,7 +333,7 @@ const ManageSessionTypes = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price ($)</Label>
+                  <Label htmlFor="price">Price (₹)</Label>
                   <Input
                     id="price"
                     name="price"
