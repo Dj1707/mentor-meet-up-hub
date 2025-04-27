@@ -1,13 +1,21 @@
 import { User, UserRole } from "@/context/AuthContext";
 
 // Session Types
+export interface SessionTypeResource {
+  id: string;
+  name: string;
+  url: string;
+  type: 'pdf' | 'csv' | 'spreadsheet';
+}
+
 export interface SessionType {
   id: string;
   name: string;
   description: string;
-  duration: number; // in minutes
+  duration: number;
   price: number;
   color: string;
+  resources?: SessionTypeResource[];
 }
 
 // Session Status

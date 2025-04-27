@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,16 +7,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Edit, Trash, Plus } from "lucide-react";
+import { Edit, Trash, Plus, FilePdf, FileSpreadsheet, FileCsv } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { SessionType } from "@/types";
+import { SessionType, SessionTypeResource } from "@/types";
 
 const ManageSessionTypes = () => {
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingType, setEditingType] = useState<SessionType | null>(null);
   
-  // Sample session types
+  // Sample session types with resources
   const [sessionTypes, setSessionTypes] = useState<SessionType[]>([
     {
       id: "1",
@@ -25,7 +24,15 @@ const ManageSessionTypes = () => {
       description: "Get professional advice on career paths, job opportunities, and professional development strategies.",
       duration: 45,
       price: 30,
-      color: "#7c3aed"
+      color: "#7c3aed",
+      resources: [
+        {
+          id: "r1",
+          name: "Career Assessment Template",
+          url: "https://example.com/career-template.pdf",
+          type: "pdf"
+        }
+      ]
     },
     {
       id: "2",
@@ -81,14 +88,16 @@ const ManageSessionTypes = () => {
     duration: number;
     price: number;
     color: string;
+    resources: SessionTypeResource[];
   }>({
     name: "",
     description: "",
     duration: 30,
     price: 0,
-    color: "#7c3aed"
+    color: "#7c3aed",
+    resources: []
   });
-  
+
   React.useEffect(() => {
     if (editingType) {
       setFormData({
@@ -96,7 +105,8 @@ const ManageSessionTypes = () => {
         description: editingType.description,
         duration: editingType.duration,
         price: editingType.price,
-        color: editingType.color
+        color: editingType.color,
+        resources: editingType.resources || []
       });
     } else {
       setFormData({
@@ -104,7 +114,8 @@ const ManageSessionTypes = () => {
         description: "",
         duration: 30,
         price: 0,
-        color: "#7c3aed"
+        color: "#7c3aed",
+        resources: []
       });
     }
   }, [editingType]);
@@ -113,12 +124,40 @@ const ManageSessionTypes = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
+
+  const handleAddResource = () => {
+    const newResource: SessionTypeResource = {
+      id: `resource-${Date.now()}`,
+      name: "",
+      url: "",
+      type: "pdf"
+    };
+    setFormData(prev => ({
+      ...prev,
+      resources: [...prev.resources, newResource]
+    }));
+  };
+
+  const handleResourceChange = (index: number, field: keyof SessionTypeResource, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      resources: prev.resources.map((resource, i) => 
+        i === index ? { ...resource, [field]: value } : resource
+      )
+    }));
+  };
+
+  const handleRemoveResource = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      resources: prev.resources.filter((_, i) => i !== index)
+    }));
+  };
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (editingType) {
-      // Update existing type
       setSessionTypes(sessionTypes.map(type => 
         type.id === editingType.id 
           ? { ...type, ...formData } 
@@ -126,10 +165,9 @@ const ManageSessionTypes = () => {
       ));
       toast({
         title: "Session type updated",
-        description: "The session type has been updated successfully."
+        description: "The session type and its resources have been updated successfully."
       });
     } else {
-      // Add new type
       const newType: SessionType = {
         id: `type-${Date.now()}`,
         ...formData
@@ -142,6 +180,17 @@ const ManageSessionTypes = () => {
     }
     
     handleCloseDialog();
+  };
+
+  const getResourceIcon = (type: 'pdf' | 'csv' | 'spreadsheet') => {
+    switch (type) {
+      case 'pdf':
+        return <FilePdf className="h-4 w-4" />;
+      case 'csv':
+        return <FileCsv className="h-4 w-4" />;
+      case 'spreadsheet':
+        return <FileSpreadsheet className="h-4 w-4" />;
+    }
   };
   
   return (
@@ -168,6 +217,7 @@ const ManageSessionTypes = () => {
                 <TableHead>Description</TableHead>
                 <TableHead>Duration</TableHead>
                 <TableHead>Price</TableHead>
+                <TableHead>Resources</TableHead>
                 <TableHead>Color</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -178,7 +228,23 @@ const ManageSessionTypes = () => {
                   <TableCell className="font-medium">{type.name}</TableCell>
                   <TableCell className="max-w-md truncate">{type.description}</TableCell>
                   <TableCell>{type.duration} min</TableCell>
-                  <TableCell>${type.price}</TableCell>
+                  <TableCell>₹{type.price}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      {type.resources?.map(resource => (
+                        <a
+                          key={resource.id}
+                          href={resource.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+                        >
+                          {getResourceIcon(resource.type)}
+                          <span className="sr-only">{resource.name}</span>
+                        </a>
+                      ))}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center">
                       <div 
@@ -212,15 +278,15 @@ const ManageSessionTypes = () => {
       </Card>
       
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
               {editingType ? "Edit Session Type" : "Add Session Type"}
             </DialogTitle>
             <DialogDescription>
               {editingType
-                ? "Update the details of this session type"
-                : "Create a new type of mentoring session"}
+                ? "Update the details and resources of this session type"
+                : "Create a new type of mentoring session with resources"}
             </DialogDescription>
           </DialogHeader>
           
@@ -297,6 +363,57 @@ const ManageSessionTypes = () => {
                     name="color"
                     className="flex-1"
                   />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label>Resource Kits</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddResource}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Resource
+                  </Button>
+                </div>
+                
+                <div className="space-y-3">
+                  {formData.resources.map((resource, index) => (
+                    <div key={resource.id} className="flex gap-2">
+                      <Input
+                        placeholder="Resource name"
+                        value={resource.name}
+                        onChange={(e) => handleResourceChange(index, 'name', e.target.value)}
+                        className="flex-1"
+                      />
+                      <Input
+                        placeholder="URL"
+                        value={resource.url}
+                        onChange={(e) => handleResourceChange(index, 'url', e.target.value)}
+                        className="flex-1"
+                      />
+                      <select
+                        value={resource.type}
+                        onChange={(e) => handleResourceChange(index, 'type', e.target.value as 'pdf' | 'csv' | 'spreadsheet')}
+                        className="px-2 py-1 border rounded-md"
+                      >
+                        <option value="pdf">PDF</option>
+                        <option value="csv">CSV</option>
+                        <option value="spreadsheet">Spreadsheet</option>
+                      </select>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveResource(index)}
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               </div>
               
