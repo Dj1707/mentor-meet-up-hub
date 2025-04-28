@@ -1,8 +1,22 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export const StudentFeedbackDisplay = () => {
+  // Sample data - replace with actual API call in production
+  const sessionStats = {
+    totalSessions: 33,
+    avgRating: 4.7,
+    sessionsThisMonth: 5
+  };
+
+  const feedbackByType = {
+    "Career Guidance": { count: 10, avg: 4.8 },
+    "Technical Interview": { count: 15, avg: 4.5 },
+    "Resume Review": { count: 8, avg: 4.9 }
+  };
+
   const feedbackData = [
     {
       id: "1",
@@ -27,16 +41,34 @@ export const StudentFeedbackDisplay = () => {
     }
   ];
 
-  const feedbackByType = {
-    "Career Guidance": { count: 10, avg: 4.8 },
-    "Technical Interview": { count: 15, avg: 4.5 },
-    "Resume Review": { count: 8, avg: 4.9 }
-  };
-
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium mb-4">Overall Feedback Summary</h3>
+        <h3 className="text-lg font-medium mb-4">Session Summary</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-2xl font-bold">{sessionStats.totalSessions}</p>
+              <p className="text-sm text-muted-foreground">Total Sessions</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-2xl font-bold">{sessionStats.avgRating.toFixed(1)}</p>
+              <p className="text-sm text-muted-foreground">Average Rating</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-2xl font-bold">{sessionStats.sessionsThisMonth}</p>
+              <p className="text-sm text-muted-foreground">Sessions This Month</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-lg font-medium mb-4">Session Type Breakdown</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           {Object.entries(feedbackByType).map(([type, data]) => (
             <Card key={type}>
@@ -68,8 +100,10 @@ export const StudentFeedbackDisplay = () => {
               <CardContent className="pt-6">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-medium">{feedback.studentName}</h4>
-                    <p className="text-sm text-muted-foreground">{feedback.sessionType} Session</p>
+                    <Badge variant="secondary" className="mb-2">
+                      {feedback.sessionType}
+                    </Badge>
+                    <p className="text-sm text-muted-foreground">{feedback.studentName}</p>
                   </div>
                   <div className="flex">
                     {Array.from({ length: 5 }).map((_, i) => (
@@ -88,3 +122,4 @@ export const StudentFeedbackDisplay = () => {
     </div>
   );
 };
+

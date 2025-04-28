@@ -55,3 +55,15 @@ export interface StudentFeedback {
   actionItems: string[];
   submittedAt: Date;
 }
+
+export interface SessionFeedbackSummary {
+  totalSessions: number;
+  avgRating: number;
+  sessionTypeStats: {
+    [key: string]: {
+      count: number;
+      avgRating: number;
+    }
+  }
+}
+
