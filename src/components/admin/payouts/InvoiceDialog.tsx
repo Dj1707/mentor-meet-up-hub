@@ -39,12 +39,12 @@ const InvoiceDialog = ({ open, onOpenChange, payout, mentor }: InvoiceDialogProp
           
           <div className="space-y-2">
             <div>Name of Issuer :- {mentor.name}</div>
-            <div>Address :- [Mentor's Address]</div>
+            <div>Address :- {payout.bankDetails?.accountName || "[Mentor's Address]"}</div>
           </div>
           
           <div className="grid grid-cols-2 gap-4 border-t border-b py-4">
-            <div>Invoice No.: {payout.id}</div>
-            <div>Invoice Date: {formatDate(payout.createdAt)}</div>
+            <div>Invoice No.: {payout.invoiceNumber || payout.id}</div>
+            <div>Invoice Date: {payout.invoiceDate ? formatDate(payout.invoiceDate) : formatDate(payout.createdAt)}</div>
           </div>
           
           <div className="space-y-2">
@@ -64,17 +64,22 @@ const InvoiceDialog = ({ open, onOpenChange, payout, mentor }: InvoiceDialogProp
               </tr>
             </thead>
             <tbody>
-              {payout.sessionIds.map((sessionId, index) => (
-                <tr key={sessionId} className="border">
-                  <td className="border p-2">{index + 1}</td>
-                  <td className="border p-2">Mentoring Session</td>
-                  <td className="border p-2">-</td>
-                  <td className="border p-2">{formatCurrency(payout.amount / payout.sessionIds.length)}</td>
-                </tr>
-              ))}
+              {payout.sessionIds.map((sessionId, index) => {
+                const sessionRate = payout.rates?.find(r => r.sessionTypeId === sessionId)?.rate || 
+                  (payout.amount / payout.sessionIds.length);
+                
+                return (
+                  <tr key={sessionId} className="border">
+                    <td className="border p-2">{index + 1}</td>
+                    <td className="border p-2">Mentoring Session</td>
+                    <td className="border p-2"><IndianRupee className="inline h-3 w-3" /> {formatCurrency(sessionRate)}</td>
+                    <td className="border p-2"><IndianRupee className="inline h-3 w-3" /> {formatCurrency(sessionRate)}</td>
+                  </tr>
+                );
+              })}
               <tr className="border font-bold">
                 <td colSpan={3} className="border p-2">Total</td>
-                <td className="border p-2">{formatCurrency(payout.amount)}</td>
+                <td className="border p-2"><IndianRupee className="inline h-3 w-3" /> {formatCurrency(payout.amount)}</td>
               </tr>
             </tbody>
           </table>
@@ -83,10 +88,10 @@ const InvoiceDialog = ({ open, onOpenChange, payout, mentor }: InvoiceDialogProp
             <div>Amount in words(in Rs.): [Amount in words] Rupees</div>
             
             <div className="space-y-1">
-              <div>Account Holder Name :- [Account Holder Name]</div>
-              <div>Bank Name :- [Bank Name]</div>
-              <div>A/C Number :- [Account Number]</div>
-              <div>IFSC :- [IFSC Code]</div>
+              <div>Account Holder Name :- {payout.bankDetails?.accountName || "[Account Holder Name]"}</div>
+              <div>Bank Name :- {payout.bankDetails?.bankName || "[Bank Name]"}</div>
+              <div>A/C Number :- {payout.bankDetails?.accountNumber || "[Account Number]"}</div>
+              <div>IFSC :- {payout.bankDetails?.ifscCode || "[IFSC Code]"}</div>
               <div>Branch :- [Branch Name]</div>
               <div>PAN :- [PAN Number]</div>
             </div>
@@ -101,7 +106,7 @@ const InvoiceDialog = ({ open, onOpenChange, payout, mentor }: InvoiceDialogProp
         </div>
         
         <div className="flex justify-end space-x-2">
-          <Button onClick={() => onOpenChange(false)}>Close</Button>
+          <Button onClick={() => onOpenChange(false)} variant="outline">Close</Button>
           <Button>Download PDF</Button>
         </div>
       </DialogContent>

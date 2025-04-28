@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
+import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Invoice, ReceiptIndianRupee } from "lucide-react";
 
 export const InvoiceTab = () => {
   const { toast } = useToast();
@@ -62,152 +64,195 @@ export const InvoiceTab = () => {
     setInvoiceDialogOpen(false);
   };
 
+  const formatDate = () => {
+    const now = new Date();
+    return now.toLocaleDateString('en-IN', { 
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).split('/').join('-');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">Invoicing</h3>
         <Button onClick={() => setInvoiceDialogOpen(true)}>
+          <Invoice className="w-4 h-4 mr-2" />
           Generate Invoice
         </Button>
       </div>
 
       <div>
         <h4 className="text-base font-medium mb-3">Pending Sessions</h4>
-        <div className="border rounded-md">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Session</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {pendingSessions.map(session => (
-                <tr key={session.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{session.sessionType}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{session.date}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{session.student}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">₹{session.amount}</td>
-                </tr>
-              ))}
-              <tr className="bg-gray-50">
-                <td colSpan={3} className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">Total Pending</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  ₹{pendingSessions.reduce((sum, session) => sum + session.amount, 0)}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Session</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Student</TableHead>
+              <TableHead>Amount</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {pendingSessions.map(session => (
+              <TableRow key={session.id}>
+                <TableCell>{session.sessionType}</TableCell>
+                <TableCell>{session.date}</TableCell>
+                <TableCell>{session.student}</TableCell>
+                <TableCell className="flex items-center">
+                  <ReceiptIndianRupee className="h-4 w-4 mr-1" />
+                  {session.amount}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={3} className="text-right font-medium">Total Pending</TableCell>
+              <TableCell className="font-medium flex items-center">
+                <ReceiptIndianRupee className="h-4 w-4 mr-1" />
+                {pendingSessions.reduce((sum, session) => sum + session.amount, 0)}
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
       </div>
 
       <div>
         <h4 className="text-base font-medium mb-3">Previous Invoices</h4>
-        <div className="border rounded-md">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sessions</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {previousInvoices.map(invoice => (
-                <tr key={invoice.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{invoice.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{invoice.date}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{invoice.sessions}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">₹{invoice.amount}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <Badge variant={invoice.status === "paid" ? "success" : "secondary"}>
-                      {invoice.status === "paid" ? "Paid" : "Processing"}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <Button variant="ghost" size="sm" className="text-xs">
-                      View
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-xs">
-                      Download
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Invoice ID</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Sessions</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {previousInvoices.map(invoice => (
+              <TableRow key={invoice.id}>
+                <TableCell>{invoice.id}</TableCell>
+                <TableCell>{invoice.date}</TableCell>
+                <TableCell>{invoice.sessions}</TableCell>
+                <TableCell className="flex items-center">
+                  <ReceiptIndianRupee className="h-4 w-4 mr-1" />
+                  {invoice.amount}
+                </TableCell>
+                <TableCell>
+                  <Badge variant={invoice.status === "paid" ? "success" : "secondary"}>
+                    {invoice.status === "paid" ? "Paid" : "Processing"}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Button variant="ghost" size="sm" className="text-xs">
+                    View
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-xs">
+                    Download
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
 
       <Dialog open={invoiceDialogOpen} onOpenChange={setInvoiceDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>Generate Invoice</DialogTitle>
             <DialogDescription>
               Create an invoice for all completed sessions
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="border rounded-md p-4 bg-gray-50">
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium">{user?.mentorProfile?.name}</p>
-                  <p className="text-sm text-gray-500">{user?.mentorProfile?.address?.street}</p>
-                  <p className="text-sm text-gray-500">
-                    {user?.mentorProfile?.address?.city}, {user?.mentorProfile?.address?.state} {user?.mentorProfile?.address?.zipCode}
-                  </p>
-                  <p className="text-sm text-gray-500">{user?.mentorProfile?.address?.country}</p>
-                </div>
-                
-                <div className="border-t pt-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    <p className="text-sm text-gray-500">Bank Name:</p>
-                    <p className="text-sm font-medium text-right">{user?.mentorProfile?.bankDetails?.bankName}</p>
-                    <p className="text-sm text-gray-500">Account Name:</p>
-                    <p className="text-sm font-medium text-right">{user?.mentorProfile?.bankDetails?.accountName}</p>
-                    <p className="text-sm text-gray-500">Account Number:</p>
-                    <p className="text-sm font-medium text-right">{user?.mentorProfile?.bankDetails?.accountNumber}</p>
-                    <p className="text-sm text-gray-500">IFSC Code:</p>
-                    <p className="text-sm font-medium text-right">{user?.mentorProfile?.bankDetails?.ifscCode}</p>
-                  </div>
-                </div>
-
-                <div className="border-t pt-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    <p className="text-sm text-gray-500">Sessions:</p>
-                    <p className="text-sm font-medium text-right">{pendingSessions.length}</p>
-                    <p className="text-sm text-gray-500">Total Amount:</p>
-                    <p className="text-sm font-medium text-right">
-                      ₹{pendingSessions.reduce((sum, session) => sum + session.amount, 0)}
-                    </p>
-                    <p className="text-sm text-gray-500">Invoice Date:</p>
-                    <p className="text-sm font-medium text-right">Apr 28, 2025</p>
-                  </div>
+          <div className="border rounded-lg p-8 space-y-6">
+            <div className="text-3xl font-bold text-right">Invoice</div>
+            
+            <div className="space-y-2">
+              <div>Name of Issuer :- {user?.mentorProfile?.name}</div>
+              <div>Address :- {user?.mentorProfile?.address?.street || "[Street Address]"}, {user?.mentorProfile?.address?.city || "[City]"}</div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 border-t border-b py-4">
+              <div>Invoice No.: INV-{Math.floor(Math.random() * 10000)}</div>
+              <div>Invoice Date: {formatDate()}</div>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="font-semibold">Bill To:</div>
+              <div>Neos Kosmos Technologies Pvt. Ltd.</div>
+              <div>Address :- Prestige Cube, Site no 26, Laskar Hosur Road,</div>
+              <div>Adugodi, Koramangala, Bengaluru, Karnataka- 560030</div>
+            </div>
+            
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border">
+                  <th className="border p-2 text-left">Sr. No.</th>
+                  <th className="border p-2 text-left">Description of Service</th>
+                  <th className="border p-2 text-left">Rate</th>
+                  <th className="border p-2 text-left">Amount (Rs.)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingSessions.map((session, index) => (
+                  <tr key={session.id} className="border">
+                    <td className="border p-2">{index + 1}</td>
+                    <td className="border p-2">{session.sessionType} Session</td>
+                    <td className="border p-2"><ReceiptIndianRupee className="inline h-3 w-3" /> {session.amount.toFixed(2)}</td>
+                    <td className="border p-2"><ReceiptIndianRupee className="inline h-3 w-3" /> {session.amount.toFixed(2)}</td>
+                  </tr>
+                ))}
+                <tr className="border font-bold">
+                  <td colSpan={3} className="border p-2">Total</td>
+                  <td className="border p-2">
+                    <ReceiptIndianRupee className="inline h-3 w-3" /> 
+                    {pendingSessions.reduce((sum, session) => sum + session.amount, 0).toFixed(2)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <div className="space-y-4">
+              <div>Amount in words(in Rs.): [Amount in words] Rupees</div>
+              
+              <div className="space-y-1">
+                <div>Account Holder Name :- {user?.mentorProfile?.bankDetails?.accountName || "[Account Holder Name]"}</div>
+                <div>Bank Name :- {user?.mentorProfile?.bankDetails?.bankName || "[Bank Name]"}</div>
+                <div>A/C Number :- {user?.mentorProfile?.bankDetails?.accountNumber || "[Account Number]"}</div>
+                <div>IFSC :- {user?.mentorProfile?.bankDetails?.ifscCode || "[IFSC Code]"}</div>
+                <div>Branch :- [Branch Name]</div>
+                <div>PAN :- [PAN Number]</div>
+              </div>
+              
+              <div className="flex justify-end">
+                <div className="text-center">
+                  <div className="mb-2">[Signature]</div>
+                  <div>Signature</div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="invoice-notes">Invoice Notes (Optional)</Label>
-              <Textarea 
-                id="invoice-notes" 
-                placeholder="Add any notes to be included in the invoice"
-              />
-            </div>
+          <div className="space-y-2 mt-4">
+            <Label htmlFor="invoice-notes">Invoice Notes (Optional)</Label>
+            <Textarea 
+              id="invoice-notes" 
+              placeholder="Add any notes to be included in the invoice"
+            />
+          </div>
 
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button variant="outline" onClick={() => setInvoiceDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreateInvoice}>
-                Generate Invoice
-              </Button>
-            </div>
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button variant="outline" onClick={() => setInvoiceDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateInvoice}>
+              Generate Invoice
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
