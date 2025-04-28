@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 
 interface PaymentInfoTabProps {
   formData: {
-    bankDetails: {
+    bankDetails?: {
       accountName: string;
       accountNumber: string;
       ifscCode: string;
@@ -18,6 +18,13 @@ const PaymentInfoTab: React.FC<PaymentInfoTabProps> = ({
   formData,
   handleChange,
 }) => {
+  const bankDetails = formData.bankDetails || {
+    accountName: "",
+    accountNumber: "",
+    ifscCode: "",
+    bankName: ""
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
@@ -34,7 +41,7 @@ const PaymentInfoTab: React.FC<PaymentInfoTabProps> = ({
             <Input
               id="bankDetails.accountName"
               name="bankDetails.accountName"
-              value={formData.bankDetails.accountName}
+              value={bankDetails.accountName}
               onChange={handleChange}
             />
           </div>
@@ -46,7 +53,7 @@ const PaymentInfoTab: React.FC<PaymentInfoTabProps> = ({
             <Input
               id="bankDetails.accountNumber"
               name="bankDetails.accountNumber"
-              value={formData.bankDetails.accountNumber}
+              value={bankDetails.accountNumber}
               onChange={handleChange}
             />
           </div>
@@ -58,7 +65,7 @@ const PaymentInfoTab: React.FC<PaymentInfoTabProps> = ({
             <Input
               id="bankDetails.ifscCode"
               name="bankDetails.ifscCode"
-              value={formData.bankDetails.ifscCode}
+              value={bankDetails.ifscCode}
               onChange={handleChange}
             />
           </div>
@@ -70,7 +77,7 @@ const PaymentInfoTab: React.FC<PaymentInfoTabProps> = ({
             <Input
               id="bankDetails.bankName"
               name="bankDetails.bankName"
-              value={formData.bankDetails.bankName}
+              value={bankDetails.bankName}
               onChange={handleChange}
             />
           </div>

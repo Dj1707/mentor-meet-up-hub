@@ -54,7 +54,12 @@ const MentorProfile = () => {
           return {
             ...prev,
             bankDetails: {
-              ...prev.bankDetails,
+              ...(prev.bankDetails || {
+                accountName: "",
+                accountNumber: "",
+                ifscCode: "",
+                bankName: ""
+              }),
               [field]: value
             }
           };
@@ -62,7 +67,13 @@ const MentorProfile = () => {
           return {
             ...prev,
             address: {
-              ...prev.address,
+              ...(prev.address || {
+                street: "",
+                city: "",
+                state: "",
+                zipCode: "",
+                country: "India"
+              }),
               [field]: value
             }
           };
@@ -82,9 +93,10 @@ const MentorProfile = () => {
 
   const toggleSector = (sector: string) => {
     setFormData(prev => {
-      const updatedSectors = prev.pastSectors.includes(sector)
-        ? prev.pastSectors.filter(s => s !== sector)
-        : [...prev.pastSectors, sector];
+      const currentSectors = prev.pastSectors || [];
+      const updatedSectors = currentSectors.includes(sector)
+        ? currentSectors.filter(s => s !== sector)
+        : [...currentSectors, sector];
       
       return { ...prev, pastSectors: updatedSectors };
     });
@@ -137,7 +149,21 @@ const MentorProfile = () => {
                 
                 <TabsContent value="personal">
                   <PersonalInfoTab
-                    formData={formData}
+                    formData={{
+                      name: formData.name,
+                      email: formData.email,
+                      phone: formData.phone || "",
+                      linkedIn: formData.linkedIn || "",
+                      profilePicture: formData.profilePicture || "",
+                      whatsappNotifications: formData.whatsappNotifications || false,
+                      address: formData.address || {
+                        street: "",
+                        city: "",
+                        state: "",
+                        zipCode: "",
+                        country: "India"
+                      }
+                    }}
                     handleChange={handleChange}
                     handleWhatsAppToggle={handleWhatsAppToggle}
                   />
@@ -145,7 +171,13 @@ const MentorProfile = () => {
                 
                 <TabsContent value="professional">
                   <ProfessionalDetailsTab
-                    formData={formData}
+                    formData={{
+                      jobTitle: formData.jobTitle || "",
+                      company: formData.company || "",
+                      role: formData.role || "",
+                      bio: formData.bio || "",
+                      pastSectors: formData.pastSectors || []
+                    }}
                     handleChange={handleChange}
                     toggleSector={toggleSector}
                     sectors={sectors}
@@ -154,7 +186,14 @@ const MentorProfile = () => {
                 
                 <TabsContent value="payment">
                   <PaymentInfoTab
-                    formData={formData}
+                    formData={{
+                      bankDetails: formData.bankDetails || {
+                        accountName: "",
+                        accountNumber: "",
+                        ifscCode: "",
+                        bankName: ""
+                      }
+                    }}
                     handleChange={handleChange}
                   />
                 </TabsContent>

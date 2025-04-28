@@ -5,11 +5,11 @@ import { Textarea } from "@/components/ui/textarea";
 
 interface ProfessionalDetailsTabProps {
   formData: {
-    jobTitle: string;
-    company: string;
-    role: string;
-    bio: string;
-    pastSectors: string[];
+    jobTitle?: string;
+    company?: string;
+    role?: string;
+    bio?: string;
+    pastSectors?: string[];
   };
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   toggleSector: (sector: string) => void;

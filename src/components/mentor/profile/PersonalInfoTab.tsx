@@ -8,11 +8,11 @@ interface PersonalInfoTabProps {
   formData: {
     name: string;
     email: string;
-    phone: string;
-    linkedIn: string;
-    profilePicture: string;
+    phone?: string;
+    linkedIn?: string;
+    profilePicture?: string;
     whatsappNotifications: boolean;
-    address: {
+    address?: {
       street: string;
       city: string;
       state: string;
