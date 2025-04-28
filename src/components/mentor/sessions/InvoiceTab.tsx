@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -8,7 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
 import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Invoice, ReceiptIndianRupee } from "lucide-react";
+import { FileText, ReceiptIndianRupee } from "lucide-react";
 
 export const InvoiceTab = () => {
   const { toast } = useToast();
@@ -78,7 +77,7 @@ export const InvoiceTab = () => {
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">Invoicing</h3>
         <Button onClick={() => setInvoiceDialogOpen(true)}>
-          <Invoice className="w-4 h-4 mr-2" />
+          <FileText className="w-4 h-4 mr-2" />
           Generate Invoice
         </Button>
       </div>
