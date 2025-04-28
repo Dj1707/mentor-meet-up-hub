@@ -1,16 +1,14 @@
+
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Briefcase, Linkedin } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import PersonalInfoTab from "@/components/mentor/profile/PersonalInfoTab";
+import ProfessionalDetailsTab from "@/components/mentor/profile/ProfessionalDetailsTab";
+import PaymentInfoTab from "@/components/mentor/profile/PaymentInfoTab";
 
 const MentorProfile = () => {
   const { user, updateMentorProfile } = useAuth();
@@ -38,38 +36,12 @@ const MentorProfile = () => {
       city: "",
       state: "",
       zipCode: "",
-      country: ""
+      country: "India"
     },
     pastSectors: []
   };
   
-  const [formData, setFormData] = useState({
-    name: profile.name || "",
-    email: profile.email || "",
-    phone: profile.phone || "",
-    linkedIn: profile.linkedIn || "",
-    profilePicture: profile.profilePicture || "",
-    jobTitle: profile.jobTitle || "",
-    role: profile.role || "",
-    company: profile.company || "",
-    bio: profile.bio || "",
-    whatsappNotifications: profile.whatsappNotifications || false,
-    bankDetails: {
-      accountName: profile.bankDetails?.accountName || "",
-      accountNumber: profile.bankDetails?.accountNumber || "",
-      ifscCode: profile.bankDetails?.ifscCode || "",
-      bankName: profile.bankDetails?.bankName || ""
-    },
-    address: {
-      street: profile.address?.street || "",
-      city: profile.address?.city || "",
-      zipCode: profile.address?.zipCode || "",
-      state: profile.address?.state || "",
-      country: profile.address?.country || "India"
-    },
-    pastSectors: profile.pastSectors || []
-  });
-  
+  const [formData, setFormData] = useState(profile);
   const [activeTab, setActiveTab] = useState("personal");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -101,70 +73,6 @@ const MentorProfile = () => {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
-  
-  const handleSelectChange = (value: string, field: string) => {
-    if (field.includes('.')) {
-      const [section, subfield] = field.split('.');
-      setFormData(prev => {
-        if (section === 'bankDetails') {
-          return {
-            ...prev,
-            bankDetails: {
-              ...prev.bankDetails,
-              [subfield]: value
-            }
-          };
-        } else if (section === 'address') {
-          return {
-            ...prev,
-            address: {
-              ...prev.address,
-              [subfield]: value
-            }
-          };
-        }
-        return prev;
-      });
-    } else {
-      setFormData(prev => ({ ...prev, [field]: value }));
-    }
-  };
-  
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    try {
-      await updateMentorProfile({
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        linkedIn: formData.linkedIn,
-        profilePicture: formData.profilePicture,
-        jobTitle: formData.jobTitle,
-        role: formData.role,
-        company: formData.company,
-        bio: formData.bio,
-        bankDetails: formData.bankDetails,
-        address: formData.address,
-        pastSectors: formData.pastSectors,
-        whatsappNotifications: formData.whatsappNotifications
-      });
-      
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully updated.",
-      });
-    } catch (error) {
-      toast({
-        title: "Update failed",
-        description: "There was an error updating your profile. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const sectors = [
     "Technology", "Healthcare", "Finance", "Education", "Retail",
@@ -180,6 +88,32 @@ const MentorProfile = () => {
       
       return { ...prev, pastSectors: updatedSectors };
     });
+  };
+
+  const handleWhatsAppToggle = (checked: boolean) => {
+    setFormData(prev => ({ ...prev, whatsappNotifications: checked }));
+  };
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      await updateMentorProfile(formData);
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Update failed",
+        description: "There was an error updating your profile. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   return (
@@ -201,297 +135,28 @@ const MentorProfile = () => {
                   <TabsTrigger value="payment">Payment Information</TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="personal" className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label htmlFor="name" className="text-sm font-medium">
-                        Full Name *
-                      </label>
-                      <Input
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="text-sm font-medium">
-                        Email *
-                      </label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label htmlFor="phone" className="text-sm font-medium">
-                        Phone Number
-                      </label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label htmlFor="linkedIn" className="text-sm font-medium">
-                        LinkedIn Profile
-                      </label>
-                      <Input
-                        id="linkedIn"
-                        name="linkedIn"
-                        value={formData.linkedIn}
-                        onChange={handleChange}
-                        placeholder="linkedin.com/in/yourprofile"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label htmlFor="profilePicture" className="text-sm font-medium">
-                        Profile Picture URL
-                      </label>
-                      <Input
-                        id="profilePicture"
-                        name="profilePicture"
-                        value={formData.profilePicture}
-                        onChange={handleChange}
-                        placeholder="https://example.com/your-image.jpg"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between space-x-2">
-                        <Label htmlFor="whatsapp-notifications" className="text-sm font-medium">
-                          Enable WhatsApp Notifications
-                        </Label>
-                        <Switch
-                          id="whatsapp-notifications"
-                          checked={formData.whatsappNotifications}
-                          onCheckedChange={(checked) => 
-                            setFormData(prev => ({ ...prev, whatsappNotifications: checked }))
-                          }
-                        />
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Receive session reminders via WhatsApp
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <h3 className="text-base font-medium mb-2">Address Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label htmlFor="address.street" className="text-sm font-medium">
-                          Street Address
-                        </label>
-                        <Input
-                          id="address.street"
-                          name="address.street"
-                          value={formData.address.street}
-                          onChange={handleChange}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label htmlFor="address.city" className="text-sm font-medium">
-                          City
-                        </label>
-                        <Input
-                          id="address.city"
-                          name="address.city"
-                          value={formData.address.city}
-                          onChange={handleChange}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label htmlFor="address.state" className="text-sm font-medium">
-                          State
-                        </label>
-                        <Input
-                          id="address.state"
-                          name="address.state"
-                          value={formData.address.state}
-                          onChange={handleChange}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label htmlFor="address.zipCode" className="text-sm font-medium">
-                          ZIP Code
-                        </label>
-                        <Input
-                          id="address.zipCode"
-                          name="address.zipCode"
-                          value={formData.address.zipCode}
-                          onChange={handleChange}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label htmlFor="address.country" className="text-sm font-medium">
-                          Country
-                        </label>
-                        <Input
-                          id="address.country"
-                          name="address.country"
-                          value={formData.address.country}
-                          onChange={handleChange}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                <TabsContent value="personal">
+                  <PersonalInfoTab
+                    formData={formData}
+                    handleChange={handleChange}
+                    handleWhatsAppToggle={handleWhatsAppToggle}
+                  />
                 </TabsContent>
                 
-                <TabsContent value="professional" className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label htmlFor="jobTitle" className="text-sm font-medium">
-                        Current Job Title *
-                      </label>
-                      <Input
-                        id="jobTitle"
-                        name="jobTitle"
-                        value={formData.jobTitle}
-                        onChange={handleChange}
-                        required
-                        placeholder="e.g. Senior Software Engineer"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label htmlFor="company" className="text-sm font-medium">
-                        Current Company *
-                      </label>
-                      <Input
-                        id="company"
-                        name="company"
-                        value={formData.company}
-                        onChange={handleChange}
-                        required
-                        placeholder="e.g. Google"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2 md:col-span-2">
-                      <label htmlFor="role" className="text-sm font-medium">
-                        Mentoring Role
-                      </label>
-                      <Input
-                        id="role"
-                        name="role"
-                        value={formData.role}
-                        onChange={handleChange}
-                        placeholder="e.g. Technical Mentor, Career Coach"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="bio" className="text-sm font-medium">
-                      Professional Bio *
-                    </label>
-                    <Textarea
-                      id="bio"
-                      name="bio"
-                      value={formData.bio}
-                      onChange={handleChange}
-                      required
-                      placeholder="Tell students about your experience, expertise, and mentoring style"
-                      className="h-32"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium block mb-2">
-                      Past Industry Sectors
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {sectors.map((sector) => (
-                        <button
-                          key={sector}
-                          type="button"
-                          onClick={() => toggleSector(sector)}
-                          className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                            formData.pastSectors.includes(sector)
-                              ? "bg-mentor text-white"
-                              : "bg-secondary text-primary hover:bg-secondary/80"
-                          }`}
-                        >
-                          {sector}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                <TabsContent value="professional">
+                  <ProfessionalDetailsTab
+                    formData={formData}
+                    handleChange={handleChange}
+                    toggleSector={toggleSector}
+                    sectors={sectors}
+                  />
                 </TabsContent>
                 
-                <TabsContent value="payment" className="space-y-6">
-                  <div className="space-y-4">
-                    <h3 className="text-base font-medium">Bank Account Details</h3>
-                    <p className="text-sm text-muted-foreground">
-                      This information is used for processing your monthly payments
-                    </p>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label htmlFor="bankDetails.accountName" className="text-sm font-medium">
-                          Account Holder Name
-                        </label>
-                        <Input
-                          id="bankDetails.accountName"
-                          name="bankDetails.accountName"
-                          value={formData.bankDetails.accountName}
-                          onChange={handleChange}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label htmlFor="bankDetails.accountNumber" className="text-sm font-medium">
-                          Account Number
-                        </label>
-                        <Input
-                          id="bankDetails.accountNumber"
-                          name="bankDetails.accountNumber"
-                          value={formData.bankDetails.accountNumber}
-                          onChange={handleChange}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label htmlFor="bankDetails.ifscCode" className="text-sm font-medium">
-                          IFSC Code
-                        </label>
-                        <Input
-                          id="bankDetails.ifscCode"
-                          name="bankDetails.ifscCode"
-                          value={formData.bankDetails.ifscCode}
-                          onChange={handleChange}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label htmlFor="bankDetails.bankName" className="text-sm font-medium">
-                          Bank Name
-                        </label>
-                        <Input
-                          id="bankDetails.bankName"
-                          name="bankDetails.bankName"
-                          value={formData.bankDetails.bankName}
-                          onChange={handleChange}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                <TabsContent value="payment">
+                  <PaymentInfoTab
+                    formData={formData}
+                    handleChange={handleChange}
+                  />
                 </TabsContent>
               </Tabs>
               
