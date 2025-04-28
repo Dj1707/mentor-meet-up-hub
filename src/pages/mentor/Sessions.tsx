@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -100,7 +99,6 @@ const SessionCard = ({
   };
 
   const handleFeedbackSubmit = () => {
-    // Remove empty action items
     const cleanedFeedback = {
       ...feedback,
       actionItems: feedback.actionItems.filter(item => item.trim() !== "")
@@ -412,7 +410,6 @@ const AddAvailabilityDialog = ({ open, setOpen }: { open: boolean; setOpen: (ope
   const [selectedSessionTypes, setSelectedSessionTypes] = useState<string[]>([]);
   const [recurringSchedule, setRecurringSchedule] = useState("none");
   
-  // Sample session types
   const sessionTypes = [
     { id: "1", name: "Career Guidance", duration: 45 },
     { id: "2", name: "Technical Interview Prep", duration: 60 },
@@ -541,9 +538,7 @@ const AddAvailabilityDialog = ({ open, setOpen }: { open: boolean; setOpen: (ope
   );
 };
 
-// Component to display student feedback
 const StudentFeedbackDisplay = () => {
-  // Mock feedback data
   const feedbackData = [
     {
       id: "1",
@@ -568,7 +563,6 @@ const StudentFeedbackDisplay = () => {
     }
   ];
 
-  // Average ratings by session type
   const feedbackByType = {
     "Career Guidance": { count: 10, avg: 4.8 },
     "Technical Interview": { count: 15, avg: 4.5 },
@@ -631,12 +625,10 @@ const StudentFeedbackDisplay = () => {
   );
 };
 
-// Component to display and create invoices
 const InvoiceTab = () => {
   const { toast } = useToast();
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
 
-  // Mock invoice data
   const pendingSessions = [
     { 
       id: "1", 
@@ -819,18 +811,14 @@ const MentorSessions = () => {
   const [availabilityDialogOpen, setAvailabilityDialogOpen] = useState(false);
   const { toast } = useToast();
   
-  // Track sessions that need feedback
   const [sessionsNeedingFeedback, setSessionsNeedingFeedback] = useState<string[]>([
-    "3", // ID of the completed session that needs feedback
-    "4"  // ID of the no-show session that needs feedback
+    "3",
+    "4"
   ]);
-  
-  // Handle feedback submission
+
   const handleFeedbackSubmit = (sessionId: string, feedback: SessionFeedback) => {
-    // In a real app, this would call an API to save the feedback
     console.log("Submitting feedback for session", sessionId, feedback);
     
-    // Remove session from the list of sessions needing feedback
     setSessionsNeedingFeedback(prev => prev.filter(id => id !== sessionId));
     
     toast({
@@ -838,8 +826,7 @@ const MentorSessions = () => {
       description: "Thank you for submitting your feedback. The session is now marked as complete."
     });
   };
-  
-  // Sample session data with resources
+
   const upcomingSessions = [
     {
       id: "1",
@@ -851,8 +838,8 @@ const MentorSessions = () => {
       status: "scheduled" as SessionStatus,
       sessionTypeId: "1",
       resources: [
-        { id: "r1", name: "Career Path Guide", url: "https://example.com/career-path.pdf", type: "pdf" },
-        { id: "r2", name: "Industry Trends", url: "https://example.com/trends.csv", type: "csv" }
+        { id: "r1", name: "Career Path Guide", url: "https://example.com/career-path.pdf", type: "pdf" as const },
+        { id: "r2", name: "Industry Trends", url: "https://example.com/trends.csv", type: "csv" as const }
       ]
     },
     {
@@ -865,11 +852,11 @@ const MentorSessions = () => {
       status: "scheduled" as SessionStatus,
       sessionTypeId: "2",
       resources: [
-        { id: "r3", name: "Interview Questions", url: "https://example.com/questions.pdf", type: "pdf" }
+        { id: "r3", name: "Interview Questions", url: "https://example.com/questions.pdf", type: "pdf" as const }
       ]
     }
   ];
-  
+
   const pastSessions = [
     {
       id: "3",
@@ -902,7 +889,7 @@ const MentorSessions = () => {
       sessionTypeId: "2"
     }
   ];
-  
+
   return (
     <MainLayout title="My Sessions">
       <div className="mb-6 flex justify-between items-center">

@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { briefcase, linkedin } from "lucide-react";
+import { Briefcase, Linkedin } from "lucide-react";
 
 const MentorProfile = () => {
   const { user, updateMentorProfile } = useAuth();
@@ -61,8 +61,8 @@ const MentorProfile = () => {
     address: {
       street: profile.address?.street || "",
       city: profile.address?.city || "",
-      state: profile.address?.state || "",
       zipCode: profile.address?.zipCode || "",
+      state: profile.address?.state || "",
       country: profile.address?.country || "India"
     },
     pastSectors: profile.pastSectors || []
@@ -75,13 +75,26 @@ const MentorProfile = () => {
     const { name, value } = e.target;
     if (name.includes('.')) {
       const [section, field] = name.split('.');
-      setFormData(prev => ({
-        ...prev,
-        [section]: {
-          ...prev[section as keyof typeof prev],
-          [field]: value
+      setFormData(prev => {
+        if (section === 'bankDetails') {
+          return {
+            ...prev,
+            bankDetails: {
+              ...prev.bankDetails,
+              [field]: value
+            }
+          };
+        } else if (section === 'address') {
+          return {
+            ...prev,
+            address: {
+              ...prev.address,
+              [field]: value
+            }
+          };
         }
-      }));
+        return prev;
+      });
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -90,13 +103,26 @@ const MentorProfile = () => {
   const handleSelectChange = (value: string, field: string) => {
     if (field.includes('.')) {
       const [section, subfield] = field.split('.');
-      setFormData(prev => ({
-        ...prev,
-        [section]: {
-          ...prev[section as keyof typeof prev],
-          [subfield]: value
+      setFormData(prev => {
+        if (section === 'bankDetails') {
+          return {
+            ...prev,
+            bankDetails: {
+              ...prev.bankDetails,
+              [subfield]: value
+            }
+          };
+        } else if (section === 'address') {
+          return {
+            ...prev,
+            address: {
+              ...prev.address,
+              [subfield]: value
+            }
+          };
         }
-      }));
+        return prev;
+      });
     } else {
       setFormData(prev => ({ ...prev, [field]: value }));
     }
