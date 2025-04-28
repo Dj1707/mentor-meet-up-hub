@@ -1,5 +1,4 @@
 
-
 export interface MentorProfile {
   name: string;
   email: string;
@@ -32,4 +31,3 @@ export interface MentorRate {
   sessionTypeId: string;
   rate: number;
 }
-
