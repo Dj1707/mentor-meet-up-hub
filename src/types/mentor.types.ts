@@ -9,7 +9,6 @@ export interface MentorProfile {
   role?: string;
   company?: string;
   bio?: string;
-  whatsappNotifications?: boolean;
   bankDetails?: {
     accountName: string;
     accountNumber: string;

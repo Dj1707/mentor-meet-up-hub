@@ -1,8 +1,6 @@
 
 import React from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 
 interface PersonalInfoTabProps {
   formData: {
@@ -11,7 +9,6 @@ interface PersonalInfoTabProps {
     phone?: string;
     linkedIn?: string;
     profilePicture?: string;
-    whatsappNotifications: boolean;
     address?: {
       street: string;
       city: string;
@@ -21,13 +18,11 @@ interface PersonalInfoTabProps {
     };
   };
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleWhatsAppToggle: (checked: boolean) => void;
 }
 
 const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
   formData,
   handleChange,
-  handleWhatsAppToggle,
 }) => {
   return (
     <div className="space-y-6">
@@ -96,22 +91,6 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             placeholder="https://example.com/your-image.jpg"
           />
         </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between space-x-2">
-            <Label htmlFor="whatsapp-notifications" className="text-sm font-medium">
-              Enable WhatsApp Notifications
-            </Label>
-            <Switch
-              id="whatsapp-notifications"
-              checked={formData.whatsappNotifications}
-              onCheckedChange={handleWhatsAppToggle}
-            />
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Receive session reminders via WhatsApp
-          </p>
-        </div>
       </div>
 
       <div className="space-y-2">
@@ -124,7 +103,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             <Input
               id="address.street"
               name="address.street"
-              value={formData.address.street}
+              value={formData.address?.street || ""}
               onChange={handleChange}
             />
           </div>
@@ -136,7 +115,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             <Input
               id="address.city"
               name="address.city"
-              value={formData.address.city}
+              value={formData.address?.city || ""}
               onChange={handleChange}
             />
           </div>
@@ -148,7 +127,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             <Input
               id="address.state"
               name="address.state"
-              value={formData.address.state}
+              value={formData.address?.state || ""}
               onChange={handleChange}
             />
           </div>
@@ -160,7 +139,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             <Input
               id="address.zipCode"
               name="address.zipCode"
-              value={formData.address.zipCode}
+              value={formData.address?.zipCode || ""}
               onChange={handleChange}
             />
           </div>
@@ -172,7 +151,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             <Input
               id="address.country"
               name="address.country"
-              value={formData.address.country}
+              value={formData.address?.country || ""}
               onChange={handleChange}
             />
           </div>

@@ -24,7 +24,6 @@ const MentorProfile = () => {
     role: "",
     company: "",
     bio: "",
-    whatsappNotifications: false,
     bankDetails: {
       accountName: "",
       accountNumber: "",
@@ -101,10 +100,6 @@ const MentorProfile = () => {
       return { ...prev, pastSectors: updatedSectors };
     });
   };
-
-  const handleWhatsAppToggle = (checked: boolean) => {
-    setFormData(prev => ({ ...prev, whatsappNotifications: checked }));
-  };
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,7 +150,6 @@ const MentorProfile = () => {
                       phone: formData.phone || "",
                       linkedIn: formData.linkedIn || "",
                       profilePicture: formData.profilePicture || "",
-                      whatsappNotifications: formData.whatsappNotifications || false,
                       address: formData.address || {
                         street: "",
                         city: "",
@@ -165,7 +159,6 @@ const MentorProfile = () => {
                       }
                     }}
                     handleChange={handleChange}
-                    handleWhatsAppToggle={handleWhatsAppToggle}
                   />
                 </TabsContent>
                 
