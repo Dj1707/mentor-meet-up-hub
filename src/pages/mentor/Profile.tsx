@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
@@ -10,12 +9,13 @@ import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Briefcase, Linkedin } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const MentorProfile = () => {
   const { user, updateMentorProfile } = useAuth();
   const { toast } = useToast();
   
-  // If profile doesn't exist, create an empty one
   const profile = user?.mentorProfile || {
     name: "",
     email: user?.email || "",
@@ -26,6 +26,7 @@ const MentorProfile = () => {
     role: "",
     company: "",
     bio: "",
+    whatsappNotifications: false,
     bankDetails: {
       accountName: "",
       accountNumber: "",
@@ -52,6 +53,7 @@ const MentorProfile = () => {
     role: profile.role || "",
     company: profile.company || "",
     bio: profile.bio || "",
+    whatsappNotifications: profile.whatsappNotifications || false,
     bankDetails: {
       accountName: profile.bankDetails?.accountName || "",
       accountNumber: profile.bankDetails?.accountNumber || "",
@@ -143,6 +145,7 @@ const MentorProfile = () => {
         role: formData.role,
         company: formData.company,
         bio: formData.bio,
+        whatsappNotifications: formData.whatsappNotifications,
         bankDetails: formData.bankDetails,
         address: formData.address,
         pastSectors: formData.pastSectors
@@ -263,6 +266,24 @@ const MentorProfile = () => {
                         onChange={handleChange}
                         placeholder="https://example.com/your-image.jpg"
                       />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between space-x-2">
+                        <Label htmlFor="whatsapp-notifications" className="text-sm font-medium">
+                          Enable WhatsApp Notifications
+                        </Label>
+                        <Switch
+                          id="whatsapp-notifications"
+                          checked={formData.whatsappNotifications}
+                          onCheckedChange={(checked) => 
+                            setFormData(prev => ({ ...prev, whatsappNotifications: checked }))
+                          }
+                        />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Receive session reminders via WhatsApp
+                      </p>
                     </div>
                   </div>
                   

@@ -13,6 +13,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { SessionStatus, SessionType, SessionTypeResource } from "@/types";
+import { useAuth } from "@/context/auth";
 
 const resourceTypeIcon = (type: string) => {
   switch (type) {
@@ -627,6 +628,7 @@ const StudentFeedbackDisplay = () => {
 
 const InvoiceTab = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
 
   const pendingSessions = [
@@ -770,15 +772,41 @@ const InvoiceTab = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="border rounded-md p-4 bg-gray-50">
-              <div className="grid grid-cols-2 gap-2">
-                <p className="text-sm text-gray-500">Sessions:</p>
-                <p className="text-sm font-medium text-right">{pendingSessions.length}</p>
-                <p className="text-sm text-gray-500">Total Amount:</p>
-                <p className="text-sm font-medium text-right">
-                  ₹{pendingSessions.reduce((sum, session) => sum + session.amount, 0)}
-                </p>
-                <p className="text-sm text-gray-500">Invoice Date:</p>
-                <p className="text-sm font-medium text-right">Apr 28, 2025</p>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium">{user?.mentorProfile?.name}</p>
+                  <p className="text-sm text-gray-500">{user?.mentorProfile?.address?.street}</p>
+                  <p className="text-sm text-gray-500">
+                    {user?.mentorProfile?.address?.city}, {user?.mentorProfile?.address?.state} {user?.mentorProfile?.address?.zipCode}
+                  </p>
+                  <p className="text-sm text-gray-500">{user?.mentorProfile?.address?.country}</p>
+                </div>
+                
+                <div className="border-t pt-4">
+                  <div className="grid grid-cols-2 gap-2">
+                    <p className="text-sm text-gray-500">Bank Name:</p>
+                    <p className="text-sm font-medium text-right">{user?.mentorProfile?.bankDetails?.bankName}</p>
+                    <p className="text-sm text-gray-500">Account Name:</p>
+                    <p className="text-sm font-medium text-right">{user?.mentorProfile?.bankDetails?.accountName}</p>
+                    <p className="text-sm text-gray-500">Account Number:</p>
+                    <p className="text-sm font-medium text-right">{user?.mentorProfile?.bankDetails?.accountNumber}</p>
+                    <p className="text-sm text-gray-500">IFSC Code:</p>
+                    <p className="text-sm font-medium text-right">{user?.mentorProfile?.bankDetails?.ifscCode}</p>
+                  </div>
+                </div>
+
+                <div className="border-t pt-4">
+                  <div className="grid grid-cols-2 gap-2">
+                    <p className="text-sm text-gray-500">Sessions:</p>
+                    <p className="text-sm font-medium text-right">{pendingSessions.length}</p>
+                    <p className="text-sm text-gray-500">Total Amount:</p>
+                    <p className="text-sm font-medium text-right">
+                      ₹{pendingSessions.reduce((sum, session) => sum + session.amount, 0)}
+                    </p>
+                    <p className="text-sm text-gray-500">Invoice Date:</p>
+                    <p className="text-sm font-medium text-right">Apr 28, 2025</p>
+                  </div>
+                </div>
               </div>
             </div>
 
