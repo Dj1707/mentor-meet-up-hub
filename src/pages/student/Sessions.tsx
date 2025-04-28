@@ -13,6 +13,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SessionSummarySection, FeedbackItemProps } from "@/components/student/sessions/SessionSummarySection";
 
 const SessionCard = ({ 
   title, 
@@ -518,6 +519,43 @@ const StudentSessions = () => {
     }
   ];
   
+  // Sample data for session summary
+  const sessionStats = {
+    totalSessions: 33,
+    avgRating: 4.7,
+    sessionsThisMonth: 5
+  };
+
+  const feedbackByType = {
+    "Career Guidance": { count: 10, avg: 4.8 },
+    "Technical Interview": { count: 15, avg: 4.5 },
+    "Resume Review": { count: 8, avg: 4.9 }
+  };
+
+  const recentFeedback: FeedbackItemProps[] = [
+    {
+      id: "1",
+      sessionType: "Career Guidance",
+      studentName: "Alex Johnson",
+      rating: 5,
+      comment: "Really helpful session! The mentor provided excellent guidance for my career transition."
+    },
+    {
+      id: "2",
+      sessionType: "Technical Interview",
+      studentName: "Jamie Rivera",
+      rating: 4,
+      comment: "Good technical advice, but would have liked more practical examples."
+    },
+    {
+      id: "3",
+      sessionType: "Resume Review",
+      studentName: "Casey Kim",
+      rating: 5,
+      comment: "The mentor gave me excellent feedback on my resume. I've already gotten more interview invitations!"
+    }
+  ];
+  
   const { toast } = useToast();
   
   const handleReschedule = () => {
@@ -553,6 +591,13 @@ const StudentSessions = () => {
           Book a Session
         </Button>
       </div>
+      
+      {/* Add the new Session Summary Section here */}
+      <SessionSummarySection 
+        sessionStats={sessionStats}
+        feedbackByType={feedbackByType}
+        recentFeedback={recentFeedback}
+      />
       
       {showFilters && (
         <Card className="mb-6">
