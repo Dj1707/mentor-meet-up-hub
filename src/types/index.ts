@@ -1,3 +1,4 @@
+
 import { User, UserRole } from "@/context/AuthContext";
 
 // Session Types
@@ -39,6 +40,7 @@ export interface Session {
   status: SessionStatus;
   notes?: string;
   feedbackId?: string;
+  meetingLink?: string;
 }
 
 // Available Time Slot
@@ -50,6 +52,8 @@ export interface TimeSlot {
   endTime: Date;
   isBooked: boolean;
   sessionTypeIds: string[]; // Which session types are available for this slot
+  meetingLink?: string;
+  recurring?: "none" | "daily" | "weekly" | "biweekly";
 }
 
 // Feedback Form Template
@@ -83,6 +87,16 @@ export interface FeedbackResponse {
   submittedAt: Date;
 }
 
+// Action Items from Mentor to Student
+export interface ActionItem {
+  id: string;
+  sessionId: string;
+  text: string;
+  isCompleted: boolean;
+  createdAt: Date;
+  completedAt?: Date;
+}
+
 // MentorRate - New type for mentor-specific session rates
 export interface MentorRate {
   mentorId: string;
@@ -100,6 +114,29 @@ export interface Payout {
   createdAt: Date;
   processedAt?: Date;
   rates?: MentorRate[]; // Add rates field to track the rates used for this payout
+  invoiceNumber?: string;
+  invoiceDate?: Date;
+  bankDetails?: {
+    accountName: string;
+    accountNumber: string;
+    ifscCode: string;
+    bankName: string;
+  };
+}
+
+// Invoice - New type for mentor invoices
+export interface Invoice {
+  id: string;
+  mentorId: string;
+  invoiceNumber: string;
+  invoiceDate: Date;
+  dueDate: Date;
+  amount: number;
+  status: "draft" | "submitted" | "paid" | "overdue";
+  sessionIds: string[];
+  notes?: string;
+  createdAt: Date;
+  paidAt?: Date;
 }
 
 // Analytics
@@ -118,4 +155,29 @@ export interface AnalyticsData {
     date: string;
     count: number;
   }[];
+}
+
+// Student Feedback for Mentors
+export interface MentorFeedback {
+  id: string;
+  mentorId: string;
+  studentId: string;
+  sessionId: string;
+  sessionTypeId: string;
+  rating: number;
+  comment: string;
+  submittedAt: Date;
+}
+
+// Mentor Feedback for Students
+export interface StudentFeedback {
+  id: string;
+  mentorId: string;
+  studentId: string;
+  sessionId: string;
+  sessionTypeId: string;
+  rating: number;
+  notes: string;
+  actionItems: string[];
+  submittedAt: Date;
 }

@@ -13,6 +13,22 @@ export interface MentorProfile {
   profilePicture?: string;
   jobTitle?: string;
   role?: string;
+  company?: string;
+  bio?: string;
+  bankDetails?: {
+    accountName: string;
+    accountNumber: string;
+    ifscCode: string;
+    bankName: string;
+  };
+  address?: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  pastSectors?: string[];
 }
 
 export interface StudentProfile {
@@ -86,7 +102,23 @@ const mockUsers: User[] = [
       linkedIn: "linkedin.com/in/taylorsmith",
       profilePicture: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
       jobTitle: "Senior Software Engineer",
-      role: "Technical Mentor"
+      company: "Tech Innovations Inc.",
+      role: "Technical Mentor",
+      bio: "Experienced software engineer with 10+ years in the industry. Passionate about helping new developers grow their skills and career.",
+      bankDetails: {
+        accountName: "Taylor Smith",
+        accountNumber: "1234567890",
+        ifscCode: "BANK0001234",
+        bankName: "State Bank"
+      },
+      address: {
+        street: "123 Tech Park",
+        city: "Bangalore",
+        state: "Karnataka",
+        zipCode: "560001",
+        country: "India"
+      },
+      pastSectors: ["Technology", "Education", "Finance"]
     }
   },
   {

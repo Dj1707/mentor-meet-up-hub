@@ -3,14 +3,16 @@ import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Users, Plus, ArrowRight, Check, Link, Calendar as CalendarIcon } from "lucide-react";
-import { Link as RouterLink } from "react-router-dom";
+import { Calendar, Clock, Users, Plus, ArrowRight, Check, Link as LinkIcon, Calendar as CalendarIcon, FileText } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 
 const SessionCard = ({ 
   title, 
@@ -19,7 +21,8 @@ const SessionCard = ({
   student,
   type,
   isPast = false,
-  meetingLink = null
+  meetingLink = null,
+  needsFeedback = false
 }: { 
   title: string; 
   date: string; 
@@ -28,10 +31,12 @@ const SessionCard = ({
   type: string;
   isPast?: boolean;
   meetingLink?: string | null;
+  needsFeedback?: boolean;
 }) => {
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [confirmCancelDialog, setConfirmCancelDialog] = useState(false);
   const [rescheduleDialog, setRescheduleDialog] = useState(false);
+  const [resourcesDialogOpen, setResourcesDialogOpen] = useState(false);
   const { toast } = useToast();
   
   const generateMeetingLink = () => {
@@ -55,6 +60,12 @@ const SessionCard = ({
     }
   };
   
+  // Sample session resources
+  const sessionResources = [
+    { name: "Interview Question Bank", url: "https://example.com/questions.pdf", type: "pdf" },
+    { name: "Evaluation Rubric", url: "https://example.com/rubric.pdf", type: "pdf" }
+  ];
+  
   return (
     <Card className={`${isPast ? "opacity-70" : ""}`}>
       <CardHeader className="pb-2">
@@ -71,33 +82,54 @@ const SessionCard = ({
       <CardContent>
         <p className="text-sm mb-4">Student: {student}</p>
         <div className="flex justify-between">
-          {isPast ? (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="text-xs"
-              onClick={() => setFeedbackDialogOpen(true)}
-            >
-              <Check className="w-3 h-3 mr-1" /> Submit Feedback
-            </Button>
-          ) : (
-            meetingLink ? (
-              <a href={meetingLink} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="sm" className="text-xs">
-                  <Link className="w-3 h-3 mr-1" /> Join Meeting
+          <div className="flex space-x-2">
+            {isPast ? (
+              needsFeedback ? (
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  className="text-xs bg-mentor hover:bg-mentor/90"
+                  onClick={() => setFeedbackDialogOpen(true)}
+                >
+                  <Check className="w-3 h-3 mr-1" /> Submit Feedback
                 </Button>
-              </a>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs"
+                  onClick={() => setResourcesDialogOpen(true)}
+                >
+                  <FileText className="w-3 h-3 mr-1" /> View Notes
+                </Button>
+              )
             ) : (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-xs"
-                onClick={handleStartSession}
-              >
-                <Calendar className="w-3 h-3 mr-1" /> Start Session
-              </Button>
-            )
-          )}
+              <>
+                {meetingLink ? (
+                  <Button variant="outline" size="sm" className="text-xs">
+                    <LinkIcon className="w-3 h-3 mr-1" /> Join Meeting
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs"
+                    onClick={handleStartSession}
+                  >
+                    <Calendar className="w-3 h-3 mr-1" /> Start Session
+                  </Button>
+                )}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-xs"
+                  onClick={() => setResourcesDialogOpen(true)}
+                >
+                  <FileText className="w-3 h-3 mr-1" /> Resources
+                </Button>
+              </>
+            )}
+          </div>
           {!isPast && (
             <div className="space-x-2">
               <Button 
@@ -119,6 +151,37 @@ const SessionCard = ({
             </div>
           )}
         </div>
+
+        {/* Session Resources Dialog */}
+        <Dialog open={resourcesDialogOpen} onOpenChange={setResourcesDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Session Resources</DialogTitle>
+              <DialogDescription>
+                Reference materials for this session
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {sessionResources.map((resource, idx) => (
+                <a 
+                  key={idx} 
+                  href={resource.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center p-3 border rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  <span>{resource.name}</span>
+                </a>
+              ))}
+              <div className="flex justify-end">
+                <Button variant="outline" onClick={() => setResourcesDialogOpen(false)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Feedback Dialog */}
         <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
@@ -253,7 +316,7 @@ const SessionCard = ({
   );
 };
 
-const AddAvailabilityDialog = ({ open, setOpen }) => {
+const AddAvailabilityDialog = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) => {
   const [meetingLink, setMeetingLink] = useState("");
   const [notifyCalendar, setNotifyCalendar] = useState(true);
   const { toast } = useToast();
@@ -381,11 +444,20 @@ const MentorDashboard = () => {
   const mentorName = user?.mentorProfile?.name || "Mentor";
   const [availabilityDialogOpen, setAvailabilityDialogOpen] = useState(false);
   
+  // Session stats for the dashboard
+  const sessionStats = [
+    { label: "Total Sessions", value: 24 },
+    { label: "This Month", value: 8 },
+    { label: "Hours Mentored", value: 18 },
+    { label: "Earnings", value: "₹14,400" }
+  ];
+  
+  // Sessions for the dashboard
   const upcomingSessions = [
     {
       id: "1",
       title: "Career Guidance Session",
-      date: "Apr 16, 2025",
+      date: "Apr 29, 2025",
       time: "3:00 PM - 3:45 PM",
       student: "Alex Johnson",
       type: "Career Guidance",
@@ -394,7 +466,7 @@ const MentorDashboard = () => {
     {
       id: "2",
       title: "Technical Interview Prep",
-      date: "Apr 18, 2025",
+      date: "Apr 30, 2025",
       time: "11:00 AM - 12:00 PM",
       student: "Jamie Rivera",
       type: "Interview Prep",
@@ -406,26 +478,41 @@ const MentorDashboard = () => {
     {
       id: "3",
       title: "Resume Review Session",
-      date: "Apr 10, 2025",
+      date: "Apr 26, 2025",
       time: "2:00 PM - 2:30 PM",
       student: "Casey Kim",
-      type: "Resume Review"
+      type: "Resume Review",
+      needsFeedback: true
+    },
+    {
+      id: "4",
+      title: "Job Search Strategy",
+      date: "Apr 24, 2025",
+      time: "10:00 AM - 10:45 AM",
+      student: "Alex Johnson",
+      type: "Career Guidance",
+      needsFeedback: false
     }
   ];
   
-  const stats = [
-    { label: "Total Sessions", value: 24 },
-    { label: "This Month", value: 8 },
-    { label: "Hours Mentored", value: 18 },
-    { label: "Earnings", value: "$720" }
+  // Profile completion items for the mentor
+  const profileItems = [
+    { label: "Basic info", completed: true },
+    { label: "Contact details", completed: true },
+    { label: "Professional bio", completed: user?.mentorProfile?.bio ? true : false },
+    { label: "Bank details", completed: user?.mentorProfile?.bankDetails?.accountNumber ? true : false },
+    { label: "Session expertise", completed: user?.mentorProfile?.pastSectors?.length ? true : false }
   ];
+  
+  const completedItems = profileItems.filter(item => item.completed).length;
+  const completionPercentage = (completedItems / profileItems.length) * 100;
   
   return (
     <MainLayout title={`Welcome, ${mentorName}`}>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-            {stats.map((stat, index) => (
+            {sessionStats.map((stat, index) => (
               <Card key={index}>
                 <CardContent className="pt-6">
                   <p className="text-sm text-muted-foreground">{stat.label}</p>
@@ -438,11 +525,11 @@ const MentorDashboard = () => {
           <div className="mb-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Today's Sessions</h2>
-              <RouterLink to="/mentor/sessions">
+              <Link to="/mentor/sessions">
                 <Button variant="ghost" size="sm" className="text-xs">
                   View All <ArrowRight className="ml-1 w-3 h-3" />
                 </Button>
-              </RouterLink>
+              </Link>
             </div>
             <div className="space-y-4">
               {upcomingSessions.length > 0 ? (
@@ -480,6 +567,7 @@ const MentorDashboard = () => {
                     student={session.student}
                     type={session.type}
                     isPast
+                    needsFeedback={session.needsFeedback}
                   />
                 ))
               ) : (
@@ -535,28 +623,48 @@ const MentorDashboard = () => {
             <CardContent>
               <div className="mb-2 flex justify-between text-sm">
                 <span>Progress</span>
-                <span>75%</span>
+                <span>{Math.round(completionPercentage)}%</span>
               </div>
-              <div className="w-full h-2 bg-secondary rounded-full mb-4">
-                <div className="h-2 bg-primary rounded-full" style={{ width: "75%" }}></div>
-              </div>
+              <Progress value={completionPercentage} className="mb-4" />
               <ul className="space-y-2 text-sm mb-4">
-                <li className="flex items-center">
-                  <Check className="w-4 h-4 mr-2 text-green-500" /> Basic info
-                </li>
-                <li className="flex items-center">
-                  <Check className="w-4 h-4 mr-2 text-green-500" /> Contact details
-                </li>
-                <li className="flex items-center">
-                  <Check className="w-4 h-4 mr-2 text-green-500" /> Job title
-                </li>
-                <li className="flex items-center text-muted-foreground">
-                  <div className="w-4 h-4 mr-2 rounded-full border border-muted-foreground"></div> LinkedIn profile
-                </li>
+                {profileItems.map((item, index) => (
+                  <li key={index} className="flex items-center">
+                    {item.completed ? (
+                      <Check className="w-4 h-4 mr-2 text-green-500" />
+                    ) : (
+                      <div className="w-4 h-4 mr-2 rounded-full border border-muted-foreground"></div>
+                    )}
+                    <span className={item.completed ? "" : "text-muted-foreground"}>{item.label}</span>
+                  </li>
+                ))}
               </ul>
-              <RouterLink to="/mentor/profile">
+              <Link to="/mentor/profile">
                 <Button variant="outline" className="w-full">Complete Profile</Button>
-              </RouterLink>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Upcoming Invoice</CardTitle>
+              <CardDescription>Next invoice will be generated on 25th May</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 mb-4">
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Sessions this month:</span>
+                  <span className="font-medium">6</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Estimated earnings:</span>
+                  <span className="font-medium">₹7,200</span>
+                </div>
+              </div>
+              <Link to="/mentor/sessions?tab=invoices">
+                <Button variant="outline" size="sm" className="w-full">
+                  View Invoice History
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
