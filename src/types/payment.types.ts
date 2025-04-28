@@ -1,4 +1,6 @@
 
+import { MentorRate } from './mentor.types';
+
 export interface Payout {
   id: string;
   mentorId: string;
