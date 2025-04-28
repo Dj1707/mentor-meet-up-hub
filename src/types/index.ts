@@ -1,4 +1,3 @@
-
 import { User, UserRole } from "@/context/AuthContext";
 
 // Session Types
@@ -189,7 +188,7 @@ export interface StudentFeedback {
   submittedAt: Date;
 }
 
-// MentorProfile - Add this interface to align with the way it's being used
+// MentorProfile interface
 export interface MentorProfile {
   name: string;
   email: string;
