@@ -145,10 +145,10 @@ const MentorProfile = () => {
         role: formData.role,
         company: formData.company,
         bio: formData.bio,
-        whatsappNotifications: formData.whatsappNotifications,
         bankDetails: formData.bankDetails,
         address: formData.address,
-        pastSectors: formData.pastSectors
+        pastSectors: formData.pastSectors,
+        whatsappNotifications: formData.whatsappNotifications
       });
       
       toast({

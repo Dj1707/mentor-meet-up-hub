@@ -1,4 +1,3 @@
-
 import { User, UserRole } from "@/context/AuthContext";
 
 // Session Types
@@ -7,16 +6,6 @@ export interface SessionTypeResource {
   name: string;
   url: string;
   type: 'pdf' | 'csv' | 'spreadsheet';
-}
-
-export interface SessionType {
-  id: string;
-  name: string;
-  description: string;
-  duration: number;
-  price: number;
-  color: string;
-  resources?: SessionTypeResource[];
 }
 
 // Session Status
@@ -180,4 +169,32 @@ export interface StudentFeedback {
   notes: string;
   actionItems: string[];
   submittedAt: Date;
+}
+
+// MentorProfile - Add this interface to align with the way it's being used
+export interface MentorProfile {
+  name: string;
+  email: string;
+  phone?: string;
+  linkedIn?: string;
+  profilePicture?: string;
+  jobTitle?: string;
+  role?: string;
+  company?: string;
+  bio?: string;
+  whatsappNotifications?: boolean;
+  bankDetails?: {
+    accountName: string;
+    accountNumber: string;
+    ifscCode: string;
+    bankName: string;
+  };
+  address?: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  pastSectors?: string[];
 }
