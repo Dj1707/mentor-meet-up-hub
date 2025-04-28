@@ -9,7 +9,7 @@ export interface MentorProfile {
   role?: string;
   company?: string;
   bio?: string;
-  panNumber?: string;
+  panNumber?: string; // Adding panNumber as an optional property
   bankDetails?: {
     accountName: string;
     accountNumber: string;
