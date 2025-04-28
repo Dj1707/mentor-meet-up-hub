@@ -1,51 +1,8 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { MentorProfile, StudentProfile } from "@/types"; // Import types from central location
 
 // User roles
 export type UserRole = "student" | "mentor" | "admin";
-
-// User profile interfaces
-export interface MentorProfile {
-  name: string;
-  email: string;
-  phone?: string;
-  linkedIn?: string;
-  profilePicture?: string;
-  jobTitle?: string;
-  role?: string;
-  company?: string;
-  bio?: string;
-  bankDetails?: {
-    accountName: string;
-    accountNumber: string;
-    ifscCode: string;
-    bankName: string;
-  };
-  address?: {
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
-  };
-  pastSectors?: string[];
-}
-
-export interface StudentProfile {
-  name: string;
-  email: string;
-  phone?: string;
-  linkedIn?: string;
-  profilePicture?: string;
-  targetRole?: string;
-  targetDomain?: string;
-  targetCTC?: string;
-  targetSectors?: string[];
-  pastJobRole?: string;
-  pastIndustry?: string;
-  resumeUrl?: string;
-  whatsappReminders?: boolean;
-}
 
 // Combined user interface
 export interface User {
@@ -105,6 +62,7 @@ const mockUsers: User[] = [
       company: "Tech Innovations Inc.",
       role: "Technical Mentor",
       bio: "Experienced software engineer with 10+ years in the industry. Passionate about helping new developers grow their skills and career.",
+      panNumber: "ABCPK1234Z", // Added PAN number
       bankDetails: {
         accountName: "Taylor Smith",
         accountNumber: "1234567890",
