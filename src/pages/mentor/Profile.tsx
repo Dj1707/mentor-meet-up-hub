@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
@@ -24,6 +23,7 @@ const MentorProfile = () => {
     role: "",
     company: "",
     bio: "",
+    panNumber: "",
     bankDetails: {
       accountName: "",
       accountNumber: "",
@@ -150,6 +150,7 @@ const MentorProfile = () => {
                       phone: formData.phone || "",
                       linkedIn: formData.linkedIn || "",
                       profilePicture: formData.profilePicture || "",
+                      panNumber: formData.panNumber || "",
                       address: formData.address || {
                         street: "",
                         city: "",
