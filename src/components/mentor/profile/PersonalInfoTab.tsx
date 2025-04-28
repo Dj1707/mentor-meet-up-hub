@@ -9,6 +9,7 @@ interface PersonalInfoTabProps {
     phone?: string;
     linkedIn?: string;
     profilePicture?: string;
+    panNumber?: string;
     address?: {
       street: string;
       city: string;
@@ -91,6 +92,21 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             placeholder="https://example.com/your-image.jpg"
           />
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="panNumber" className="text-sm font-medium">
+          PAN Card Number
+        </label>
+        <Input
+          id="panNumber"
+          name="panNumber"
+          value={formData.panNumber || ""}
+          onChange={handleChange}
+          placeholder="Enter PAN card number"
+          className="uppercase"
+          maxLength={10}
+        />
       </div>
 
       <div className="space-y-2">

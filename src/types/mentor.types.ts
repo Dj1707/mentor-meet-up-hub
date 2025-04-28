@@ -9,6 +9,7 @@ export interface MentorProfile {
   role?: string;
   company?: string;
   bio?: string;
+  panNumber?: string;
   bankDetails?: {
     accountName: string;
     accountNumber: string;

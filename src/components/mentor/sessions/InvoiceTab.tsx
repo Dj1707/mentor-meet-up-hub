@@ -72,6 +72,43 @@ export const InvoiceTab = () => {
     }).split('/').join('-');
   };
 
+  const numberToWords = (num: number): string => {
+    const units = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+    const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+    const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+    
+    const convertLessThanThousand = (n: number): string => {
+      if (n === 0) return "";
+      
+      if (n < 10) return units[n];
+      if (n < 20) return teens[n - 10];
+      if (n < 100) {
+        const digit = n % 10;
+        return tens[Math.floor(n / 10)] + (digit ? " " + units[digit] : "");
+      }
+      const digit = n % 10;
+      const rest = n % 100;
+      return units[Math.floor(n / 100)] + " Hundred" + 
+             (rest ? " and " + convertLessThanThousand(rest) : "");
+    };
+
+    if (num === 0) return "Zero";
+    
+    const billion = Math.floor(num / 1000000000);
+    const million = Math.floor((num % 1000000000) / 1000000);
+    const thousand = Math.floor((num % 1000000) / 1000);
+    const remainder = num % 1000;
+    
+    let result = "";
+    
+    if (billion) result += convertLessThanThousand(billion) + " Billion ";
+    if (million) result += convertLessThanThousand(million) + " Million ";
+    if (thousand) result += convertLessThanThousand(thousand) + " Thousand ";
+    if (remainder) result += convertLessThanThousand(remainder);
+    
+    return result.trim();
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -161,7 +198,7 @@ export const InvoiceTab = () => {
       </div>
 
       <Dialog open={invoiceDialogOpen} onOpenChange={setInvoiceDialogOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Generate Invoice</DialogTitle>
             <DialogDescription>
@@ -217,15 +254,15 @@ export const InvoiceTab = () => {
             </table>
             
             <div className="space-y-4">
-              <div>Amount in words(in Rs.): [Amount in words] Rupees</div>
+              <div>Amount in words(in Rs.): {numberToWords(pendingSessions.reduce((sum, session) => sum + session.amount, 0))} Rupees Only</div>
               
               <div className="space-y-1">
                 <div>Account Holder Name :- {user?.mentorProfile?.bankDetails?.accountName || "[Account Holder Name]"}</div>
                 <div>Bank Name :- {user?.mentorProfile?.bankDetails?.bankName || "[Bank Name]"}</div>
                 <div>A/C Number :- {user?.mentorProfile?.bankDetails?.accountNumber || "[Account Number]"}</div>
                 <div>IFSC :- {user?.mentorProfile?.bankDetails?.ifscCode || "[IFSC Code]"}</div>
-                <div>Branch :- [Branch Name]</div>
-                <div>PAN :- [PAN Number]</div>
+                <div>Branch :- {user?.mentorProfile?.bankDetails?.bankName ? `${user?.mentorProfile?.bankDetails?.bankName} Branch` : "[Branch Name]"}</div>
+                <div>PAN :- {user?.mentorProfile?.panNumber || "[PAN Number]"}</div>
               </div>
               
               <div className="flex justify-end">
