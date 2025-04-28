@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -8,12 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
 import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { FileText, ReceiptIndianRupee } from "lucide-react";
+import { SessionInfoTooltip, SessionTypeInfo } from "@/components/shared/SessionInfoTooltip";
 
 export const InvoiceTab = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
 
+  // Sample data for pending sessions
   const pendingSessions = [
     { 
       id: "1", 
@@ -38,6 +41,33 @@ export const InvoiceTab = () => {
     },
   ];
 
+  // Generate session type info for tooltips
+  const sessionTypeInfoMap: Record<string, SessionTypeInfo> = {
+    "Career Guidance": {
+      sessionTypeName: "Career Guidance",
+      totalCount: 2,
+      details: [
+        { student: "Alex Johnson", date: "Apr 16, 2025", count: 1 },
+        { student: "Morgan Smith", date: "Apr 13, 2025", count: 1 }
+      ]
+    },
+    "Technical Interview": {
+      sessionTypeName: "Technical Interview",
+      totalCount: 1,
+      details: [
+        { student: "Jamie Rivera", date: "Apr 18, 2025", count: 1 }
+      ]
+    },
+    "Resume Review": {
+      sessionTypeName: "Resume Review",
+      totalCount: 1,
+      details: [
+        { student: "Casey Kim", date: "Apr 20, 2025", count: 1 }
+      ]
+    }
+  };
+
+  // Sample data for previous invoices
   const previousInvoices = [
     { 
       id: "inv-2025-03", 
@@ -133,7 +163,14 @@ export const InvoiceTab = () => {
           <TableBody>
             {pendingSessions.map(session => (
               <TableRow key={session.id}>
-                <TableCell>{session.sessionType}</TableCell>
+                <TableCell className="flex items-center">
+                  {session.sessionType}
+                  {sessionTypeInfoMap[session.sessionType] && (
+                    <SessionInfoTooltip 
+                      sessionTypeInfo={sessionTypeInfoMap[session.sessionType]} 
+                    />
+                  )}
+                </TableCell>
                 <TableCell>{session.date}</TableCell>
                 <TableCell>{session.student}</TableCell>
                 <TableCell className="flex items-center">
@@ -238,7 +275,17 @@ export const InvoiceTab = () => {
                 {pendingSessions.map((session, index) => (
                   <tr key={session.id} className="border">
                     <td className="border p-2">{index + 1}</td>
-                    <td className="border p-2">{session.sessionType} Session</td>
+                    <td className="border p-2">
+                      <div className="flex items-center">
+                        {session.sessionType} Session
+                        {sessionTypeInfoMap[session.sessionType] && (
+                          <SessionInfoTooltip 
+                            sessionTypeInfo={sessionTypeInfoMap[session.sessionType]}
+                            useHoverCard={true}
+                          />
+                        )}
+                      </div>
+                    </td>
                     <td className="border p-2"><ReceiptIndianRupee className="inline h-3 w-3" /> {session.amount.toFixed(2)}</td>
                     <td className="border p-2"><ReceiptIndianRupee className="inline h-3 w-3" /> {session.amount.toFixed(2)}</td>
                   </tr>

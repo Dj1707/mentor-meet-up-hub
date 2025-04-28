@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Payout } from "@/types";
 import { IndianRupee } from "lucide-react";
+import { SessionInfoTooltip, SessionTypeInfo } from "@/components/shared/SessionInfoTooltip";
 
 interface InvoiceDialogProps {
   open: boolean;
@@ -26,6 +27,30 @@ const InvoiceDialog = ({ open, onOpenChange, payout, mentor }: InvoiceDialogProp
   const formatCurrency = (amount: number) => {
     return amount.toFixed(2);
   };
+  
+  // Sample session info for tooltips - in real application, this should be provided from the payout data
+  const getSessionInfoMap = (): Record<string, SessionTypeInfo> => {
+    // In a real application, this would be derived from payout.sessionIds
+    return {
+      "Career Guidance": {
+        sessionTypeName: "Career Guidance",
+        totalCount: 2,
+        details: [
+          { student: "Alex Johnson", date: "Apr 16, 2025", count: 1 },
+          { student: "Morgan Smith", date: "Apr 13, 2025", count: 1 }
+        ]
+      },
+      "Technical Interview": {
+        sessionTypeName: "Technical Interview",
+        totalCount: 1,
+        details: [
+          { student: "Jamie Rivera", date: "Apr 18, 2025", count: 1 }
+        ]
+      }
+    };
+  };
+  
+  const sessionTypeInfoMap = getSessionInfoMap();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -68,10 +93,24 @@ const InvoiceDialog = ({ open, onOpenChange, payout, mentor }: InvoiceDialogProp
                 const sessionRate = payout.rates?.find(r => r.sessionTypeId === sessionId)?.rate || 
                   (payout.amount / payout.sessionIds.length);
                 
+                // For demo purposes, we're using hardcoded session types
+                // In a real application, this would be determined from actual session data
+                const sessionType = index === 0 ? "Career Guidance" : "Technical Interview";
+                
                 return (
                   <tr key={sessionId} className="border">
                     <td className="border p-2">{index + 1}</td>
-                    <td className="border p-2">Mentoring Session</td>
+                    <td className="border p-2">
+                      <div className="flex items-center">
+                        {sessionType} Session
+                        {sessionTypeInfoMap[sessionType] && (
+                          <SessionInfoTooltip 
+                            sessionTypeInfo={sessionTypeInfoMap[sessionType]}
+                            useHoverCard={true}
+                          />
+                        )}
+                      </div>
+                    </td>
                     <td className="border p-2"><IndianRupee className="inline h-3 w-3" /> {formatCurrency(sessionRate)}</td>
                     <td className="border p-2"><IndianRupee className="inline h-3 w-3" /> {formatCurrency(sessionRate)}</td>
                   </tr>
