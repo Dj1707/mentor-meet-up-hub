@@ -1,6 +1,17 @@
+
 import { User, UserRole } from "@/context/AuthContext";
 
 // Session Types
+export interface SessionType {
+  id: string;
+  name: string;
+  description: string;
+  duration: number;
+  price: number;
+  color: string;
+  resources?: SessionTypeResource[];
+}
+
 export interface SessionTypeResource {
   id: string;
   name: string;
@@ -144,6 +155,13 @@ export interface AnalyticsData {
     date: string;
     count: number;
   }[];
+}
+
+// Session Feedback interface
+export interface SessionFeedback {
+  rating: number;
+  notes: string;
+  actionItems: string[];
 }
 
 // Student Feedback for Mentors

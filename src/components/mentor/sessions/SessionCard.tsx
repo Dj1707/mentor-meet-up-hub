@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { Calendar, Clock, File, FileSpreadsheet, FileText, Check, X } from "lucide-react";
+import { Calendar, Clock, File, FileSpreadsheet, FileText, Check, X, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SessionStatus, SessionTypeResource } from "@/types";
 
