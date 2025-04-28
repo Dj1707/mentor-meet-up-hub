@@ -25,6 +25,9 @@ import StudentSessions from "./pages/student/Sessions";
 import MentorSessions from "./pages/mentor/Sessions";
 import AdminSessions from "./pages/admin/Sessions";
 
+// Student pages
+import StudentMentors from "./pages/student/Mentors";
+
 // Admin management pages
 import ManageMentors from "./pages/admin/ManageMentors";
 import ManageStudents from "./pages/admin/ManageStudents";
@@ -52,6 +55,7 @@ const App = () => (
               <Route path="/student" element={<StudentDashboard />} />
               <Route path="/student/profile" element={<StudentProfile />} />
               <Route path="/student/sessions" element={<StudentSessions />} />
+              <Route path="/student/mentors" element={<StudentMentors />} />
               
               {/* Mentor Routes */}
               <Route path="/mentor" element={<MentorDashboard />} />

@@ -25,6 +25,10 @@ export interface StudentProfile {
   targetDomain?: string;
   targetCTC?: string;
   targetSectors?: string[];
+  pastJobRole?: string;
+  pastIndustry?: string;
+  resumeUrl?: string;
+  whatsappReminders?: boolean;
 }
 
 // Combined user interface
@@ -64,8 +68,11 @@ const mockUsers: User[] = [
       profilePicture: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
       targetRole: "Software Engineer",
       targetDomain: "Web Development",
-      targetCTC: "$90,000",
-      targetSectors: ["Tech", "Startups", "Education"]
+      targetCTC: "₹12,00,000",
+      targetSectors: ["Tech", "Startups", "Education"],
+      pastJobRole: "Junior Developer",
+      pastIndustry: "E-commerce",
+      whatsappReminders: true
     }
   },
   {
@@ -156,7 +163,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else if (role === "student") {
         newUser.studentProfile = {
           name,
-          email
+          email,
+          whatsappReminders: false
         };
       }
       
