@@ -5,6 +5,7 @@ import { getGupshupTemplateId } from "@/utils/whatsappTemplates";
 
 // Storage keys for WhatsApp configuration
 const WHATSAPP_CONFIG_KEY = "mesa_whatsapp_config";
+const DEFAULT_API_KEY = "M5XfeLmmEQSuCg3kWIHFoIKAZhOpHEn0nhH2h3spal4";
 
 // Get WhatsApp configuration from storage
 export const getWhatsappConfig = (): WhatsAppConfig => {
@@ -20,7 +21,7 @@ export const getWhatsappConfig = (): WhatsAppConfig => {
   // Return default config if none exists
   return {
     enabled: true,
-    apiKey: "",
+    apiKey: DEFAULT_API_KEY,
     lastUpdated: new Date()
   };
 };
@@ -122,7 +123,7 @@ const sendWhatsAppMessage = async (
     
     // Get the API key from storage
     const config = getWhatsappConfig();
-    const GUPSHUP_API_KEY = config.apiKey;
+    const GUPSHUP_API_KEY = config.apiKey || DEFAULT_API_KEY;
     const GUPSHUP_API_URL = "https://api.gupshup.io/sm/api/v1/msg";
     
     // Ensure phone number is in proper format (includes country code)
@@ -149,6 +150,7 @@ const sendWhatsAppMessage = async (
     };
 
     console.log("Sending WhatsApp message:", payload);
+    console.log("Using API key:", GUPSHUP_API_KEY.substring(0, 5) + "...");
     
     // Send the request to Gupshup API
     const response = await fetch(GUPSHUP_API_URL, {

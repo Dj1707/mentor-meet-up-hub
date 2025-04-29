@@ -21,9 +21,11 @@ import {
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+const GUPSHUP_API_KEY = "M5XfeLmmEQSuCg3kWIHFoIKAZhOpHEn0nhH2h3spal4";
+
 const WhatsappConfig = () => {
   const { toast } = useToast();
-  const [apiKey, setApiKey] = useState("");
+  const [apiKey, setApiKey] = useState(GUPSHUP_API_KEY);
   const [enabled, setEnabled] = useState(true);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [message, setMessage] = useState("");
@@ -35,12 +37,25 @@ const WhatsappConfig = () => {
   // Load the current config when the component mounts
   useEffect(() => {
     const config = getWhatsappConfig();
-    setApiKey(config.apiKey);
+    setApiKey(config.apiKey || GUPSHUP_API_KEY);
     setEnabled(config.enabled);
     
     // Load reminder logs for display
     const logs = getSessionReminders();
     setReminderLogs(logs);
+    
+    // If API key isn't already set, automatically save the default one
+    if (!config.apiKey && GUPSHUP_API_KEY) {
+      updateWhatsappConfig({
+        apiKey: GUPSHUP_API_KEY,
+        enabled: true
+      });
+      
+      toast({
+        title: "API Key Configured",
+        description: "The WhatsApp API key has been automatically configured."
+      });
+    }
   }, []);
   
   const handleSaveConfig = () => {
