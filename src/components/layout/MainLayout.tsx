@@ -1,5 +1,5 @@
 
-import React, { ReactNode } from "react";
+import React, { ReactNode, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, Sidebar } from "@/components/ui/sidebar";
@@ -14,6 +14,7 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [logoError, setLogoError] = useState(false);
   
   if (!user) {
     navigate("/login");
@@ -23,6 +24,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
   const handleLogout = () => {
     logout();
     navigate("/login");
+  };
+  
+  const handleLogoError = () => {
+    console.error("Logo failed to load. Trying fallback...");
+    setLogoError(true);
   };
   
   // Determine menu items based on user role
@@ -75,12 +81,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
       <Sidebar>
         <div className="p-4 border-b">
           <div className="flex flex-col items-center space-y-2">
-            <div className="w-32 h-auto mb-2 flex justify-center">
-              <img 
-                src="/mesa-logo.png" 
-                alt="Mesa School of Business" 
-                className="max-w-full max-h-16 object-contain"
-              />
+            <div className="w-32 h-16 flex justify-center items-center">
+              {!logoError ? (
+                <img 
+                  src="/mesa-logo.png" 
+                  alt="Mesa School of Business" 
+                  className="max-h-16 w-auto object-contain"
+                  onError={handleLogoError}
+                  onLoad={() => console.log("Logo loaded successfully")}
+                />
+              ) : (
+                <div className="text-lg font-semibold text-center">Mesa School</div>
+              )}
             </div>
             <div className="text-sm font-medium">Welcome, {displayName}</div>
             <div className={`role-badge role-badge-${user.role}`}>
