@@ -1,4 +1,4 @@
-import { Session, WhatsAppConfig, SessionReminder } from "@/types";
+import { Session, WhatsAppConfig } from "@/types";
 import { formatDate, formatTime } from "@/lib/dateUtils";
 import { getGupshupTemplateId } from "@/utils/whatsappTemplates";
 
@@ -49,16 +49,6 @@ export const isWhatsappEnabled = (): boolean => {
   const config = getWhatsappConfig();
   return config.enabled && !!config.apiKey;
 };
-
-// Interface for tracking reminder status
-export interface SessionReminder {
-  sessionId: string;
-  recipientType: "student" | "mentor";
-  recipientId: string;
-  scheduledTime: Date;
-  status: "scheduled" | "sent" | "failed";
-  errorMessage?: string;
-}
 
 // Store for tracking reminders
 const sessionReminders: SessionReminder[] = [];
