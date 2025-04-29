@@ -21,6 +21,10 @@ export const TEMPLATES = {
         "4": "Date (format: 29th April 2025)",
         "5": "Time (format: 5:00 PM)"
       }
+    },
+    gupshupId: {
+      STUDENT: "7738522",
+      MENTOR: "7738541"
     }
   }
 };
@@ -33,6 +37,16 @@ export const getTemplateVariables = (
   recipientType: "STUDENT" | "MENTOR"
 ): Record<string, string> => {
   return TEMPLATES[templateId]?.variables[recipientType] || {};
+};
+
+/**
+ * Get the Gupshup template ID
+ */
+export const getGupshupTemplateId = (
+  templateId: keyof typeof TEMPLATES,
+  recipientType: "STUDENT" | "MENTOR"
+): string => {
+  return TEMPLATES[templateId]?.gupshupId[recipientType] || "";
 };
 
 /**

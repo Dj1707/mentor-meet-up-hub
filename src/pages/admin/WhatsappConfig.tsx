@@ -13,8 +13,13 @@ import {
   getWhatsappConfig, 
   getSessionReminders 
 } from "@/services/whatsappService";
-import { formatTemplateMessage, getTemplateVariables } from "@/utils/whatsappTemplates";
+import { 
+  formatTemplateMessage, 
+  getTemplateVariables,
+  getGupshupTemplateId 
+} from "@/utils/whatsappTemplates";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const WhatsappConfig = () => {
   const { toast } = useToast();
@@ -25,6 +30,7 @@ const WhatsappConfig = () => {
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<"success" | "error" | null>(null);
   const [reminderLogs, setReminderLogs] = useState<any[]>([]);
+  const [recipientType, setRecipientType] = useState<"STUDENT" | "MENTOR">("STUDENT");
   
   // Load the current config when the component mounts
   useEffect(() => {
@@ -56,13 +62,13 @@ const WhatsappConfig = () => {
     
     try {
       // Get template variables for preview
-      const templateVars = getTemplateVariables("SESSION_REMINDER", "STUDENT");
+      const templateVars = getTemplateVariables("SESSION_REMINDER", recipientType);
       
       // Create test values
       const testValues = {
-        "1": "Student Name",
+        "1": recipientType === "STUDENT" ? "Student Name" : "Mentor Name",
         "2": "Mock Interview",
-        "3": "John Smith",
+        "3": recipientType === "STUDENT" ? "John Smith" : "Jane Doe",
         "4": "30th April 2025",
         "5": "4:30 PM"
       };
@@ -70,11 +76,12 @@ const WhatsappConfig = () => {
       // Format a preview message
       const previewMessage = formatTemplateMessage(
         "SESSION_REMINDER",
-        "STUDENT",
+        recipientType,
         testValues
       );
       
       console.log("Test message preview:", previewMessage);
+      console.log("Using template ID:", getGupshupTemplateId("SESSION_REMINDER", recipientType));
       
       // Simulate API call to send a test message
       await new Promise(resolve => setTimeout(resolve, 1500));
@@ -171,13 +178,42 @@ const WhatsappConfig = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="test-message">Test Message</Label>
-              <Input
-                id="test-message"
-                placeholder="This is a test message from Mesa School"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-              />
+              <Label htmlFor="recipient-type">Recipient Type</Label>
+              <Select 
+                value={recipientType} 
+                onValueChange={(value: "STUDENT" | "MENTOR") => setRecipientType(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select recipient type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="STUDENT">Student</SelectItem>
+                  <SelectItem value="MENTOR">Mentor</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-muted-foreground">
+                Select the type of recipient to test the correct template.
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="test-message">Template Preview</Label>
+              <div className="p-3 border rounded-md bg-muted/50 whitespace-pre-line">
+                {formatTemplateMessage(
+                  "SESSION_REMINDER",
+                  recipientType,
+                  {
+                    "1": recipientType === "STUDENT" ? "Student Name" : "Mentor Name",
+                    "2": "Mock Interview",
+                    "3": recipientType === "STUDENT" ? "John Smith" : "Jane Doe",
+                    "4": "30th April 2025",
+                    "5": "4:30 PM"
+                  }
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Template ID: {getGupshupTemplateId("SESSION_REMINDER", recipientType)}
+              </p>
             </div>
             
             <div className="flex items-center gap-2">

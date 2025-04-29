@@ -1,6 +1,6 @@
-
-import { Session, WhatsAppConfig } from "@/types";
+import { Session, WhatsAppConfig, SessionReminder } from "@/types";
 import { formatDate, formatTime } from "@/lib/dateUtils";
+import { getGupshupTemplateId } from "@/utils/whatsappTemplates";
 
 // Storage keys for WhatsApp configuration
 const WHATSAPP_CONFIG_KEY = "mesa_whatsapp_config";
@@ -119,7 +119,8 @@ export const formatSessionForReminder = (
  */
 const sendWhatsAppMessage = async (
   phoneNumber: string,
-  templateData: { [key: string]: string }
+  templateData: { [key: string]: string },
+  recipientType: "STUDENT" | "MENTOR"
 ): Promise<boolean> => {
   try {
     // Check if WhatsApp reminders are enabled
@@ -138,6 +139,9 @@ const sendWhatsAppMessage = async (
       ? phoneNumber.substring(1) 
       : phoneNumber;
     
+    // Get the correct template ID based on recipient type
+    const templateId = getGupshupTemplateId("SESSION_REMINDER", recipientType);
+    
     // Construct the payload for Gupshup API
     const payload = {
       channel: "whatsapp",
@@ -147,7 +151,7 @@ const sendWhatsAppMessage = async (
       message: {
         type: "template",
         template: {
-          id: "session_reminder", // Replace with your template ID
+          id: templateId,
           params: Object.values(templateData) // This should be an array of values in correct order
         }
       }
@@ -216,8 +220,8 @@ export const sendStudentReminder = async (session: Session): Promise<boolean> =>
       "5": formattedTime  // Time (format: 5:00 PM)
     };
 
-    // Send the WhatsApp message
-    return await sendWhatsAppMessage(studentPhone, templateData);
+    // Send the WhatsApp message with STUDENT recipient type
+    return await sendWhatsAppMessage(studentPhone, templateData, "STUDENT");
   } catch (error) {
     console.error("Error sending student reminder:", error);
     return false;
@@ -254,8 +258,8 @@ export const sendMentorReminder = async (session: Session): Promise<boolean> => 
       "5": formattedTime  // Time (format: 5:00 PM)
     };
 
-    // Send the WhatsApp message
-    return await sendWhatsAppMessage(mentorPhone, templateData);
+    // Send the WhatsApp message with MENTOR recipient type
+    return await sendWhatsAppMessage(mentorPhone, templateData, "MENTOR");
   } catch (error) {
     console.error("Error sending mentor reminder:", error);
     return false;
