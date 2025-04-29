@@ -24,6 +24,7 @@ export interface MentorProfile {
     country: string;
   };
   pastSectors?: string[];
+  onboardingStatus?: "invited" | "active" | "inactive";
 }
 
 export interface MentorRate {
@@ -40,4 +41,12 @@ export interface MentorSessionEligibility {
     rate: number;
     isEligible?: boolean;
   }[];
+}
+
+export interface MentorInvite {
+  email: string;
+  name: string;
+  jobTitle?: string;
+  company?: string;
+  sessionRates?: MentorRate[];
 }

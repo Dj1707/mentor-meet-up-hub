@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { MentorRate } from "@/types";
 
 interface MentorSessionRatesDialogProps {
@@ -30,6 +30,7 @@ const MentorSessionRatesDialog = ({
 }: MentorSessionRatesDialogProps) => {
   const { toast } = useToast();
   const [rates, setRates] = useState<MentorRate[]>([]);
+  const [isNewMentor] = useState(mentorId === "new");
 
   useEffect(() => {
     if (open) {
@@ -72,8 +73,10 @@ const MentorSessionRatesDialog = ({
   const handleSave = () => {
     onSave(rates);
     toast({
-      title: "Session rates updated",
-      description: `Updated session rates and eligibility for ${mentorName}`,
+      title: isNewMentor ? "Mentor Invitation Prepared" : "Session rates updated",
+      description: isNewMentor 
+        ? `${mentorName} will be invited with configured session eligibility` 
+        : `Updated session rates and eligibility for ${mentorName}`,
     });
     onOpenChange(false);
   };
@@ -82,9 +85,13 @@ const MentorSessionRatesDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Manage Session Rates</DialogTitle>
+          <DialogTitle>
+            {isNewMentor ? "Configure Session Eligibility" : "Manage Session Rates"}
+          </DialogTitle>
           <DialogDescription>
-            Set which session types {mentorName} is eligible for and their rates
+            {isNewMentor 
+              ? `Set which session types ${mentorName} will be eligible to offer`
+              : `Set which session types ${mentorName} is eligible for and their rates`}
           </DialogDescription>
         </DialogHeader>
 
@@ -135,7 +142,9 @@ const MentorSessionRatesDialog = ({
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>Save Changes</Button>
+            <Button onClick={handleSave}>
+              {isNewMentor ? "Complete & Invite" : "Save Changes"}
+            </Button>
           </div>
         </div>
       </DialogContent>

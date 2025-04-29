@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,12 +6,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { PlusCircle, Search, Edit, Trash, UserCheck, UserX, Settings } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import MentorSessionRatesDialog from "@/components/admin/mentors/MentorSessionRatesDialog";
-import { MentorRate } from "@/types";
+import MentorAddDialog from "@/components/admin/mentors/MentorAddDialog";
+import { sendMentorInviteEmail } from "@/services/emailService";
+import { MentorInvite, MentorRate } from "@/types";
 
 interface Mentor {
   id: string;
@@ -75,9 +77,10 @@ const ManageMentors = () => {
   
   const [searchTerm, setSearchTerm] = useState("");
   const [tab, setTab] = useState("all");
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [mentorAddDialogOpen, setMentorAddDialogOpen] = useState(false);
   const [sessionRatesDialogOpen, setSessionRatesDialogOpen] = useState(false);
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
+  const [pendingMentor, setPendingMentor] = useState<{ id?: string; name: string; email: string } | null>(null);
   
   // Sample session types (in a real app, these would come from an API or store)
   const sessionTypes = [
@@ -131,17 +134,99 @@ const ManageMentors = () => {
     setSessionRatesDialogOpen(true);
   };
   
+  const handleOpenPendingSessionRatesDialog = (mentorData: { id?: string; name: string; email: string }) => {
+    setPendingMentor(mentorData);
+    setSessionRatesDialogOpen(true);
+  };
+  
   const handleSaveSessionRates = (rates: MentorRate[]) => {
-    if (!selectedMentor) return;
+    // If we're adding a new mentor
+    if (pendingMentor) {
+      const newMentorId = `m${Date.now()}`;
+      
+      // Create the new mentor
+      const newMentor: Mentor = {
+        id: newMentorId,
+        name: pendingMentor.name,
+        email: pendingMentor.email,
+        phone: "",
+        jobTitle: "",
+        company: "",
+        status: "pending",
+        sessions: 0,
+        rating: 0
+      };
+      
+      // Add the mentor to the list
+      setMentors([...mentors, newMentor]);
+      
+      // Save the session rates
+      const mentorRatesWithId = rates.map(rate => ({
+        ...rate,
+        mentorId: newMentorId
+      }));
+      
+      setMentorRates({
+        ...mentorRates,
+        [newMentorId]: mentorRatesWithId
+      });
+      
+      // Send invitation email
+      sendMentorInviteEmail({
+        email: pendingMentor.email,
+        name: pendingMentor.name,
+        sessionRates: mentorRatesWithId
+      });
+      
+      setPendingMentor(null);
+      
+      toast({
+        title: "Mentor Added",
+        description: `${pendingMentor.name} has been added and will receive an invitation email.`
+      });
+    } 
+    // If we're updating an existing mentor
+    else if (selectedMentor) {
+      setMentorRates(prev => ({
+        ...prev,
+        [selectedMentor.id]: rates
+      }));
+      
+      toast({
+        title: "Session rates updated",
+        description: `Updated session rates for ${selectedMentor.name}`
+      });
+    }
     
-    setMentorRates(prev => ({
-      ...prev,
-      [selectedMentor.id]: rates
-    }));
+    setSessionRatesDialogOpen(false);
+    setSelectedMentor(null);
+  };
+  
+  const handleMentorInvite = (mentorData: MentorInvite) => {
+    const newMentorId = `m${Date.now()}`;
+    
+    // Create the new mentor
+    const newMentor: Mentor = {
+      id: newMentorId,
+      name: mentorData.name,
+      email: mentorData.email,
+      phone: "",
+      jobTitle: mentorData.jobTitle || "",
+      company: mentorData.company || "",
+      status: "pending",
+      sessions: 0,
+      rating: 0
+    };
+    
+    // Add the mentor to the list
+    setMentors([...mentors, newMentor]);
+    
+    // Send invitation email
+    sendMentorInviteEmail(mentorData);
     
     toast({
-      title: "Session rates updated",
-      description: `Updated session rates for ${selectedMentor.name}`
+      title: "Mentor Invited",
+      description: `${mentorData.name} has been invited to join as a mentor.`
     });
   };
   
@@ -168,7 +253,7 @@ const ManageMentors = () => {
             <TabsTrigger value="pending">Pending</TabsTrigger>
             <TabsTrigger value="inactive">Inactive</TabsTrigger>
           </TabsList>
-          <Button className="mt-4 md:mt-0" onClick={() => setDialogOpen(true)}>
+          <Button className="mt-4 md:mt-0" onClick={() => setMentorAddDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Add Mentor
           </Button>
@@ -228,50 +313,21 @@ const ManageMentors = () => {
         </Card>
       </Tabs>
       
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add New Mentor</DialogTitle>
-            <DialogDescription>
-              Invite a new mentor to join the platform
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
-                Email Address
-              </label>
-              <Input id="email" placeholder="mentor@example.com" type="email" />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium">
-                Full Name
-              </label>
-              <Input id="name" placeholder="John Doe" />
-            </div>
-            <div className="flex justify-end">
-              <Button onClick={() => {
-                setDialogOpen(false);
-                toast({
-                  title: "Invitation Sent",
-                  description: "The mentor will receive an email with instructions to complete their profile."
-                });
-              }}>
-                Send Invitation
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <MentorAddDialog
+        open={mentorAddDialogOpen}
+        onOpenChange={setMentorAddDialogOpen}
+        onMentorInvite={handleMentorInvite}
+        sessionTypes={sessionTypes}
+        onOpenSessionRates={handleOpenPendingSessionRatesDialog}
+      />
       
-      {selectedMentor && (
+      {(selectedMentor || pendingMentor) && (
         <MentorSessionRatesDialog
           open={sessionRatesDialogOpen}
           onOpenChange={setSessionRatesDialogOpen}
-          mentorId={selectedMentor.id}
-          mentorName={selectedMentor.name}
-          initialRates={mentorRates[selectedMentor.id] || []}
+          mentorId={selectedMentor?.id || "new"}
+          mentorName={selectedMentor?.name || pendingMentor?.name || ""}
+          initialRates={selectedMentor ? mentorRates[selectedMentor.id] || [] : []}
           sessionTypes={sessionTypes}
           onSave={handleSaveSessionRates}
         />
