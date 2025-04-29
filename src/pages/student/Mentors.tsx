@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Calendar, Clock, Filter, Search, Calendar as CalendarIcon, Star, Briefcase, Linkedin } from "lucide-react";
+import { Calendar, Clock, Filter, Search, Calendar as CalendarIcon, Star, Briefcase, Linkedin, User, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -19,12 +19,15 @@ const mentors = [
   {
     id: "1",
     name: "Taylor Smith",
-    role: "Senior Software Engineer at Google",
+    role: "Senior Software Engineer",
+    company: "Google",
     bio: "10+ years experience in web development and system design. Passionate about helping junior developers grow.",
     profilePicture: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
+    linkedIn: "linkedin.com/in/taylorsmith",
     rating: 4.9,
     sessionCount: 120,
     expertise: ["Career Guidance", "Technical Interviews", "Resume Review"],
+    pastSectors: ["Technology", "Finance", "Education"],
     availability: [
       { date: "May 10, 2025", slots: ["10:00 AM", "2:00 PM", "4:00 PM"] },
       { date: "May 11, 2025", slots: ["11:00 AM", "3:00 PM"] },
@@ -34,12 +37,15 @@ const mentors = [
   {
     id: "2",
     name: "Alex Johnson",
-    role: "Product Manager at Amazon",
+    role: "Product Manager",
+    company: "Amazon",
     bio: "Experienced PM with background in both startups and large tech companies. Specialized in product strategy and user research.",
     profilePicture: "https://images.unsplash.com/photo-1560250097-0b93528c311a",
+    linkedIn: "linkedin.com/in/alexjohnson",
     rating: 4.7,
     sessionCount: 87,
     expertise: ["Product Management", "Career Transition", "Interview Prep"],
+    pastSectors: ["Technology", "Retail", "Healthcare"],
     availability: [
       { date: "May 9, 2025", slots: ["1:00 PM", "5:00 PM"] },
       { date: "May 10, 2025", slots: ["11:00 AM", "4:00 PM"] },
@@ -49,12 +55,15 @@ const mentors = [
   {
     id: "3",
     name: "Priya Singh",
-    role: "Engineering Director at Microsoft",
+    role: "Engineering Director",
+    company: "Microsoft",
     bio: "15+ years in tech leadership. Specialized in helping engineers advance their careers and develop leadership skills.",
     profilePicture: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2",
+    linkedIn: "linkedin.com/in/priyasingh",
     rating: 4.8,
     sessionCount: 156,
     expertise: ["Leadership Development", "Career Growth", "Technical Management"],
+    pastSectors: ["Technology", "Manufacturing", "Consulting"],
     availability: [
       { date: "May 11, 2025", slots: ["9:00 AM", "2:00 PM"] },
       { date: "May 12, 2025", slots: ["11:00 AM", "3:00 PM"] },
@@ -93,7 +102,7 @@ const MentorCard = ({ mentor }: { mentor: typeof mentors[0] }) => {
             </Avatar>
             <div>
               <CardTitle className="text-lg">{mentor.name}</CardTitle>
-              <CardDescription>{mentor.role}</CardDescription>
+              <CardDescription>{mentor.role} at {mentor.company}</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -142,7 +151,7 @@ const MentorCard = ({ mentor }: { mentor: typeof mentors[0] }) => {
               </Avatar>
               {mentor.name}
             </DialogTitle>
-            <DialogDescription>{mentor.role}</DialogDescription>
+            <DialogDescription>{mentor.role} at {mentor.company}</DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">
@@ -152,10 +161,18 @@ const MentorCard = ({ mentor }: { mentor: typeof mentors[0] }) => {
                 <span className="font-medium">{mentor.rating}</span>
                 <span className="text-muted-foreground">({mentor.sessionCount} sessions)</span>
               </div>
-              <div className="flex items-center">
-                <Linkedin className="h-4 w-4 mr-1" />
-                <span className="text-sm text-blue-600 underline">LinkedIn Profile</span>
-              </div>
+              
+              {mentor.linkedIn && (
+                <a 
+                  href={`https://${mentor.linkedIn}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center text-blue-600 hover:text-blue-800"
+                >
+                  <Linkedin className="h-4 w-4 mr-1" />
+                  <span className="text-sm underline">LinkedIn Profile</span>
+                </a>
+              )}
             </div>
             
             <div>
@@ -172,23 +189,39 @@ const MentorCard = ({ mentor }: { mentor: typeof mentors[0] }) => {
               </div>
             </div>
             
+            {mentor.pastSectors && mentor.pastSectors.length > 0 && (
+              <div>
+                <h4 className="font-medium mb-1">Past Sector Experience</h4>
+                <div className="flex flex-wrap gap-1">
+                  {mentor.pastSectors.map((sector, i) => (
+                    <Badge key={i} variant="outline" className="bg-slate-50">
+                      <FileText className="h-3 w-3 mr-1" />
+                      {sector}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             <div>
               <h4 className="font-medium mb-1">Experience</h4>
               <div className="space-y-2">
                 <div className="flex items-start gap-2">
                   <Briefcase className="h-4 w-4 mt-0.5 text-muted-foreground" />
                   <div>
-                    <p className="text-sm font-medium">Google</p>
-                    <p className="text-xs text-muted-foreground">Senior Software Engineer (2020 - Present)</p>
+                    <p className="text-sm font-medium">{mentor.company}</p>
+                    <p className="text-xs text-muted-foreground">{mentor.role} (Current)</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-2">
-                  <Briefcase className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Facebook</p>
-                    <p className="text-xs text-muted-foreground">Software Engineer (2016 - 2020)</p>
+                {mentor.id === "1" && (
+                  <div className="flex items-start gap-2">
+                    <Briefcase className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Facebook</p>
+                      <p className="text-xs text-muted-foreground">Software Engineer (2016 - 2020)</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -276,7 +309,8 @@ const StudentMentors = () => {
   const filteredMentors = mentors.filter(mentor => {
     // Apply search filter
     if (searchTerm && !mentor.name.toLowerCase().includes(searchTerm.toLowerCase()) && 
-        !mentor.role.toLowerCase().includes(searchTerm.toLowerCase())) {
+        !mentor.role.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !mentor.company.toLowerCase().includes(searchTerm.toLowerCase())) {
       return false;
     }
     
