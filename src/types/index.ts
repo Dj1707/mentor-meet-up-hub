@@ -7,3 +7,4 @@ export * from './feedback.types';
 export * from './analytics.types';
 export * from './action.types';
 export * from './payment.types';
+export * from './reminder.types'; // Add this line to export reminder types
