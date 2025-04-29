@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
-import { updateGupshupApiKey } from "@/services/whatsappService";
+import { 
+  updateWhatsappConfig, 
+  getWhatsappConfig, 
+  getSessionReminders 
+} from "@/services/whatsappService";
+import { formatTemplateMessage, getTemplateVariables } from "@/utils/whatsappTemplates";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 
 const WhatsappConfig = () => {
@@ -19,10 +24,25 @@ const WhatsappConfig = () => {
   const [message, setMessage] = useState("");
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<"success" | "error" | null>(null);
+  const [reminderLogs, setReminderLogs] = useState<any[]>([]);
+  
+  // Load the current config when the component mounts
+  useEffect(() => {
+    const config = getWhatsappConfig();
+    setApiKey(config.apiKey);
+    setEnabled(config.enabled);
+    
+    // Load reminder logs for display
+    const logs = getSessionReminders();
+    setReminderLogs(logs);
+  }, []);
   
   const handleSaveConfig = () => {
-    // Save the API key
-    updateGupshupApiKey(apiKey);
+    // Save the API key and enabled status
+    updateWhatsappConfig({
+      apiKey,
+      enabled
+    });
     
     toast({
       title: "Configuration Saved",
@@ -35,17 +55,42 @@ const WhatsappConfig = () => {
     setTestResult(null);
     
     try {
+      // Get template variables for preview
+      const templateVars = getTemplateVariables("SESSION_REMINDER", "STUDENT");
+      
+      // Create test values
+      const testValues = {
+        "1": "Student Name",
+        "2": "Mock Interview",
+        "3": "John Smith",
+        "4": "30th April 2025",
+        "5": "4:30 PM"
+      };
+      
+      // Format a preview message
+      const previewMessage = formatTemplateMessage(
+        "SESSION_REMINDER",
+        "STUDENT",
+        testValues
+      );
+      
+      console.log("Test message preview:", previewMessage);
+      
       // Simulate API call to send a test message
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       // In a real implementation, this would call the WhatsApp service
-      // For now, let's simulate a success
-      setTestResult("success");
-      
-      toast({
-        title: "Test Message Sent",
-        description: "A test message has been sent to the provided number."
-      });
+      // For now, let's simulate a success if API key is present
+      if (apiKey) {
+        setTestResult("success");
+        
+        toast({
+          title: "Test Message Sent",
+          description: "A test message has been sent to the provided number."
+        });
+      } else {
+        throw new Error("API key is required");
+      }
     } catch (error) {
       setTestResult("error");
       toast({
@@ -157,9 +202,35 @@ const WhatsappConfig = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-center text-muted-foreground py-8">
-              No reminder logs yet
-            </p>
+            {reminderLogs.length > 0 ? (
+              <div className="space-y-4">
+                {reminderLogs.map((log, index) => (
+                  <div key={index} className="p-3 border rounded-md">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Session ID: {log.sessionId}</span>
+                      <span className={`px-2 py-1 text-xs rounded ${
+                        log.status === 'sent' ? 'bg-green-100 text-green-800' : 
+                        log.status === 'failed' ? 'bg-red-100 text-red-800' : 
+                        'bg-blue-100 text-blue-800'
+                      }`}>
+                        {log.status}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {log.recipientType.charAt(0).toUpperCase() + log.recipientType.slice(1)} reminder
+                      scheduled for {new Date(log.scheduledTime).toLocaleString()}
+                    </p>
+                    {log.errorMessage && (
+                      <p className="text-sm text-red-600 mt-1">{log.errorMessage}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground py-8">
+                No reminder logs yet
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>

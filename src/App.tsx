@@ -35,6 +35,7 @@ import ManageSessionTypes from "./pages/admin/ManageSessionTypes";
 import ManageFeedback from "./pages/admin/ManageFeedback";
 import Analytics from "./pages/admin/Analytics";
 import Payouts from "./pages/admin/Payouts";
+import WhatsappConfig from "./pages/admin/WhatsappConfig";
 
 const queryClient = new QueryClient();
 
@@ -99,6 +100,7 @@ const App = () => {
                 <Route path="/admin/feedback" element={<ManageFeedback />} />
                 <Route path="/admin/analytics" element={<Analytics />} />
                 <Route path="/admin/payouts" element={<Payouts />} />
+                <Route path="/admin/whatsapp-config" element={<WhatsappConfig />} />
                 
                 {/* Default route redirects to appropriate dashboard based on role */}
                 <Route path="/" element={<Navigate replace to={getHomeRoute()} />} />

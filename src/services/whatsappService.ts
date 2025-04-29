@@ -1,10 +1,54 @@
 
-import { Session } from "@/types";
+import { Session, WhatsAppConfig } from "@/types";
 import { formatDate, formatTime } from "@/lib/dateUtils";
 
-// This will be replaced with the actual API key from environment variables
-const GUPSHUP_API_KEY = "GUPSHUP_API_KEY_PLACEHOLDER";
-const GUPSHUP_API_URL = "https://api.gupshup.io/sm/api/v1/msg";
+// Storage keys for WhatsApp configuration
+const WHATSAPP_CONFIG_KEY = "mesa_whatsapp_config";
+
+// Get WhatsApp configuration from storage
+export const getWhatsappConfig = (): WhatsAppConfig => {
+  const storedConfig = localStorage.getItem(WHATSAPP_CONFIG_KEY);
+  if (storedConfig) {
+    try {
+      return JSON.parse(storedConfig) as WhatsAppConfig;
+    } catch (error) {
+      console.error("Error parsing WhatsApp config:", error);
+    }
+  }
+  
+  // Return default config if none exists
+  return {
+    enabled: true,
+    apiKey: "",
+    lastUpdated: new Date()
+  };
+};
+
+// Update Gupshup API key and settings
+export const updateWhatsappConfig = (config: Partial<WhatsAppConfig>): void => {
+  // Get current config and merge with updates
+  const currentConfig = getWhatsappConfig();
+  const updatedConfig: WhatsAppConfig = {
+    ...currentConfig,
+    ...config,
+    lastUpdated: new Date()
+  };
+  
+  // Store the updated config
+  localStorage.setItem(WHATSAPP_CONFIG_KEY, JSON.stringify(updatedConfig));
+  console.log("Updated WhatsApp configuration:", updatedConfig);
+};
+
+// Update just the API key (maintaining previous behavior)
+export const updateGupshupApiKey = (apiKey: string): void => {
+  updateWhatsappConfig({ apiKey });
+};
+
+// Check if WhatsApp reminders are enabled
+export const isWhatsappEnabled = (): boolean => {
+  const config = getWhatsappConfig();
+  return config.enabled && !!config.apiKey;
+};
 
 // Interface for tracking reminder status
 export interface SessionReminder {
@@ -78,6 +122,17 @@ const sendWhatsAppMessage = async (
   templateData: { [key: string]: string }
 ): Promise<boolean> => {
   try {
+    // Check if WhatsApp reminders are enabled
+    if (!isWhatsappEnabled()) {
+      console.log("WhatsApp reminders are disabled");
+      return false;
+    }
+    
+    // Get the API key from storage
+    const config = getWhatsappConfig();
+    const GUPSHUP_API_KEY = config.apiKey;
+    const GUPSHUP_API_URL = "https://api.gupshup.io/sm/api/v1/msg";
+    
     // Ensure phone number is in proper format (includes country code)
     const formattedPhone = phoneNumber.startsWith("+") 
       ? phoneNumber.substring(1) 
@@ -212,6 +267,12 @@ export const sendMentorReminder = async (session: Session): Promise<boolean> => 
  */
 export const scheduleSessionReminder = (session: Session): void => {
   try {
+    // Check if WhatsApp reminders are enabled
+    if (!isWhatsappEnabled()) {
+      console.log("WhatsApp reminders are disabled, not scheduling reminder");
+      return;
+    }
+    
     // Calculate the reminder time (30 minutes before session start)
     const reminderTime = new Date(session.startTime.getTime() - 30 * 60 * 1000);
     const now = new Date();
@@ -335,12 +396,4 @@ export const cancelSessionReminders = (sessionId: string): void => {
  */
 export const getSessionReminders = (): SessionReminder[] => {
   return [...sessionReminders];
-};
-
-/**
- * Update Gupshup API key
- */
-export const updateGupshupApiKey = (apiKey: string): void => {
-  // In a real implementation, this would be stored securely
-  console.log("Updating Gupshup API key");
 };
