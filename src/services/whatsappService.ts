@@ -242,7 +242,8 @@ export const sendStudentReminder = async (session: Session): Promise<boolean> =>
     };
 
     // Send the WhatsApp message with STUDENT recipient type
-    return await sendWhatsAppMessage(studentPhone, templateData, "STUDENT");
+    const result = await sendWhatsAppMessage(studentPhone, templateData, "STUDENT");
+    return result.success; // Extract the success boolean from the result object
   } catch (error) {
     console.error("Error sending student reminder:", error);
     return false;
@@ -280,7 +281,8 @@ export const sendMentorReminder = async (session: Session): Promise<boolean> => 
     };
 
     // Send the WhatsApp message with MENTOR recipient type
-    return await sendWhatsAppMessage(mentorPhone, templateData, "MENTOR");
+    const result = await sendWhatsAppMessage(mentorPhone, templateData, "MENTOR");
+    return result.success; // Extract the success boolean from the result object
   } catch (error) {
     console.error("Error sending mentor reminder:", error);
     return false;
