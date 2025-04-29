@@ -1,4 +1,5 @@
-import { Session, WhatsAppConfig } from "@/types";
+
+import { Session, WhatsAppConfig, SessionReminder } from "@/types";
 import { formatDate, formatTime } from "@/lib/dateUtils";
 import { getGupshupTemplateId } from "@/utils/whatsappTemplates";
 
