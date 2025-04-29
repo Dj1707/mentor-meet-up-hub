@@ -1,3 +1,4 @@
+
 import React, { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -69,26 +70,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
   const roleColorClass = getRoleColorClass();
   const displayName = user.studentProfile?.name || user.mentorProfile?.name || user.email;
   
-  // Debug the logo path
-  console.log("Current logo path:", "/mesa-logo.png");
-  
   return (
     <div className="min-h-screen flex w-full">
       <Sidebar>
         <div className="p-4 border-b">
           <div className="flex flex-col items-center space-y-2">
             <div className="w-32 h-auto mb-2 flex justify-center">
-              {/* Use an absolute path for the image source */}
               <img 
                 src="/mesa-logo.png" 
                 alt="Mesa School of Business" 
                 className="max-w-full max-h-16 object-contain"
-                onError={(e) => {
-                  console.error("Logo failed to load");
-                  e.currentTarget.style.display = 'none'; // Hide on error
-                  // Try to load from a different path as fallback
-                  e.currentTarget.src = "./mesa-logo.png";
-                }}
               />
             </div>
             <div className="text-sm font-medium">Welcome, {displayName}</div>
