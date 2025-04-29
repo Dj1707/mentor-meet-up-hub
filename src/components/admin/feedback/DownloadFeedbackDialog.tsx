@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Download, FileText, FileCsv, FileJson } from "lucide-react";
+import { Download, FileText, FileJson } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { SessionType } from "@/types";
 
@@ -124,7 +124,7 @@ const DownloadFeedbackDialog = ({
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="csv" id="csv" />
                 <Label htmlFor="csv" className="flex items-center">
-                  <FileCsv className="w-4 h-4 mr-1" /> CSV
+                  <FileText className="w-4 h-4 mr-1" /> CSV
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
