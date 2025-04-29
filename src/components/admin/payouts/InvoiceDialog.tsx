@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Payout } from "@/types";
 import { IndianRupee } from "lucide-react";
 import { SessionInfoTooltip, SessionTypeInfo } from "@/components/shared/SessionInfoTooltip";
+import { formatIndianRupee } from "@/lib/utils";
 
 interface InvoiceDialogProps {
   open: boolean;
@@ -22,10 +23,6 @@ const InvoiceDialog = ({ open, onOpenChange, payout, mentor }: InvoiceDialogProp
       month: '2-digit',
       year: 'numeric'
     }).split('/').join('-');
-  };
-
-  const formatCurrency = (amount: number) => {
-    return amount.toFixed(2);
   };
   
   // Sample session info for tooltips - in real application, this should be provided from the payout data
@@ -74,7 +71,7 @@ const InvoiceDialog = ({ open, onOpenChange, payout, mentor }: InvoiceDialogProp
           
           <div className="space-y-2">
             <div className="font-semibold">Bill To:</div>
-            <div>Neos Kosmos Technologies Pvt. Ltd.</div>
+            <div>Mesa School of Business</div>
             <div>Address :- Prestige Cube, Site no 26, Laskar Hosur Road,</div>
             <div>Adugodi, Koramangala, Bengaluru, Karnataka- 560030</div>
           </div>
@@ -85,7 +82,7 @@ const InvoiceDialog = ({ open, onOpenChange, payout, mentor }: InvoiceDialogProp
                 <th className="border p-2 text-left">Sr. No.</th>
                 <th className="border p-2 text-left">Description of Service</th>
                 <th className="border p-2 text-left">Rate</th>
-                <th className="border p-2 text-left">Amount (Rs.)</th>
+                <th className="border p-2 text-left">Amount (₹)</th>
               </tr>
             </thead>
             <tbody>
@@ -111,20 +108,20 @@ const InvoiceDialog = ({ open, onOpenChange, payout, mentor }: InvoiceDialogProp
                         )}
                       </div>
                     </td>
-                    <td className="border p-2"><IndianRupee className="inline h-3 w-3" /> {formatCurrency(sessionRate)}</td>
-                    <td className="border p-2"><IndianRupee className="inline h-3 w-3" /> {formatCurrency(sessionRate)}</td>
+                    <td className="border p-2"><IndianRupee className="inline h-3 w-3" /> {formatIndianRupee(sessionRate)}</td>
+                    <td className="border p-2"><IndianRupee className="inline h-3 w-3" /> {formatIndianRupee(sessionRate)}</td>
                   </tr>
                 );
               })}
               <tr className="border font-bold">
                 <td colSpan={3} className="border p-2">Total</td>
-                <td className="border p-2"><IndianRupee className="inline h-3 w-3" /> {formatCurrency(payout.amount)}</td>
+                <td className="border p-2"><IndianRupee className="inline h-3 w-3" /> {formatIndianRupee(payout.amount)}</td>
               </tr>
             </tbody>
           </table>
           
           <div className="space-y-4">
-            <div>Amount in words(in Rs.): [Amount in words] Rupees</div>
+            <div>Amount in words(in ₹): [Amount in words] Rupees</div>
             
             <div className="space-y-1">
               <div>Account Holder Name :- {payout.bankDetails?.accountName || "[Account Holder Name]"}</div>

@@ -5,107 +5,107 @@
 
 @layer base {
   :root {
-    --background: 220 33% 98%;
-    --foreground: 220 40% 13%;
+    --background: 147 35% 95%;  /* Light mint green - #e4f3e7 */
+    --foreground: 180 29% 10%;  /* Dark teal-black - #112121 */
 
     --card: 0 0% 100%;
-    --card-foreground: 220 40% 13%;
+    --card-foreground: 180 29% 10%;  /* Dark teal-black - #112121 */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 40% 13%;
+    --popover-foreground: 180 29% 10%;  /* Dark teal-black - #112121 */
 
-    --primary: 252 59% 48%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 32 89% 68%;  /* Orange - #f6af65 */
+    --primary-foreground: 180 29% 10%;  /* Dark teal-black - #112121 */
 
-    --secondary: 220 14% 90%;
-    --secondary-foreground: 220 40% 13%;
+    --secondary: 160 61% 12%;  /* Deep green - #0b2e2a */
+    --secondary-foreground: 147 35% 95%;  /* Light mint green - #e4f3e7 */
 
-    --muted: 220 14% 95%;
-    --muted-foreground: 220 10% 40%;
+    --muted: 147 10% 90%;
+    --muted-foreground: 180 10% 40%;
 
-    --accent: 252 59% 92%;
-    --accent-foreground: 252 59% 48%;
+    --accent: 32 89% 68%;  /* Orange - #f6af65 */
+    --accent-foreground: 180 29% 10%;  /* Dark teal-black - #112121 */
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 147 35% 95%;  /* Light mint green - #e4f3e7 */
 
-    --border: 220 20% 90%;
-    --input: 220 20% 90%;
-    --ring: 252 59% 48%;
+    --border: 147 20% 85%;
+    --input: 147 20% 85%;
+    --ring: 32 89% 68%;  /* Orange - #f6af65 */
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 40% 13%;
-    --sidebar-primary: 252 59% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 252 59% 94%;
-    --sidebar-accent-foreground: 252 59% 48%;
-    --sidebar-border: 220 20% 90%;
-    --sidebar-ring: 252 59% 48%;
+    --sidebar-background: 180 29% 10%;  /* Dark teal-black - #112121 */
+    --sidebar-foreground: 147 35% 95%;  /* Light mint green - #e4f3e7 */
+    --sidebar-primary: 32 89% 68%;  /* Orange - #f6af65 */
+    --sidebar-primary-foreground: 180 29% 10%;  /* Dark teal-black - #112121 */
+    --sidebar-accent: 160 61% 12%;  /* Deep green - #0b2e2a */
+    --sidebar-accent-foreground: 147 35% 95%;  /* Light mint green - #e4f3e7 */
+    --sidebar-border: 160 30% 20%;
+    --sidebar-ring: 32 89% 68%;  /* Orange - #f6af65 */
 
-    --mentor: 252 59% 48%;
-    --mentor-foreground: 0 0% 100%;
-    --mentor-muted: 252 59% 94%;
+    --mentor: 32 89% 68%;  /* Orange - #f6af65 */
+    --mentor-foreground: 180 29% 10%;  /* Dark teal-black - #112121 */
+    --mentor-muted: 32 80% 94%;
 
-    --student: 210 100% 56%;
-    --student-foreground: 0 0% 100%;
-    --student-muted: 210 100% 94%;
+    --student: 160 61% 42%;  /* Darker green - adapted from #0b2e2a */
+    --student-foreground: 147 35% 95%;  /* Light mint green - #e4f3e7 */
+    --student-muted: 160 61% 94%;
 
-    --admin: 158 64% 52%;
-    --admin-foreground: 0 0% 100%;
-    --admin-muted: 158 64% 94%;
+    --admin: 180 29% 30%;  /* Darker variant of #112121 */
+    --admin-foreground: 147 35% 95%;  /* Light mint green - #e4f3e7 */
+    --admin-muted: 180 29% 94%;
   }
 
   .dark {
-    --background: 220 40% 13%;
-    --foreground: 220 33% 98%;
+    --background: 180 29% 10%;  /* Dark teal-black - #112121 */
+    --foreground: 147 35% 95%;  /* Light mint green - #e4f3e7 */
 
-    --card: 220 30% 17%;
-    --card-foreground: 220 33% 98%;
+    --card: 160 61% 12%;  /* Deep green - #0b2e2a */
+    --card-foreground: 147 35% 95%;  /* Light mint green - #e4f3e7 */
 
-    --popover: 220 30% 17%;
-    --popover-foreground: 220 33% 98%;
+    --popover: 160 61% 12%;  /* Deep green - #0b2e2a */
+    --popover-foreground: 147 35% 95%;  /* Light mint green - #e4f3e7 */
 
-    --primary: 252 59% 54%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 32 89% 68%;  /* Orange - #f6af65 */
+    --primary-foreground: 180 29% 10%;  /* Dark teal-black - #112121 */
 
-    --secondary: 220 30% 22%;
-    --secondary-foreground: 220 33% 98%;
+    --secondary: 160 40% 20%;
+    --secondary-foreground: 147 35% 95%;  /* Light mint green - #e4f3e7 */
 
-    --muted: 220 30% 22%;
-    --muted-foreground: 220 10% 70%;
+    --muted: 180 20% 20%;
+    --muted-foreground: 147 10% 70%;
 
-    --accent: 252 59% 30%;
-    --accent-foreground: 252 59% 90%;
+    --accent: 32 89% 40%;  /* Darker Orange */
+    --accent-foreground: 147 35% 95%;  /* Light mint green - #e4f3e7 */
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 147 35% 95%;  /* Light mint green - #e4f3e7 */
 
-    --border: 220 30% 22%;
-    --input: 220 30% 22%;
-    --ring: 252 59% 54%;
+    --border: 160 40% 20%;
+    --input: 160 40% 20%;
+    --ring: 32 89% 68%;  /* Orange - #f6af65 */
 
-    --sidebar-background: 220 30% 17%;
-    --sidebar-foreground: 220 33% 98%;
-    --sidebar-primary: 252 59% 54%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 252 59% 30%;
-    --sidebar-accent-foreground: 252 59% 90%;
-    --sidebar-border: 220 30% 22%;
-    --sidebar-ring: 252 59% 54%;
+    --sidebar-background: 180 29% 10%;  /* Dark teal-black - #112121 */
+    --sidebar-foreground: 147 35% 95%;  /* Light mint green - #e4f3e7 */
+    --sidebar-primary: 32 89% 68%;  /* Orange - #f6af65 */
+    --sidebar-primary-foreground: 180 29% 10%;  /* Dark teal-black - #112121 */
+    --sidebar-accent: 160 40% 20%;
+    --sidebar-accent-foreground: 147 35% 95%;  /* Light mint green - #e4f3e7 */
+    --sidebar-border: 160 40% 20%;
+    --sidebar-ring: 32 89% 68%;  /* Orange - #f6af65 */
 
-    --mentor: 252 59% 54%;
-    --mentor-foreground: 0 0% 100%;
-    --mentor-muted: 252 59% 20%;
+    --mentor: 32 89% 68%;  /* Orange - #f6af65 */
+    --mentor-foreground: 180 29% 10%;  /* Dark teal-black - #112121 */
+    --mentor-muted: 32 80% 20%;
 
-    --student: 210 100% 56%;
-    --student-foreground: 0 0% 100%;
-    --student-muted: 210 100% 26%;
+    --student: 160 61% 42%;  /* Darker green - adapted from #0b2e2a */
+    --student-foreground: 147 35% 95%;  /* Light mint green - #e4f3e7 */
+    --student-muted: 160 61% 20%;
 
-    --admin: 158 64% 52%;
-    --admin-foreground: 0 0% 100%;
-    --admin-muted: 158 64% 22%;
+    --admin: 180 29% 30%;  /* Darker variant of #112121 */
+    --admin-foreground: 147 35% 95%;  /* Light mint green - #e4f3e7 */
+    --admin-muted: 180 29% 20%;
   }
 }
 
@@ -115,7 +115,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
 }
 

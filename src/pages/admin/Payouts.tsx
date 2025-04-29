@@ -5,12 +5,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Filter, AlertCircle, CheckCircle, DollarSign, Info, Search, Calendar, User, Settings, IndianRupee } from "lucide-react";
+import { Filter, AlertCircle, CheckCircle, Calendar, User, Settings, IndianRupee } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { MentorRate, Payout } from "@/types";
 import InvoiceDialog from "@/components/admin/payouts/InvoiceDialog";
+import { formatIndianRupee } from "@/lib/utils";
 
 const Payouts = () => {
   const { toast } = useToast();
@@ -18,7 +19,7 @@ const Payouts = () => {
     {
       id: "p1",
       mentorId: "m1",
-      amount: 480,
+      amount: 48000,
       status: "pending",
       sessionIds: ["s1", "s2", "s3", "s4"],
       createdAt: new Date(2025, 3, 10)
@@ -26,7 +27,7 @@ const Payouts = () => {
     {
       id: "p2",
       mentorId: "m2",
-      amount: 320,
+      amount: 32000,
       status: "processed",
       sessionIds: ["s5", "s6", "s7"],
       createdAt: new Date(2025, 3, 1),
@@ -35,7 +36,7 @@ const Payouts = () => {
     {
       id: "p3",
       mentorId: "m3",
-      amount: 560,
+      amount: 56000,
       status: "pending",
       sessionIds: ["s8", "s9", "s10", "s11", "s12"],
       createdAt: new Date(2025, 3, 12)
@@ -43,7 +44,7 @@ const Payouts = () => {
     {
       id: "p4",
       mentorId: "m4",
-      amount: 240,
+      amount: 24000,
       status: "processed",
       sessionIds: ["s13", "s14"],
       createdAt: new Date(2025, 2, 15),
@@ -52,7 +53,7 @@ const Payouts = () => {
     {
       id: "p5",
       mentorId: "m1",
-      amount: 360,
+      amount: 36000,
       status: "processed",
       sessionIds: ["s15", "s16", "s17"],
       createdAt: new Date(2025, 2, 1),
@@ -74,10 +75,10 @@ const Payouts = () => {
     payout: null
   });
   const [mentorRates, setMentorRates] = useState<MentorRate[]>([
-    { mentorId: "m1", sessionTypeId: "1", rate: 80, isEligible: true },
-    { mentorId: "m1", sessionTypeId: "2", rate: 90, isEligible: true },
-    { mentorId: "m2", sessionTypeId: "1", rate: 75, isEligible: true },
-    { mentorId: "m2", sessionTypeId: "2", rate: 85, isEligible: true }
+    { mentorId: "m1", sessionTypeId: "1", rate: 8000, isEligible: true },
+    { mentorId: "m1", sessionTypeId: "2", rate: 9000, isEligible: true },
+    { mentorId: "m2", sessionTypeId: "1", rate: 7500, isEligible: true },
+    { mentorId: "m2", sessionTypeId: "2", rate: 8500, isEligible: true }
   ]);
   const [rateDialog, setRateDialog] = useState<{ open: boolean; mentorId: string | null }>({
     open: false,
@@ -89,9 +90,9 @@ const Payouts = () => {
   });
 
   const sessionTypes = [
-    { id: "1", name: "Career Guidance", baseRate: 80 },
-    { id: "2", name: "Technical Interview Prep", baseRate: 90 },
-    { id: "3", name: "Resume Review", baseRate: 70 }
+    { id: "1", name: "Career Guidance", baseRate: 8000 },
+    { id: "2", name: "Technical Interview Prep", baseRate: 9000 },
+    { id: "3", name: "Resume Review", baseRate: 7000 }
   ];
 
   const handleProcessPayout = (payoutId: string) => {
@@ -120,7 +121,7 @@ const Payouts = () => {
   };
   
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { 
+    return date.toLocaleDateString('en-IN', { 
       month: 'short', 
       day: 'numeric', 
       year: 'numeric' 
@@ -157,10 +158,6 @@ const Payouts = () => {
     });
   };
 
-  const formatCurrency = (amount: number) => {
-    return `₹${amount.toFixed(2)}`;
-  };
-
   return (
     <MainLayout title="Mentor Payouts">
       <Card className="mb-6">
@@ -179,7 +176,7 @@ const Payouts = () => {
         <CardContent>
           <div className="flex flex-col md:flex-row justify-between mb-6 gap-4">
             <div className="relative w-full md:w-96">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Filter className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search mentor..."
                 className="pl-8"
@@ -223,7 +220,7 @@ const Payouts = () => {
                     <TableCell className="font-medium">
                       {mentors[payout.mentorId].name}
                     </TableCell>
-                    <TableCell>{formatCurrency(payout.amount)}</TableCell>
+                    <TableCell>{formatIndianRupee(payout.amount)}</TableCell>
                     <TableCell>{payout.sessionIds.length}</TableCell>
                     <TableCell>{formatDate(payout.createdAt)}</TableCell>
                     <TableCell>
@@ -287,10 +284,10 @@ const Payouts = () => {
               <div key={sessionType.id} className="flex items-center justify-between space-x-4">
                 <div>
                   <p className="font-medium">{sessionType.name}</p>
-                  <p className="text-sm text-muted-foreground">Base rate: ${sessionType.baseRate}/session</p>
+                  <p className="text-sm text-muted-foreground">Base rate: ₹{formatIndianRupee(sessionType.baseRate)}/session</p>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span>$</span>
+                  <span>₹</span>
                   <Input
                     type="number"
                     className="w-20"
@@ -318,14 +315,14 @@ const Payouts = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <PayoutStatCard 
           title="Total Outstanding" 
-          value={formatCurrency(1040.00)}
+          value={formatIndianRupee(104000)}
           description="Pending payouts to process"
           icon={IndianRupee}
           color="text-amber-500"
         />
         <PayoutStatCard 
           title="Processed (Month)" 
-          value={formatCurrency(2480.00)}
+          value={formatIndianRupee(248000)}
           description="Processed in April 2025"
           icon={CheckCircle}
           color="text-green-500"
@@ -398,7 +395,7 @@ const PayoutDetailsDialog = ({ open, payout, mentors, onOpenChange, onProcess }:
   }
   
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { 
+    return date.toLocaleDateString('en-IN', { 
       weekday: 'long',
       month: 'long', 
       day: 'numeric', 
@@ -426,7 +423,7 @@ const PayoutDetailsDialog = ({ open, payout, mentors, onOpenChange, onProcess }:
           
           <div className="flex justify-between items-center pb-2 border-b">
             <span className="text-sm font-medium">Amount</span>
-            <span className="font-bold">${payout.amount.toFixed(2)}</span>
+            <span className="font-bold">{formatIndianRupee(payout.amount)}</span>
           </div>
           
           <div className="flex justify-between items-center pb-2 border-b">

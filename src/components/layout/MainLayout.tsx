@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, Sidebar } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { UserCircle, LogOut, LayoutDashboard, Calendar, Settings, Users, FileText, BarChart2, DollarSign } from "lucide-react";
+import { UserCircle, LogOut, LayoutDashboard, Calendar, Settings, Users, FileText, BarChart2, IndianRupee } from "lucide-react";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -49,7 +49,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
           { title: "Session Types", icon: Settings, url: "/admin/session-types" },
           { title: "Feedback Forms", icon: FileText, url: "/admin/feedback" },
           { title: "Analytics", icon: BarChart2, url: "/admin/analytics" },
-          { title: "Payouts", icon: DollarSign, url: "/admin/payouts" },
+          { title: "Payouts", icon: IndianRupee, url: "/admin/payouts" },
         ];
       default:
         return [];
@@ -75,8 +75,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
       <Sidebar>
         <div className="p-4 border-b">
           <div className="flex flex-col items-center space-y-2">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${roleColorClass}`}>
-              {displayName.charAt(0).toUpperCase()}
+            <div className="w-32 h-auto mb-2">
+              <img src="/mesa-logo.png" alt="Mesa School of Business" className="w-full h-auto" />
             </div>
             <div className="text-sm font-medium">Welcome, {displayName}</div>
             <div className={`role-badge role-badge-${user.role}`}>

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -8,8 +7,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
 import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { FileText, ReceiptIndianRupee } from "lucide-react";
+import { FileText, IndianRupee } from "lucide-react";
 import { SessionInfoTooltip, SessionTypeInfo } from "@/components/shared/SessionInfoTooltip";
+import { formatIndianRupee } from "@/lib/utils";
 
 export const InvoiceTab = () => {
   const { toast } = useToast();
@@ -103,40 +103,7 @@ export const InvoiceTab = () => {
   };
 
   const numberToWords = (num: number): string => {
-    const units = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
-    const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
-    const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
-    
-    const convertLessThanThousand = (n: number): string => {
-      if (n === 0) return "";
-      
-      if (n < 10) return units[n];
-      if (n < 20) return teens[n - 10];
-      if (n < 100) {
-        const digit = n % 10;
-        return tens[Math.floor(n / 10)] + (digit ? " " + units[digit] : "");
-      }
-      const digit = n % 10;
-      const rest = n % 100;
-      return units[Math.floor(n / 100)] + " Hundred" + 
-             (rest ? " and " + convertLessThanThousand(rest) : "");
-    };
-
-    if (num === 0) return "Zero";
-    
-    const billion = Math.floor(num / 1000000000);
-    const million = Math.floor((num % 1000000000) / 1000000);
-    const thousand = Math.floor((num % 1000000) / 1000);
-    const remainder = num % 1000;
-    
-    let result = "";
-    
-    if (billion) result += convertLessThanThousand(billion) + " Billion ";
-    if (million) result += convertLessThanThousand(million) + " Million ";
-    if (thousand) result += convertLessThanThousand(thousand) + " Thousand ";
-    if (remainder) result += convertLessThanThousand(remainder);
-    
-    return result.trim();
+    return num.toString();
   };
 
   return (
@@ -174,8 +141,8 @@ export const InvoiceTab = () => {
                 <TableCell>{session.date}</TableCell>
                 <TableCell>{session.student}</TableCell>
                 <TableCell className="flex items-center">
-                  <ReceiptIndianRupee className="h-4 w-4 mr-1" />
-                  {session.amount}
+                  <IndianRupee className="h-4 w-4 mr-1" />
+                  {formatIndianRupee(session.amount)}
                 </TableCell>
               </TableRow>
             ))}
@@ -184,8 +151,8 @@ export const InvoiceTab = () => {
             <TableRow>
               <TableCell colSpan={3} className="text-right font-medium">Total Pending</TableCell>
               <TableCell className="font-medium flex items-center">
-                <ReceiptIndianRupee className="h-4 w-4 mr-1" />
-                {pendingSessions.reduce((sum, session) => sum + session.amount, 0)}
+                <IndianRupee className="h-4 w-4 mr-1" />
+                {formatIndianRupee(pendingSessions.reduce((sum, session) => sum + session.amount, 0))}
               </TableCell>
             </TableRow>
           </TableFooter>
@@ -212,8 +179,8 @@ export const InvoiceTab = () => {
                 <TableCell>{invoice.date}</TableCell>
                 <TableCell>{invoice.sessions}</TableCell>
                 <TableCell className="flex items-center">
-                  <ReceiptIndianRupee className="h-4 w-4 mr-1" />
-                  {invoice.amount}
+                  <IndianRupee className="h-4 w-4 mr-1" />
+                  {formatIndianRupee(invoice.amount)}
                 </TableCell>
                 <TableCell>
                   <Badge variant={invoice.status === "paid" ? "success" : "secondary"}>
@@ -257,7 +224,7 @@ export const InvoiceTab = () => {
             
             <div className="space-y-2">
               <div className="font-semibold">Bill To:</div>
-              <div>Neos Kosmos Technologies Pvt. Ltd.</div>
+              <div>Mesa School of Business</div>
               <div>Address :- Prestige Cube, Site no 26, Laskar Hosur Road,</div>
               <div>Adugodi, Koramangala, Bengaluru, Karnataka- 560030</div>
             </div>
@@ -268,7 +235,7 @@ export const InvoiceTab = () => {
                   <th className="border p-2 text-left">Sr. No.</th>
                   <th className="border p-2 text-left">Description of Service</th>
                   <th className="border p-2 text-left">Rate</th>
-                  <th className="border p-2 text-left">Amount (Rs.)</th>
+                  <th className="border p-2 text-left">Amount (₹)</th>
                 </tr>
               </thead>
               <tbody>
@@ -286,22 +253,22 @@ export const InvoiceTab = () => {
                         )}
                       </div>
                     </td>
-                    <td className="border p-2"><ReceiptIndianRupee className="inline h-3 w-3" /> {session.amount.toFixed(2)}</td>
-                    <td className="border p-2"><ReceiptIndianRupee className="inline h-3 w-3" /> {session.amount.toFixed(2)}</td>
+                    <td className="border p-2"><IndianRupee className="inline h-3 w-3" /> {formatIndianRupee(session.amount)}</td>
+                    <td className="border p-2"><IndianRupee className="inline h-3 w-3" /> {formatIndianRupee(session.amount)}</td>
                   </tr>
                 ))}
                 <tr className="border font-bold">
                   <td colSpan={3} className="border p-2">Total</td>
                   <td className="border p-2">
-                    <ReceiptIndianRupee className="inline h-3 w-3" /> 
-                    {pendingSessions.reduce((sum, session) => sum + session.amount, 0).toFixed(2)}
+                    <IndianRupee className="inline h-3 w-3" /> 
+                    {formatIndianRupee(pendingSessions.reduce((sum, session) => sum + session.amount, 0))}
                   </td>
                 </tr>
               </tbody>
             </table>
             
             <div className="space-y-4">
-              <div>Amount in words(in Rs.): {numberToWords(pendingSessions.reduce((sum, session) => sum + session.amount, 0))} Rupees Only</div>
+              <div>Amount in words(in ₹): {numberToWords(pendingSessions.reduce((sum, session) => sum + session.amount, 0))} Rupees Only</div>
               
               <div className="space-y-1">
                 <div>Account Holder Name :- {user?.mentorProfile?.bankDetails?.accountName || "[Account Holder Name]"}</div>
