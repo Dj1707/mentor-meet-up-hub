@@ -1,5 +1,6 @@
 
 export interface MentorProfile {
+  id?: string;
   name: string;
   email: string;
   phone?: string;
@@ -9,6 +10,9 @@ export interface MentorProfile {
   role?: string;
   company?: string;
   bio?: string;
+  rating?: number; 
+  sessionCount?: number;
+  expertise?: string[];
   panNumber?: string;
   bankDetails?: {
     accountName: string;
@@ -25,6 +29,10 @@ export interface MentorProfile {
   };
   pastSectors?: string[];
   onboardingStatus?: "invited" | "active" | "inactive";
+  availability?: {
+    date: string;
+    slots: string[];
+  }[];
 }
 
 export interface MentorRate {
