@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Download, FileText } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Download, FileText, FileCsv, FileJson } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { SessionType } from "@/types";
 
@@ -25,19 +26,24 @@ const DownloadFeedbackDialog = ({
   const [includeComments, setIncludeComments] = useState(true);
   const [includeRatings, setIncludeRatings] = useState(true);
   const [dateRange, setDateRange] = useState<"all" | "month" | "quarter" | "year">("month");
+  const [fileFormat, setFileFormat] = useState<"csv" | "json" | "pdf">("csv");
 
   const handleDownload = () => {
     // In a real implementation, this would call an API to generate and download the feedback
+    const sessionTypeName = selectedType ? 
+      sessionTypes.find(t => t.id === selectedType)?.name || "" : 
+      "all session types";
+    
     toast({
       title: "Downloading feedback",
-      description: `Feedback for ${sessionTypes.find(t => t.id === selectedType)?.name || "all sessions"} is being prepared for download.`,
+      description: `Feedback for ${sessionTypeName} is being prepared for download in ${fileFormat.toUpperCase()} format.`,
     });
     
     // Simulate download delay
     setTimeout(() => {
       toast({
         title: "Download complete",
-        description: "Feedback data has been downloaded successfully.",
+        description: `Feedback data has been downloaded successfully as ${fileFormat.toUpperCase()}.`,
       });
       onOpenChange(false);
     }, 1500);
@@ -106,6 +112,34 @@ const DownloadFeedbackDialog = ({
                 <Label htmlFor="include-comments">Comments</Label>
               </div>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>File Format</Label>
+            <RadioGroup 
+              value={fileFormat} 
+              onValueChange={(value: "csv" | "json" | "pdf") => setFileFormat(value)}
+              className="flex space-x-2"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="csv" id="csv" />
+                <Label htmlFor="csv" className="flex items-center">
+                  <FileCsv className="w-4 h-4 mr-1" /> CSV
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="json" id="json" />
+                <Label htmlFor="json" className="flex items-center">
+                  <FileJson className="w-4 h-4 mr-1" /> JSON
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="pdf" id="pdf" />
+                <Label htmlFor="pdf" className="flex items-center">
+                  <FileText className="w-4 h-4 mr-1" /> PDF
+                </Label>
+              </div>
+            </RadioGroup>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">

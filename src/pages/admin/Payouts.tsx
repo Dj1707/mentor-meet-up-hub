@@ -74,10 +74,10 @@ const Payouts = () => {
     payout: null
   });
   const [mentorRates, setMentorRates] = useState<MentorRate[]>([
-    { mentorId: "m1", sessionTypeId: "1", rate: 80 },
-    { mentorId: "m1", sessionTypeId: "2", rate: 90 },
-    { mentorId: "m2", sessionTypeId: "1", rate: 75 },
-    { mentorId: "m2", sessionTypeId: "2", rate: 85 }
+    { mentorId: "m1", sessionTypeId: "1", rate: 80, isEligible: true },
+    { mentorId: "m1", sessionTypeId: "2", rate: 90, isEligible: true },
+    { mentorId: "m2", sessionTypeId: "1", rate: 75, isEligible: true },
+    { mentorId: "m2", sessionTypeId: "2", rate: 85, isEligible: true }
   ]);
   const [rateDialog, setRateDialog] = useState<{ open: boolean; mentorId: string | null }>({
     open: false,
@@ -153,7 +153,7 @@ const Payouts = () => {
         return updatedRates;
       }
 
-      return [...prevRates, { mentorId, sessionTypeId, rate: newRate }];
+      return [...prevRates, { mentorId, sessionTypeId, rate: newRate, isEligible: true }];
     });
   };
 

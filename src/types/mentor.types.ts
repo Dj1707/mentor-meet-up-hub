@@ -38,5 +38,6 @@ export interface MentorSessionEligibility {
   eligibleSessionTypes: {
     sessionTypeId: string;
     rate: number;
+    isEligible?: boolean;
   }[];
 }
