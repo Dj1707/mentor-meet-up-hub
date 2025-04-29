@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -265,10 +264,10 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
   ];
   
   const sessionTypes = [
-    { id: "1", name: "Career Guidance", duration: 45, price: 30, description: "Get personalized career advice from experienced professionals." },
-    { id: "2", name: "Technical Interview Prep", duration: 60, price: 40, description: "Practice technical interviews with experienced engineers." },
-    { id: "3", name: "Resume Review", duration: 30, price: 25, description: "Get your resume reviewed by industry professionals." },
-    { id: "4", name: "System Design", duration: 60, price: 45, description: "Learn system design principles for senior-level interviews." }
+    { id: "1", name: "Career Guidance", duration: 45, description: "Get personalized career advice from experienced professionals." },
+    { id: "2", name: "Technical Interview Prep", duration: 60, description: "Practice technical interviews with experienced engineers." },
+    { id: "3", name: "Resume Review", duration: 30, description: "Get your resume reviewed by industry professionals." },
+    { id: "4", name: "System Design", duration: 60, description: "Learn system design principles for senior-level interviews." }
   ];
   
   const handleBookSession = () => {
@@ -417,7 +416,7 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
               >
                 <CardHeader>
                   <CardTitle>{type.name}</CardTitle>
-                  <CardDescription>{type.duration} minutes • ${type.price}</CardDescription>
+                  <CardDescription>{type.duration} minutes</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm mb-4">{type.description}</p>

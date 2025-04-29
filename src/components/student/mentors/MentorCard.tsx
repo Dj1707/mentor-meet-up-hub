@@ -71,10 +71,10 @@ const MentorCard = ({ mentor }: MentorCardProps) => {
                     href={`https://${mentor.linkedIn}`} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center text-blue-600 hover:text-blue-800 text-sm mt-1"
+                    className="flex items-center text-[#0A66C2] hover:text-[#0A66C2]/80 text-sm mt-1 group"
                   >
-                    <Linkedin className="h-3.5 w-3.5 mr-1" />
-                    {mentor.linkedIn}
+                    <Linkedin className="h-4 w-4 mr-1 fill-[#0A66C2]" />
+                    <span className="underline group-hover:no-underline">LinkedIn Profile</span>
                   </a>
                 )}
               </CardDescription>
@@ -198,10 +198,10 @@ const MentorProfileDialog = ({ mentor, open, onOpenChange, onBookSession }: Ment
                 href={`https://${mentor.linkedIn}`} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="flex items-center text-blue-600 hover:text-blue-800 gap-1"
+                className="flex items-center gap-1.5 bg-[#0A66C2] hover:bg-[#0A66C2]/90 text-white px-3 py-1.5 rounded-md transition-colors"
               >
-                <Linkedin className="h-4 w-4" />
-                <span className="text-sm underline">LinkedIn Profile</span>
+                <Linkedin className="h-4 w-4 fill-white" />
+                <span className="text-sm">LinkedIn Profile</span>
               </a>
             )}
           </div>
