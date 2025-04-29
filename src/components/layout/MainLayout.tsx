@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, Sidebar } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { UserCircle, LogOut, LayoutDashboard, Calendar, Settings, Users, FileText, BarChart2, IndianRupee } from "lucide-react";
+import { UserCircle, LogOut, LayoutDashboard, Calendar, Settings, Users, FileText, BarChart2, IndianRupee, MessageSquare } from "lucide-react";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -56,6 +56,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
           { title: "Feedback Forms", icon: FileText, url: "/admin/feedback" },
           { title: "Analytics", icon: BarChart2, url: "/admin/analytics" },
           { title: "Payouts", icon: IndianRupee, url: "/admin/payouts" },
+          { title: "WhatsApp Config", icon: MessageSquare, url: "/admin/whatsapp-config" },
         ];
       default:
         return [];
