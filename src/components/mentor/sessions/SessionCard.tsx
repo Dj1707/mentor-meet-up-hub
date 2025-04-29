@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { Calendar, Clock, File, FileSpreadsheet, FileText, Check, X, Plus } from "lucide-react";
+import { Calendar, Clock, File, FileSpreadsheet, FileText, Check, X, Plus, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SessionStatus, SessionTypeResource } from "@/types";
+import { StudentResumeDialog } from "./StudentResumeDialog";
 
 interface SessionFeedback {
   rating: number;
@@ -24,6 +25,10 @@ interface SessionCardProps {
   date: string;
   time: string;
   student: string;
+  studentEmail?: string;
+  studentProfile?: {
+    resumeUrl?: string;
+  };
   type: string;
   status: SessionStatus;
   sessionTypeId: string;
@@ -50,6 +55,8 @@ export const SessionCard = ({
   date,
   time,
   student,
+  studentEmail,
+  studentProfile,
   type,
   status,
   sessionTypeId,
@@ -61,12 +68,15 @@ export const SessionCard = ({
   const [resourcesDialogOpen, setResourcesDialogOpen] = useState(false);
   const [confirmCancelDialog, setConfirmCancelDialog] = useState(false);
   const [rescheduleDialog, setRescheduleDialog] = useState(false);
+  const [resumeDialogOpen, setResumeDialogOpen] = useState(false);
 
   const [feedback, setFeedback] = useState<SessionFeedback>({
     rating: 5,
     notes: "",
     actionItems: [""]
   });
+
+  const hasResume = studentProfile?.resumeUrl && studentProfile.resumeUrl.trim() !== '';
 
   const addActionItem = () => {
     setFeedback(prev => ({
@@ -164,6 +174,15 @@ export const SessionCard = ({
               >
                 View Resources
               </Button>
+              {hasResume && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setResumeDialogOpen(true)}
+                >
+                  <FileText className="h-4 w-4 mr-1" /> View Resume
+                </Button>
+              )}
               <Button variant="outline" size="sm" onClick={() => setRescheduleDialog(true)}>
                 Reschedule
               </Button>
@@ -178,8 +197,19 @@ export const SessionCard = ({
             </>
           )}
 
-          {status === "completed" && (
-            <Button variant="outline" size="sm">View Notes</Button>
+          {(status === "completed" || status === "no-show") && (
+            <>
+              <Button variant="outline" size="sm">View Notes</Button>
+              {hasResume && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setResumeDialogOpen(true)}
+                >
+                  <FileText className="h-4 w-4 mr-1" /> View Resume
+                </Button>
+              )}
+            </>
           )}
 
           {(status === "completed" || status === "no-show") && !onFeedbackSubmit && (
@@ -235,6 +265,16 @@ export const SessionCard = ({
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Resume Dialog */}
+        {hasResume && (
+          <StudentResumeDialog
+            open={resumeDialogOpen}
+            setOpen={setResumeDialogOpen}
+            resumeUrl={studentProfile?.resumeUrl || ""}
+            studentName={student}
+          />
+        )}
 
         {/* Feedback Dialog */}
         <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>

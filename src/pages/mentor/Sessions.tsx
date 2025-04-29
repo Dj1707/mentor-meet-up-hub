@@ -35,6 +35,11 @@ const MentorSessions = () => {
       date: "Apr 16, 2025",
       time: "3:00 PM - 3:45 PM",
       student: "Alex Johnson",
+      studentEmail: "alex.johnson@example.com",
+      studentProfile: {
+        resumeUrl: "https://example.com/resume/alex_johnson_resume.pdf",
+        linkedIn: "https://linkedin.com/in/alexjohnson"
+      },
       type: "Career Guidance",
       status: "scheduled" as const,
       sessionTypeId: "1",
@@ -59,6 +64,11 @@ const MentorSessions = () => {
       date: "Apr 18, 2025",
       time: "2:00 PM - 3:00 PM",
       student: "Jamie Rivera",
+      studentEmail: "jamie.rivera@example.com",
+      studentProfile: {
+        resumeUrl: "",
+        linkedIn: "https://linkedin.com/in/jamierivera"
+      },
       type: "Technical Interview",
       status: "scheduled" as const,
       sessionTypeId: "2"
@@ -72,6 +82,11 @@ const MentorSessions = () => {
       date: "Apr 14, 2025",
       time: "11:00 AM - 11:30 AM",
       student: "Casey Kim",
+      studentEmail: "casey.kim@example.com",
+      studentProfile: {
+        resumeUrl: "https://example.com/resume/casey_kim_resume.pdf",
+        linkedIn: "https://linkedin.com/in/caseykim"
+      },
       type: "Resume Review",
       status: "completed" as const,
       sessionTypeId: "3"
@@ -82,6 +97,11 @@ const MentorSessions = () => {
       date: "Apr 13, 2025",
       time: "4:00 PM - 4:45 PM",
       student: "Morgan Smith",
+      studentEmail: "morgan.smith@example.com",
+      studentProfile: {
+        resumeUrl: "https://example.com/resume/morgan_smith_resume.pdf",
+        linkedIn: "https://linkedin.com/in/morgansmith"
+      },
       type: "Career Guidance",
       status: "no-show" as const,
       sessionTypeId: "1"
