@@ -13,12 +13,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { StudentResumeDialog } from "@/components/mentor/sessions/StudentResumeDialog";
 
 const SessionCard = ({ 
   title, 
   date, 
   time, 
   student,
+  studentProfile,
   type,
   isPast = false,
   meetingLink = null,
@@ -28,6 +30,9 @@ const SessionCard = ({
   date: string; 
   time: string; 
   student: string;
+  studentProfile?: {
+    resumeUrl?: string;
+  };
   type: string;
   isPast?: boolean;
   meetingLink?: string | null;
@@ -37,7 +42,10 @@ const SessionCard = ({
   const [confirmCancelDialog, setConfirmCancelDialog] = useState(false);
   const [rescheduleDialog, setRescheduleDialog] = useState(false);
   const [resourcesDialogOpen, setResourcesDialogOpen] = useState(false);
+  const [resumeDialogOpen, setResumeDialogOpen] = useState(false);
   const { toast } = useToast();
+  
+  const hasResume = studentProfile?.resumeUrl && studentProfile.resumeUrl.trim() !== '';
   
   const generateMeetingLink = () => {
     // In a real app, this would call an API to create a meeting
@@ -129,6 +137,16 @@ const SessionCard = ({
                 </Button>
               </>
             )}
+            {hasResume && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={() => setResumeDialogOpen(true)}
+              >
+                <FileText className="w-3 h-3 mr-1" /> View Resume
+              </Button>
+            )}
           </div>
           {!isPast && (
             <div className="space-x-2">
@@ -151,6 +169,16 @@ const SessionCard = ({
             </div>
           )}
         </div>
+
+        {/* Resume Dialog */}
+        {hasResume && (
+          <StudentResumeDialog
+            open={resumeDialogOpen}
+            setOpen={setResumeDialogOpen}
+            resumeUrl={studentProfile?.resumeUrl || ""}
+            studentName={student}
+          />
+        )}
 
         {/* Session Resources Dialog */}
         <Dialog open={resourcesDialogOpen} onOpenChange={setResourcesDialogOpen}>
@@ -452,7 +480,7 @@ const MentorDashboard = () => {
     { label: "Earnings", value: "₹14,400" }
   ];
   
-  // Sessions for the dashboard
+  // Updated sessions data with student profile information including resume URLs
   const upcomingSessions = [
     {
       id: "1",
@@ -460,6 +488,9 @@ const MentorDashboard = () => {
       date: "Apr 29, 2025",
       time: "3:00 PM - 3:45 PM",
       student: "Alex Johnson",
+      studentProfile: {
+        resumeUrl: "https://example.com/resume/alex_johnson_resume.pdf"
+      },
       type: "Career Guidance",
       meetingLink: "https://meet.google.com/abc-defg-hij"
     },
@@ -469,6 +500,9 @@ const MentorDashboard = () => {
       date: "Apr 30, 2025",
       time: "11:00 AM - 12:00 PM",
       student: "Jamie Rivera",
+      studentProfile: {
+        resumeUrl: ""
+      },
       type: "Interview Prep",
       meetingLink: null
     }
@@ -481,6 +515,9 @@ const MentorDashboard = () => {
       date: "Apr 26, 2025",
       time: "2:00 PM - 2:30 PM",
       student: "Casey Kim",
+      studentProfile: {
+        resumeUrl: "https://example.com/resume/casey_kim_resume.pdf"
+      },
       type: "Resume Review",
       needsFeedback: true
     },
@@ -490,6 +527,9 @@ const MentorDashboard = () => {
       date: "Apr 24, 2025",
       time: "10:00 AM - 10:45 AM",
       student: "Alex Johnson",
+      studentProfile: {
+        resumeUrl: "https://example.com/resume/alex_johnson_resume.pdf"
+      },
       type: "Career Guidance",
       needsFeedback: false
     }
@@ -540,6 +580,7 @@ const MentorDashboard = () => {
                     date={session.date}
                     time={session.time}
                     student={session.student}
+                    studentProfile={session.studentProfile}
                     type={session.type}
                     meetingLink={session.meetingLink}
                   />
@@ -565,6 +606,7 @@ const MentorDashboard = () => {
                     date={session.date}
                     time={session.time}
                     student={session.student}
+                    studentProfile={session.studentProfile}
                     type={session.type}
                     isPast
                     needsFeedback={session.needsFeedback}
