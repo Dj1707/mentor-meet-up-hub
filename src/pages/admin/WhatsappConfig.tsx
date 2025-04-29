@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +10,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { 
   updateWhatsappConfig, 
   getWhatsappConfig, 
-  getSessionReminders 
+  getSessionReminders,
+  sendDummyWhatsAppMessage 
 } from "@/services/whatsappService";
 import { 
   formatTemplateMessage, 
@@ -27,12 +27,13 @@ const WhatsappConfig = () => {
   const { toast } = useToast();
   const [apiKey, setApiKey] = useState(GUPSHUP_API_KEY);
   const [enabled, setEnabled] = useState(true);
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("+919821414601");
   const [message, setMessage] = useState("");
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<"success" | "error" | null>(null);
   const [reminderLogs, setReminderLogs] = useState<any[]>([]);
   const [recipientType, setRecipientType] = useState<"STUDENT" | "MENTOR">("STUDENT");
+  const [sendingDummy, setSendingDummy] = useState(false);
   
   // Load the current config when the component mounts
   useEffect(() => {
@@ -122,6 +123,51 @@ const WhatsappConfig = () => {
       });
     } finally {
       setTesting(false);
+    }
+  };
+  
+  const handleSendDummyMessage = async () => {
+    setSendingDummy(true);
+    setTestResult(null);
+    
+    try {
+      // Create dummy data for the template
+      const dummyValues = {
+        "1": recipientType === "STUDENT" ? "Test Student" : "Test Mentor",
+        "2": "Mock Interview Session",
+        "3": recipientType === "STUDENT" ? "John Mentor" : "Alice Student",
+        "4": "30th April 2025",
+        "5": "4:30 PM"
+      };
+      
+      console.log("Sending dummy message with:", dummyValues);
+      
+      // Send actual message to the provided number
+      const success = await sendDummyWhatsAppMessage(
+        phoneNumber, 
+        dummyValues,
+        recipientType
+      );
+      
+      if (success) {
+        setTestResult("success");
+        toast({
+          title: "Dummy Message Sent",
+          description: `A dummy WhatsApp message has been sent to ${phoneNumber}.`
+        });
+      } else {
+        throw new Error("Failed to send dummy message");
+      }
+    } catch (error) {
+      console.error("Error sending dummy message:", error);
+      setTestResult("error");
+      toast({
+        title: "Test Failed",
+        description: "Failed to send dummy WhatsApp message. Please check the console for details.",
+        variant: "destructive"
+      });
+    } finally {
+      setSendingDummy(false);
     }
   };
   
@@ -231,15 +277,26 @@ const WhatsappConfig = () => {
               </p>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Button 
                 onClick={handleTestMessage} 
-                disabled={testing || !phoneNumber || !apiKey}
+                disabled={testing || sendingDummy || !phoneNumber || !apiKey}
               >
                 {testing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {testResult === "success" && <CheckCircle className="mr-2 h-4 w-4 text-green-500" />}
-                {testResult === "error" && <XCircle className="mr-2 h-4 w-4 text-red-500" />}
+                {testResult === "success" && !sendingDummy && <CheckCircle className="mr-2 h-4 w-4 text-green-500" />}
+                {testResult === "error" && !sendingDummy && <XCircle className="mr-2 h-4 w-4 text-red-500" />}
                 Send Test Message
+              </Button>
+              
+              <Button 
+                onClick={handleSendDummyMessage}
+                variant="secondary"
+                disabled={testing || sendingDummy || !phoneNumber || !apiKey}
+              >
+                {sendingDummy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {testResult === "success" && sendingDummy && <CheckCircle className="mr-2 h-4 w-4 text-green-500" />}
+                {testResult === "error" && sendingDummy && <XCircle className="mr-2 h-4 w-4 text-red-500" />}
+                Send Dummy Message
               </Button>
             </div>
           </CardContent>

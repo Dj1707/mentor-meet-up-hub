@@ -1,4 +1,3 @@
-
 import { Session, WhatsAppConfig, SessionReminder } from "@/types";
 import { formatDate, formatTime } from "@/lib/dateUtils";
 import { getGupshupTemplateId } from "@/utils/whatsappTemplates";
@@ -173,6 +172,38 @@ const sendWhatsAppMessage = async (
     return true;
   } catch (error) {
     console.error("Error sending WhatsApp message:", error);
+    return false;
+  }
+};
+
+/**
+ * Send a dummy WhatsApp message with predefined data
+ */
+export const sendDummyWhatsAppMessage = async (
+  phoneNumber: string,
+  dummyData: { [key: string]: string },
+  recipientType: "STUDENT" | "MENTOR"
+): Promise<boolean> => {
+  try {
+    console.log(`Sending dummy WhatsApp message to ${phoneNumber} with type ${recipientType}`);
+    console.log("Dummy data:", dummyData);
+    
+    // Ensure phone number is valid
+    if (!phoneNumber || !phoneNumber.match(/^\+\d{10,15}$/)) {
+      console.error("Invalid phone number format. Must include country code (e.g., +919876543210)");
+      return false;
+    }
+    
+    // Get WhatsApp config
+    if (!isWhatsappEnabled()) {
+      console.log("WhatsApp reminders are disabled");
+      return false;
+    }
+    
+    // Send the actual message using the existing function
+    return await sendWhatsAppMessage(phoneNumber, dummyData, recipientType);
+  } catch (error) {
+    console.error("Error sending dummy WhatsApp message:", error);
     return false;
   }
 };
