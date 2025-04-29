@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, BookOpen, Check, Link as LinkIcon, Star } from "lucide-react";
+import { Calendar, Clock, BookOpen, Check, Link as LinkIcon, Star, Linkedin } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -219,6 +219,8 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
   const [selectedType, setSelectedType] = useState(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [activeTab, setActiveTab] = useState("mentors");
+  const [viewMentorDialog, setViewMentorDialog] = useState(false);
+  const [currentMentor, setCurrentMentor] = useState(null);
   const { toast } = useToast();
   
   const availableMentors = [
@@ -226,9 +228,12 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
       id: "1",
       name: "Taylor Smith",
       role: "Senior Software Engineer",
+      company: "Google",
       expertise: ["Career Guidance", "Technical Interviews"],
       rating: 4.9,
       reviews: 32,
+      bio: "Experienced software engineer with 8+ years at major tech companies. Specialized in frontend development and mentoring junior developers. Passionate about helping others grow in their careers.",
+      linkedIn: "linkedin.com/in/taylor-smith",
       availability: [
         { date: "Apr 22, 2025", slots: ["10:00 AM", "2:00 PM", "4:00 PM"] },
         { date: "Apr 23, 2025", slots: ["11:00 AM", "3:00 PM"] },
@@ -239,9 +244,12 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
       id: "2",
       name: "Jordan Lee", 
       role: "Engineering Manager",
+      company: "Microsoft",
       expertise: ["System Design", "Career Growth"],
       rating: 4.8,
       reviews: 24,
+      bio: "Engineering manager with experience leading teams of 20+ engineers. Previously worked at Amazon and Facebook. Expert in system design and career development strategies.",
+      linkedIn: "linkedin.com/in/jordan-lee-tech",
       availability: [
         { date: "Apr 22, 2025", slots: ["9:00 AM", "1:00 PM"] },
         { date: "Apr 24, 2025", slots: ["2:00 PM", "5:00 PM"] },
@@ -252,9 +260,12 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
       id: "3",
       name: "Morgan Jones",
       role: "Technical Recruiter",
+      company: "Apple",
       expertise: ["Resume Review", "Interview Prep"],
       rating: 4.7,
       reviews: 18,
+      bio: "Technical recruiter with 5+ years of experience hiring for top tech companies. Expert in resume optimization and interview preparation with insider knowledge of hiring processes.",
+      linkedIn: "linkedin.com/in/morgan-jones-recruiter",
       availability: [
         { date: "Apr 23, 2025", slots: ["10:00 AM", "1:00 PM", "4:00 PM"] },
         { date: "Apr 25, 2025", slots: ["11:00 AM", "3:00 PM"] },
@@ -281,6 +292,11 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
     setSelectedTimeSlot(null);
   };
   
+  const handleViewProfile = (mentor) => {
+    setCurrentMentor(mentor);
+    setViewMentorDialog(true);
+  };
+  
   // Fix the filtering logic to properly filter mentors based on selected session type
   const filteredMentors = selectedType 
     ? availableMentors.filter(mentor => {
@@ -296,143 +312,241 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
   };
   
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-auto">
-        <DialogHeader>
-          <DialogTitle>Available Sessions</DialogTitle>
-          <DialogDescription>
-            Browse available mentors and their open time slots
-          </DialogDescription>
-        </DialogHeader>
-        
-        <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="mentors" className="mt-4">
-          <TabsList className="mb-4">
-            <TabsTrigger value="mentors">Browse Mentors</TabsTrigger>
-            <TabsTrigger value="sessions">Session Types</TabsTrigger>
-          </TabsList>
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle>Available Sessions</DialogTitle>
+            <DialogDescription>
+              Browse available mentors and their open time slots
+            </DialogDescription>
+          </DialogHeader>
           
-          <TabsContent value="mentors" className="space-y-6">
-            {filteredMentors.length > 0 ? (
-              filteredMentors.map((mentor) => (
-                <Card key={mentor.id} className="overflow-hidden">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row gap-4">
-                      <div className="md:w-1/3">
-                        <div className="flex items-center space-x-4 mb-4">
-                          <Avatar className="h-12 w-12">
-                            <AvatarImage src="" />
-                            <AvatarFallback className="bg-mentor text-white">
-                              {mentor.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h3 className="font-medium">{mentor.name}</h3>
-                            <p className="text-sm text-muted-foreground">{mentor.role}</p>
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-1">
-                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            <span className="text-sm">{mentor.rating} ({mentor.reviews} reviews)</span>
-                          </div>
-                          <div>
-                            <h4 className="text-sm font-medium mb-1">Expertise</h4>
-                            <div className="flex flex-wrap gap-1">
-                              {mentor.expertise.map((skill, i) => (
-                                <Badge key={i} variant="secondary" className="text-xs">{skill}</Badge>
-                              ))}
+          <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="mentors" className="mt-4">
+            <TabsList className="mb-4">
+              <TabsTrigger value="mentors">Browse Mentors</TabsTrigger>
+              <TabsTrigger value="sessions">Session Types</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="mentors" className="space-y-6">
+              {filteredMentors.length > 0 ? (
+                filteredMentors.map((mentor) => (
+                  <Card key={mentor.id} className="overflow-hidden">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col md:flex-row gap-4">
+                        <div className="md:w-1/3">
+                          <div className="flex items-center space-x-4 mb-4">
+                            <Avatar className="h-12 w-12">
+                              <AvatarImage src="" />
+                              <AvatarFallback className="bg-mentor text-white">
+                                {mentor.name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h3 className="font-medium">{mentor.name}</h3>
+                              <p className="text-sm text-muted-foreground">{mentor.role} at {mentor.company}</p>
+                              {mentor.linkedIn && (
+                                <a 
+                                  href={`https://${mentor.linkedIn}`} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="flex items-center text-[#0A66C2] hover:text-[#0A66C2]/80 text-sm mt-1 group"
+                                >
+                                  <Linkedin className="h-4 w-4 mr-1 fill-[#0A66C2]" />
+                                  <span className="underline group-hover:no-underline">LinkedIn</span>
+                                </a>
+                              )}
                             </div>
                           </div>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="w-full mt-2"
-                            onClick={() => setSelectedMentor(mentor.id === selectedMentor ? null : mentor.id)}
-                          >
-                            {mentor.id === selectedMentor ? "Hide Availability" : "View Availability"}
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      {mentor.id === selectedMentor && (
-                        <div className="md:w-2/3 border-l pl-4">
-                          <h4 className="font-medium mb-3">Available Time Slots</h4>
-                          <div className="space-y-4">
-                            {mentor.availability.map((day, dayIndex) => (
-                              <div key={dayIndex}>
-                                <h5 className="text-sm font-medium mb-2">{day.date}</h5>
-                                <div className="grid grid-cols-3 gap-2">
-                                  {day.slots.map((slot, slotIndex) => (
-                                    <Button 
-                                      key={slotIndex} 
-                                      variant={selectedTimeSlot === `${mentor.id}-${day.date}-${slot}` ? "default" : "outline"}
-                                      size="sm" 
-                                      className="text-xs"
-                                      onClick={() => setSelectedTimeSlot(`${mentor.id}-${day.date}-${slot}`)}
-                                    >
-                                      {slot}
-                                    </Button>
-                                  ))}
-                                </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-1">
+                              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                              <span className="text-sm">{mentor.rating} ({mentor.reviews} reviews)</span>
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-medium mb-1">Expertise</h4>
+                              <div className="flex flex-wrap gap-1">
+                                {mentor.expertise.map((skill, i) => (
+                                  <Badge key={i} variant="secondary" className="text-xs">{skill}</Badge>
+                                ))}
                               </div>
-                            ))}
-                          </div>
-                          <div className="mt-4 pt-4 border-t">
-                            <Button 
-                              className="w-full" 
-                              disabled={!selectedTimeSlot}
-                              onClick={handleBookSession}
-                            >
-                              Book Session
-                            </Button>
+                            </div>
+                            <div className="flex gap-2 mt-3">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="flex-1"
+                                onClick={() => handleViewProfile(mentor)}
+                              >
+                                View Profile
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="flex-1"
+                                onClick={() => setSelectedMentor(mentor.id === selectedMentor ? null : mentor.id)}
+                              >
+                                {mentor.id === selectedMentor ? "Hide Availability" : "View Availability"}
+                              </Button>
+                            </div>
                           </div>
                         </div>
-                      )}
-                    </div>
+                        
+                        {mentor.id === selectedMentor && (
+                          <div className="md:w-2/3 border-l pl-4">
+                            <h4 className="font-medium mb-3">Available Time Slots</h4>
+                            <div className="space-y-4">
+                              {mentor.availability.map((day, dayIndex) => (
+                                <div key={dayIndex}>
+                                  <h5 className="text-sm font-medium mb-2">{day.date}</h5>
+                                  <div className="grid grid-cols-3 gap-2">
+                                    {day.slots.map((slot, slotIndex) => (
+                                      <Button 
+                                        key={slotIndex} 
+                                        variant={selectedTimeSlot === `${mentor.id}-${day.date}-${slot}` ? "default" : "outline"}
+                                        size="sm" 
+                                        className="text-xs"
+                                        onClick={() => setSelectedTimeSlot(`${mentor.id}-${day.date}-${slot}`)}
+                                      >
+                                        {slot}
+                                      </Button>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="mt-4 pt-4 border-t">
+                              <Button 
+                                className="w-full" 
+                                disabled={!selectedTimeSlot}
+                                onClick={handleBookSession}
+                              >
+                                Book Session
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <p className="text-muted-foreground py-4">No mentors available for the selected session type</p>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setSelectedType(null)}
+                    >
+                      Clear Selection
+                    </Button>
                   </CardContent>
                 </Card>
-              ))
-            ) : (
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <p className="text-muted-foreground py-4">No mentors available for the selected session type</p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setSelectedType(null)}
+              )}
+            </TabsContent>
+            
+            <TabsContent value="sessions" className="space-y-4">
+              {sessionTypes.map((type) => (
+                <Card 
+                  key={type.id} 
+                  className={`${selectedType === type.id ? "border-mentor" : ""} cursor-pointer transition-all`}
+                  onClick={() => setSelectedType(type.id === selectedType ? null : type.id)}
+                >
+                  <CardHeader>
+                    <CardTitle>{type.name}</CardTitle>
+                    <CardDescription>{type.duration} minutes</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm mb-4">{type.description}</p>
+                    <Button 
+                      className="w-full"
+                      onClick={(e) => handleFindMentors(e, type.id)}
+                    >
+                      Find Available Mentors
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      {/* Mentor Profile Dialog */}
+      <Dialog open={viewMentorDialog} onOpenChange={setViewMentorDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Mentor Profile</DialogTitle>
+            <DialogDescription>
+              Learn more about this mentor's experience and expertise
+            </DialogDescription>
+          </DialogHeader>
+          {currentMentor && (
+            <div className="space-y-4 py-4">
+              <div className="flex items-center space-x-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src="" />
+                  <AvatarFallback className="bg-mentor text-white text-xl">
+                    {currentMentor.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="font-medium">{currentMentor.name}</h3>
+                  <p className="text-sm text-muted-foreground">{currentMentor.role} at {currentMentor.company}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-1">
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <span className="text-sm ml-1">{currentMentor.rating} ({currentMentor.reviews} reviews)</span>
+                </div>
+                
+                {currentMentor.linkedIn && (
+                  <a 
+                    href={`https://${currentMentor.linkedIn}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 bg-[#0A66C2] hover:bg-[#0A66C2]/90 text-white px-3 py-1.5 rounded-md transition-colors"
                   >
-                    Clear Selection
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="sessions" className="space-y-4">
-            {sessionTypes.map((type) => (
-              <Card 
-                key={type.id} 
-                className={`${selectedType === type.id ? "border-mentor" : ""} cursor-pointer transition-all`}
-                onClick={() => setSelectedType(type.id === selectedType ? null : type.id)}
+                    <Linkedin className="h-4 w-4 fill-white" />
+                    <span className="text-sm">LinkedIn</span>
+                  </a>
+                )}
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium mb-1">Expertise</h4>
+                <div className="flex flex-wrap gap-1">
+                  {currentMentor.expertise.map((skill, i) => (
+                    <Badge key={i} variant="secondary">{skill}</Badge>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium mb-1">About</h4>
+                <p className="text-sm">{currentMentor.bio}</p>
+              </div>
+              
+              <Button 
+                className="w-full mt-4"
+                onClick={() => {
+                  setViewMentorDialog(false);
+                  setSelectedMentor(currentMentor.id);
+                }}
               >
-                <CardHeader>
-                  <CardTitle>{type.name}</CardTitle>
-                  <CardDescription>{type.duration} minutes</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm mb-4">{type.description}</p>
-                  <Button 
-                    className="w-full"
-                    onClick={(e) => handleFindMentors(e, type.id)}
-                  >
-                    Find Available Mentors
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </TabsContent>
-        </Tabs>
-      </DialogContent>
-    </Dialog>
+                View Availability & Book
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
