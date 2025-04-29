@@ -3,9 +3,10 @@ import React from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, LineChart } from "@/components/ui/chart";
-import { Users, CalendarDays, FileEdit, DollarSign, UserPlus, Building, BookOpen } from "lucide-react";
+import { Users, CalendarDays, FileEdit, IndianRupee, UserPlus, Building, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { formatIndianRupee } from "@/lib/utils";
 
 const AdminDashboard = () => {
   // Sample stats data
@@ -16,7 +17,7 @@ const AdminDashboard = () => {
     { label: "Feedback Forms", value: 12, icon: FileEdit, color: "text-amber-500" },
     { label: "New Users (Week)", value: 28, icon: UserPlus, color: "text-lime-500" },
     { label: "Session Types", value: 8, icon: BookOpen, color: "text-cyan-500" },
-    { label: "Pending Payouts", value: "$2,480", icon: DollarSign, color: "text-admin" },
+    { label: "Pending Payouts", value: formatIndianRupee(2480), icon: IndianRupee, color: "text-admin" },
   ];
   
   // Sample session data by type
@@ -176,7 +177,7 @@ const AdminDashboard = () => {
               </Link>
               <Link to="/admin/payouts">
                 <Button variant="outline" className="w-full justify-start">
-                  <DollarSign className="mr-2 h-4 w-4" />
+                  <IndianRupee className="mr-2 h-4 w-4" />
                   Process Payouts
                 </Button>
               </Link>
@@ -195,7 +196,7 @@ const AdminDashboard = () => {
                 { time: "4 hours ago", event: "New session booked: Career Guidance with Alex Johnson" },
                 { time: "Yesterday", event: "Feedback submitted for Resume Review session" },
                 { time: "Yesterday", event: "New student registration: Casey Kim" },
-                { time: "2 days ago", event: "Payout processed: $180 to Taylor Smith" }
+                { time: "2 days ago", event: "Payout processed: ₹180 to Taylor Smith" }
               ].map((activity, index) => (
                 <div key={index} className="flex items-start">
                   <div className="w-2 h-2 mt-2 rounded-full bg-primary mr-3"></div>

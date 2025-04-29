@@ -75,8 +75,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
       <Sidebar>
         <div className="p-4 border-b">
           <div className="flex flex-col items-center space-y-2">
-            <div className="w-32 h-auto mb-2">
-              <img src="/mesa-logo.png" alt="Mesa School of Business" className="w-full h-auto" />
+            <div className="w-32 h-auto mb-2 flex justify-center">
+              <img 
+                src="/mesa-logo.png" 
+                alt="Mesa School of Business" 
+                className="max-w-full max-h-16 object-contain"
+              />
             </div>
             <div className="text-sm font-medium">Welcome, {displayName}</div>
             <div className={`role-badge role-badge-${user.role}`}>
