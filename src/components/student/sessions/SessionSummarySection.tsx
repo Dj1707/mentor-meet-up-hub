@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { SessionStatsSummary } from "./SessionStatsSummary";
 import { SessionTypeBreakdown } from "./SessionTypeBreakdown";
 import { RecentFeedbackList } from "./RecentFeedbackList";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { SessionFeedbackSummary } from "@/types";
+import { SessionFeedbackSummary } from "@/types/feedback.types";
 
 // Sample data type for feedback items
 export interface FeedbackItemProps {
