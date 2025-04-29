@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,8 +19,10 @@ import {
   getTemplateVariables,
   getGupshupTemplateId 
 } from "@/utils/whatsappTemplates";
-import { Loader2, CheckCircle, XCircle } from "lucide-react";
+import { sendMessage } from "@/utils/whatsappApi";
+import { Loader2, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const GUPSHUP_API_KEY = "M5XfeLmmEQSuCg3kWIHFoIKAZhOpHEn0nhH2h3spal4";
 
@@ -34,6 +37,7 @@ const WhatsappConfig = () => {
   const [reminderLogs, setReminderLogs] = useState<any[]>([]);
   const [recipientType, setRecipientType] = useState<"STUDENT" | "MENTOR">("STUDENT");
   const [sendingDummy, setSendingDummy] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   // Load the current config when the component mounts
   useEffect(() => {
@@ -75,6 +79,7 @@ const WhatsappConfig = () => {
   const handleTestMessage = async () => {
     setTesting(true);
     setTestResult(null);
+    setErrorMessage(null);
     
     try {
       // Get template variables for preview
@@ -99,23 +104,26 @@ const WhatsappConfig = () => {
       console.log("Test message preview:", previewMessage);
       console.log("Using template ID:", getGupshupTemplateId("SESSION_REMINDER", recipientType));
       
-      // Simulate API call to send a test message
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Simulate sending a message using our API utility
+      const response = await sendMessage({
+        phone: phoneNumber.startsWith("+") ? phoneNumber.substring(1) : phoneNumber,
+        templateId: getGupshupTemplateId("SESSION_REMINDER", recipientType),
+        templateParams: Object.values(testValues),
+        apiKey: apiKey
+      });
       
-      // In a real implementation, this would call the WhatsApp service
-      // For now, let's simulate a success if API key is present
-      if (apiKey) {
+      if (response.success) {
         setTestResult("success");
-        
         toast({
           title: "Test Message Sent",
           description: "A test message has been sent to the provided number."
         });
       } else {
-        throw new Error("API key is required");
+        throw new Error(response.error || "Failed to send test message");
       }
     } catch (error) {
       setTestResult("error");
+      setErrorMessage(error instanceof Error ? error.message : "Unknown error occurred");
       toast({
         title: "Test Failed",
         description: "Failed to send test message. Please check your configuration.",
@@ -129,6 +137,7 @@ const WhatsappConfig = () => {
   const handleSendDummyMessage = async () => {
     setSendingDummy(true);
     setTestResult(null);
+    setErrorMessage(null);
     
     try {
       // Create dummy data for the template
@@ -161,6 +170,7 @@ const WhatsappConfig = () => {
     } catch (error) {
       console.error("Error sending dummy message:", error);
       setTestResult("error");
+      setErrorMessage(error instanceof Error ? error.message : "Unknown error occurred");
       toast({
         title: "Test Failed",
         description: "Failed to send dummy WhatsApp message. Please check the console for details.",
@@ -225,6 +235,14 @@ const WhatsappConfig = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {errorMessage && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{errorMessage}</AlertDescription>
+              </Alert>
+            )}
+            
             <div className="space-y-2">
               <Label htmlFor="test-phone">Phone Number</Label>
               <Input
@@ -274,6 +292,14 @@ const WhatsappConfig = () => {
               </div>
               <p className="text-sm text-muted-foreground">
                 Template ID: {getGupshupTemplateId("SESSION_REMINDER", recipientType)}
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-yellow-600">
+                <AlertCircle className="inline-block h-4 w-4 mr-1" />
+                This is a simulated implementation that doesn't actually send WhatsApp messages
+                due to browser CORS restrictions. In production, you would need a backend proxy.
               </p>
             </div>
             
