@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,9 +9,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Check, Edit, FileText, Pencil, Plus, PlusCircle, Trash } from "lucide-react";
+import { Check, Edit, FileText, Pencil, Plus, PlusCircle, Trash, Download } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { FeedbackTemplate, FeedbackQuestion } from "@/types";
+import { FeedbackTemplate, FeedbackQuestion, SessionType } from "@/types";
+import DownloadFeedbackDialog from "@/components/admin/feedback/DownloadFeedbackDialog";
 
 const ManageFeedback = () => {
   const { toast } = useToast();
@@ -130,7 +130,44 @@ const ManageFeedback = () => {
   ]);
   
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [downloadDialogOpen, setDownloadDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<FeedbackTemplate | null>(null);
+  
+  // Sample session types (in a real app, these would come from an API or store)
+  const sessionTypes: SessionType[] = [
+    { 
+      id: "1", 
+      name: "Career Guidance", 
+      description: "Get professional advice on career paths and opportunities",
+      duration: 45,
+      price: 1500,
+      color: "#7c3aed"
+    },
+    { 
+      id: "2", 
+      name: "Technical Interview Prep", 
+      description: "Practice technical interview questions",
+      duration: 60,
+      price: 2000,
+      color: "#0ea5e9" 
+    },
+    { 
+      id: "3", 
+      name: "Resume Review", 
+      description: "Get your resume reviewed by a professional",
+      duration: 30,
+      price: 1000,
+      color: "#f97316" 
+    },
+    { 
+      id: "4", 
+      name: "Job Search Strategy", 
+      description: "Develop a personalized job search strategy",
+      duration: 45,
+      price: 1500,
+      color: "#10b981" 
+    }
+  ];
   
   const handleDeleteTemplate = (id: string) => {
     setTemplates(templates.filter(template => template.id !== id));
@@ -189,10 +226,16 @@ const ManageFeedback = () => {
               Create and manage feedback forms for different session types
             </CardDescription>
           </div>
-          <Button onClick={handleCreateTemplate}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Create Template
-          </Button>
+          <div className="space-x-2">
+            <Button onClick={handleCreateTemplate}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create Template
+            </Button>
+            <Button variant="outline" onClick={() => setDownloadDialogOpen(true)}>
+              <Download className="mr-2 h-4 w-4" />
+              Download Feedback
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border">
@@ -255,6 +298,12 @@ const ManageFeedback = () => {
         template={editingTemplate}
         onSave={handleSaveTemplate}
         onCancel={handleCloseDialog}
+      />
+      
+      <DownloadFeedbackDialog 
+        open={downloadDialogOpen}
+        onOpenChange={setDownloadDialogOpen}
+        sessionTypes={sessionTypes}
       />
       
       <Card>

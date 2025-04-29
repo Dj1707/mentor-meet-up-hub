@@ -30,4 +30,13 @@ export interface MentorRate {
   mentorId: string;
   sessionTypeId: string;
   rate: number;
+  isEligible: boolean;
+}
+
+export interface MentorSessionEligibility {
+  mentorId: string;
+  eligibleSessionTypes: {
+    sessionTypeId: string;
+    rate: number;
+  }[];
 }

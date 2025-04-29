@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,8 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, Search, Edit, Trash, UserCheck, UserX } from "lucide-react";
+import { PlusCircle, Search, Edit, Trash, UserCheck, UserX, Settings } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import MentorSessionRatesDialog from "@/components/admin/mentors/MentorSessionRatesDialog";
+import { MentorRate } from "@/types";
 
 interface Mentor {
   id: string;
@@ -75,6 +76,32 @@ const ManageMentors = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [tab, setTab] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [sessionRatesDialogOpen, setSessionRatesDialogOpen] = useState(false);
+  const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
+  
+  // Sample session types (in a real app, these would come from an API or store)
+  const sessionTypes = [
+    { id: "1", name: "Career Guidance", price: 1500, color: "#7c3aed" },
+    { id: "2", name: "Technical Interview Prep", price: 2000, color: "#0ea5e9" },
+    { id: "3", name: "Resume Review", price: 1000, color: "#f97316" },
+    { id: "4", name: "Job Search Strategy", price: 1500, color: "#10b981" }
+  ];
+  
+  // Sample mentor rates (in a real app, these would come from an API)
+  const [mentorRates, setMentorRates] = useState<Record<string, MentorRate[]>>({
+    m1: [
+      { mentorId: "m1", sessionTypeId: "1", rate: 1500, isEligible: true },
+      { mentorId: "m1", sessionTypeId: "2", rate: 2000, isEligible: true },
+      { mentorId: "m1", sessionTypeId: "3", rate: 1000, isEligible: false },
+      { mentorId: "m1", sessionTypeId: "4", rate: 1500, isEligible: true },
+    ],
+    m2: [
+      { mentorId: "m2", sessionTypeId: "1", rate: 1700, isEligible: true },
+      { mentorId: "m2", sessionTypeId: "2", rate: 2200, isEligible: true },
+      { mentorId: "m2", sessionTypeId: "3", rate: 1200, isEligible: true },
+      { mentorId: "m2", sessionTypeId: "4", rate: 1600, isEligible: false },
+    ]
+  });
   
   const handleStatusChange = (mentorId: string, newStatus: "active" | "pending" | "inactive") => {
     setMentors(mentors.map(mentor => 
@@ -96,6 +123,25 @@ const ManageMentors = () => {
     toast({
       title: "Mentor Removed",
       description: `${mentor?.name} has been removed from the platform.`
+    });
+  };
+  
+  const handleOpenSessionRatesDialog = (mentor: Mentor) => {
+    setSelectedMentor(mentor);
+    setSessionRatesDialogOpen(true);
+  };
+  
+  const handleSaveSessionRates = (rates: MentorRate[]) => {
+    if (!selectedMentor) return;
+    
+    setMentorRates(prev => ({
+      ...prev,
+      [selectedMentor.id]: rates
+    }));
+    
+    toast({
+      title: "Session rates updated",
+      description: `Updated session rates for ${selectedMentor.name}`
     });
   };
   
@@ -151,6 +197,7 @@ const ManageMentors = () => {
                 mentors={filteredMentors}
                 onStatusChange={handleStatusChange}
                 onDelete={handleDelete}
+                onManageRates={handleOpenSessionRatesDialog}
               />
             </TabsContent>
             <TabsContent value="active" className="m-0">
@@ -158,6 +205,7 @@ const ManageMentors = () => {
                 mentors={filteredMentors}
                 onStatusChange={handleStatusChange}
                 onDelete={handleDelete}
+                onManageRates={handleOpenSessionRatesDialog}
               />
             </TabsContent>
             <TabsContent value="pending" className="m-0">
@@ -165,6 +213,7 @@ const ManageMentors = () => {
                 mentors={filteredMentors}
                 onStatusChange={handleStatusChange}
                 onDelete={handleDelete}
+                onManageRates={handleOpenSessionRatesDialog}
               />
             </TabsContent>
             <TabsContent value="inactive" className="m-0">
@@ -172,6 +221,7 @@ const ManageMentors = () => {
                 mentors={filteredMentors}
                 onStatusChange={handleStatusChange}
                 onDelete={handleDelete}
+                onManageRates={handleOpenSessionRatesDialog}
               />
             </TabsContent>
           </CardContent>
@@ -214,6 +264,18 @@ const ManageMentors = () => {
           </div>
         </DialogContent>
       </Dialog>
+      
+      {selectedMentor && (
+        <MentorSessionRatesDialog
+          open={sessionRatesDialogOpen}
+          onOpenChange={setSessionRatesDialogOpen}
+          mentorId={selectedMentor.id}
+          mentorName={selectedMentor.name}
+          initialRates={mentorRates[selectedMentor.id] || []}
+          sessionTypes={sessionTypes}
+          onSave={handleSaveSessionRates}
+        />
+      )}
     </MainLayout>
   );
 };
@@ -222,9 +284,10 @@ interface MentorTableProps {
   mentors: Mentor[];
   onStatusChange: (mentorId: string, status: "active" | "pending" | "inactive") => void;
   onDelete: (mentorId: string) => void;
+  onManageRates: (mentor: Mentor) => void;
 }
 
-const MentorTable = ({ mentors, onStatusChange, onDelete }: MentorTableProps) => {
+const MentorTable = ({ mentors, onStatusChange, onDelete, onManageRates }: MentorTableProps) => {
   return (
     <div className="rounded-md border">
       <Table>
@@ -296,6 +359,14 @@ const MentorTable = ({ mentors, onStatusChange, onDelete }: MentorTableProps) =>
                         <UserX className="h-4 w-4 text-amber-500" />
                       </Button>
                     )}
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => onManageRates(mentor)}
+                      title="Manage Session Rates"
+                    >
+                      <Settings className="h-4 w-4 text-blue-500" />
+                    </Button>
                     <Button
                       variant="outline"
                       size="icon"
