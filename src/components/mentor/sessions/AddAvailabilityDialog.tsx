@@ -7,6 +7,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 
+// Session types data - matches our updated requirements
+const sessionTypes = [
+  { id: "1", name: "Weekly Mock Interview", duration: 60, price: 40 },
+  { id: "2", name: "Behavioural 1:1", duration: 45, price: 35 },
+  { id: "3", name: "Data 1:1", duration: 45, price: 35 },
+  { id: "4", name: "Problem Solving 1:1", duration: 60, price: 40 },
+  { id: "5", name: "Portfolio Review 1:1", duration: 45, price: 35 },
+  { id: "6", name: "Resume Review 1:1", duration: 30, price: 25 },
+  { id: "7", name: "Collateral Review 1:1", duration: 45, price: 30 },
+  { id: "8", name: "Office Hour", duration: 30, price: 25 },
+  { id: "9", name: "Figma 1:1", duration: 45, price: 35 },
+  { id: "10", name: "Mixpanel 1:1", duration: 45, price: 35 },
+  { id: "11", name: "Notion 1:1", duration: 45, price: 35 },
+  { id: "12", name: "Product Overview 1:1", duration: 60, price: 40 },
+  { id: "13", name: "SQL 1:1", duration: 45, price: 35 },
+];
+
 interface AddAvailabilityDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -19,13 +36,6 @@ export const AddAvailabilityDialog = ({ open, setOpen }: AddAvailabilityDialogPr
   const [endTime, setEndTime] = useState("");
   const [selectedSessionTypes, setSelectedSessionTypes] = useState<string[]>([]);
   const [recurringSchedule, setRecurringSchedule] = useState("none");
-  
-  const sessionTypes = [
-    { id: "1", name: "Career Guidance", duration: 45 },
-    { id: "2", name: "Technical Interview Prep", duration: 60 },
-    { id: "3", name: "Resume Review", duration: 30 },
-    { id: "4", name: "Job Search Strategy", duration: 45 },
-  ];
   
   const toggleSessionType = (id: string) => {
     setSelectedSessionTypes(prev => 
@@ -105,7 +115,7 @@ export const AddAvailabilityDialog = ({ open, setOpen }: AddAvailabilityDialogPr
           
           <div className="space-y-2">
             <Label>Session Types *</Label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
               {sessionTypes.map((type) => (
                 <div key={type.id} className="flex items-center space-x-2">
                   <input 
