@@ -3,8 +3,8 @@ import { toast } from "@/hooks/use-toast";
 
 // OAuth 2.0 configuration
 const GOOGLE_AUTH_CONFIG = {
-  clientId: process.env.GOOGLE_CLIENT_ID || '',
-  apiKey: process.env.GOOGLE_API_KEY || '',
+  clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
+  apiKey: import.meta.env.VITE_GOOGLE_API_KEY || '',
   scope: 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events',
   discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
 };

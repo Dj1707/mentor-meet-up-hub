@@ -16,3 +16,11 @@ export * from './action.types';
 export * from './payment.types';
 export * from './reminder.types';
 export * from './calendar.types';
+
+// Export a SessionStatus type to fix the BookSessionDialog type error
+export type SessionStatus = 
+  | 'scheduled' 
+  | 'completed' 
+  | 'cancelled' 
+  | 'no-show' 
+  | 'in-progress';
