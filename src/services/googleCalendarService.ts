@@ -3,6 +3,7 @@ import { toast } from "@/hooks/use-toast";
 import googleAuthService from "./googleAuthService";
 import { GoogleCalendarEvent, GoogleCalendarAttendee } from "@/types/calendar.types";
 import { Session } from "@/types/session.types";
+import userService from "./userService";
 
 /**
  * Service to handle Google Calendar operations
@@ -30,9 +31,13 @@ class GoogleCalendarService {
       const startTime = new Date(session.startTime);
       const endTime = new Date(session.endTime);
       
+      // Get mentor user info to use for title
+      const mentorUser = userService.getUserById(session.mentorId);
+      const mentorName = mentorUser?.mentorProfile?.name || mentorEmail.split('@')[0];
+      
       // Format event title
       const sessionType = session.sessionType?.name || "Mentoring Session";
-      const eventTitle = `${sessionType} with ${session.mentorName || mentorEmail.split('@')[0]}`;
+      const eventTitle = `${sessionType} with ${mentorName}`;
       
       // Prepare attendees
       const attendees: GoogleCalendarAttendee[] = [

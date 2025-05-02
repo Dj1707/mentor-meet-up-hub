@@ -22,7 +22,7 @@ interface MentorDisplayData {
   expertise: string[];
   pastSectors: string[];
   sessionTypeIds: string[];
-  availability?: { date: string, slots: string[] }[];
+  availability: { date: string, slots: string[] }[]; // Made this required
 }
 
 const StudentMentors = () => {
@@ -59,7 +59,18 @@ const StudentMentors = () => {
         sessionCount: profile.sessionCount || 0,
         expertise: profile.expertise || ["Career Guidance"],
         pastSectors: profile.pastSectors || [],
-        sessionTypeIds: profile.sessionTypeIds || []
+        sessionTypeIds: profile.sessionTypeIds || [],
+        // Ensure availability is always an array with at least one default item
+        availability: profile.availability || [
+          {
+            date: "2025-05-10",
+            slots: ["10:00 AM", "2:00 PM", "4:00 PM"]
+          },
+          {
+            date: "2025-05-11", 
+            slots: ["11:00 AM", "3:00 PM"]
+          }
+        ]
       };
     });
     

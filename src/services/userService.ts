@@ -95,7 +95,17 @@ class UserService {
             rating: 4.8,
             onboardingStatus: "active",
             expertise: ["Career Guidance", "Technical Interviews", "Resume Review"],
-            sessionTypeIds: ["1", "2", "6"]
+            sessionTypeIds: ["1", "2", "6"],
+            availability: [
+              {
+                date: "2025-05-10",
+                slots: ["10:00 AM", "2:00 PM", "4:00 PM"]
+              },
+              {
+                date: "2025-05-11", 
+                slots: ["11:00 AM", "3:00 PM"]
+              }
+            ]
           }
         },
         {
@@ -117,7 +127,17 @@ class UserService {
             rating: 4.7,
             onboardingStatus: "active",
             expertise: ["Product Management", "Career Transition", "Interview Prep"],
-            sessionTypeIds: ["2", "4", "8"]
+            sessionTypeIds: ["2", "4", "8"],
+            availability: [
+              {
+                date: "2025-05-15",
+                slots: ["9:00 AM", "1:00 PM", "5:00 PM"]
+              },
+              {
+                date: "2025-05-16", 
+                slots: ["10:00 AM", "2:00 PM"]
+              }
+            ]
           }
         },
         {
@@ -139,7 +159,17 @@ class UserService {
             rating: 4.8,
             onboardingStatus: "active",
             expertise: ["Leadership Development", "Career Growth", "Technical Management"],
-            sessionTypeIds: ["4", "5", "12"]
+            sessionTypeIds: ["4", "5", "12"],
+            availability: [
+              {
+                date: "2025-05-12",
+                slots: ["11:00 AM", "3:00 PM", "5:00 PM"]
+              },
+              {
+                date: "2025-05-13", 
+                slots: ["9:00 AM", "1:00 PM"]
+              }
+            ]
           }
         },
         {

@@ -33,6 +33,7 @@ export interface MentorProfile {
     date: string;
     slots: string[];
   }[];
+  sessionTypeIds?: string[]; // Added this property
 }
 
 export interface MentorRate {
