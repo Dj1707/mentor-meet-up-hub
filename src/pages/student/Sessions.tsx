@@ -4,7 +4,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, Filter, Plus, Search, Star, Video, MessageCircle } from "lucide-react";
+import { Calendar, Clock, Filter, Plus, Search, Star, Video, MessageCircle, FileText, FileSymlink, ExternalLink, Link } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,23 +14,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SessionSummarySection, FeedbackItemProps } from "@/components/student/sessions/SessionSummarySection";
+import { SessionSubmissionUpload } from "@/components/student/sessions/SessionSubmissionUpload";
+import { SessionType, SubmissionType, SessionSubmission } from "@/types";
 
-const SessionCard = ({ 
-  title, 
-  date, 
-  time, 
-  mentor,
-  mentorImage,
-  type,
-  status,
-  meetingLink,
-  feedbackReceived,
-  onJoin,
-  onReschedule,
-  onCancel,
-  onLeaveFeedback,
-  onViewFeedback
-}: { 
+interface SessionCardProps {
+  id: string;
   title: string; 
   date: string; 
   time: string; 
@@ -40,11 +28,37 @@ const SessionCard = ({
   status: "scheduled" | "completed" | "cancelled";
   meetingLink?: string;
   feedbackReceived?: boolean;
+  sessionTypeId: string;
+  sessionType?: SessionType;
+  submission?: Partial<SessionSubmission>;
   onJoin: () => void;
   onReschedule: () => void;
   onCancel: () => void;
   onLeaveFeedback: () => void;
   onViewFeedback: () => void;
+  onManageSubmission?: () => void;
+}
+
+const SessionCard: React.FC<SessionCardProps> = ({ 
+  id,
+  title, 
+  date, 
+  time, 
+  mentor,
+  mentorImage,
+  type,
+  status,
+  meetingLink,
+  feedbackReceived,
+  sessionTypeId,
+  sessionType,
+  submission,
+  onJoin,
+  onReschedule,
+  onCancel,
+  onLeaveFeedback,
+  onViewFeedback,
+  onManageSubmission
 }) => {
   let statusClass = "";
   let statusText = "";
@@ -63,6 +77,24 @@ const SessionCard = ({
       statusText = "Cancelled";
       break;
   }
+  
+  const needsSubmission = sessionType?.submissionType && sessionType.submissionType !== "none";
+  const hasSubmission = !!submission;
+  
+  const getSubmissionIcon = (type?: SubmissionType) => {
+    switch (type) {
+      case "resume":
+        return <FileText className="h-4 w-4" />;
+      case "portfolio":
+        return <ExternalLink className="h-4 w-4" />;
+      case "collateral":
+        return <FileSymlink className="h-4 w-4" />;
+      case "link":
+        return <Link className="h-4 w-4" />;
+      default:
+        return null;
+    }
+  };
   
   return (
     <Card>
@@ -89,16 +121,48 @@ const SessionCard = ({
           <span>Mentor: {mentor}</span>
         </div>
         
-        {status === "scheduled" && meetingLink && (
-          <div className="p-3 bg-blue-50 rounded-md mb-4">
-            <div className="flex items-center gap-2 text-blue-800">
-              <Video className="h-4 w-4" />
-              <p className="font-medium">Meeting Link Available</p>
-            </div>
-            <p className="text-xs text-blue-800 mt-1">
-              Your meeting is scheduled for {date} at {time}
-            </p>
-          </div>
+        {status === "scheduled" && (
+          <>
+            {needsSubmission && (
+              <div className={`p-3 ${hasSubmission ? 'bg-green-50' : 'bg-blue-50'} rounded-md mb-4`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-blue-800">
+                    {getSubmissionIcon(sessionType?.submissionType)}
+                    {hasSubmission ? (
+                      <p className="font-medium">Submission Added</p>
+                    ) : (
+                      <p className="font-medium">Submission Required</p>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={hasSubmission ? "text-green-700" : "text-blue-700"}
+                    onClick={onManageSubmission}
+                  >
+                    {hasSubmission ? "Edit Submission" : "Add Submission"}
+                  </Button>
+                </div>
+                {!hasSubmission && (
+                  <p className="text-xs text-blue-800 mt-1">
+                    Please add your {sessionType?.submissionType} before the session
+                  </p>
+                )}
+              </div>
+            )}
+            
+            {meetingLink && (
+              <div className="p-3 bg-blue-50 rounded-md mb-4">
+                <div className="flex items-center gap-2 text-blue-800">
+                  <Video className="h-4 w-4" />
+                  <p className="font-medium">Meeting Link Available</p>
+                </div>
+                <p className="text-xs text-blue-800 mt-1">
+                  Your meeting is scheduled for {date} at {time}
+                </p>
+              </div>
+            )}
+          </>
         )}
         
         {status === "completed" && feedbackReceived && (
@@ -168,12 +232,48 @@ const BookSessionDialog = ({ open, setOpen }: { open: boolean; setOpen: (open: b
     { id: "3", name: "Morgan Jones", expertise: "Resume Review", image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2" },
   ];
   
-  const sessionTypes = [
-    { id: "1", name: "Career Guidance", duration: 45 },
-    { id: "2", name: "Technical Interview Prep", duration: 60 },
-    { id: "3", name: "Resume Review", duration: 30 },
-    { id: "4", name: "Job Search Strategy", duration: 45 },
+  // Updated session types with submission types
+  const sessionTypes: SessionType[] = [
+    { id: "1", name: "Weekly Mock Interview", description: "Practice interview scenarios", duration: 60, price: 40, color: "#7c3aed", submissionType: "none" },
+    { id: "2", name: "Behavioural 1:1", description: "Work on behavioral interview skills", duration: 45, price: 35, color: "#0ea5e9", submissionType: "none" },
+    { id: "3", name: "Data 1:1", description: "Review data analysis techniques", duration: 45, price: 35, color: "#f97316", submissionType: "link" },
+    { id: "4", name: "Problem Solving 1:1", description: "Tackle technical problems", duration: 60, price: 40, color: "#10b981", submissionType: "none" },
+    { id: "5", name: "Portfolio Review 1:1", description: "Get feedback on your portfolio", duration: 45, price: 35, color: "#6366f1", submissionType: "portfolio" },
+    { id: "6", name: "Resume Review 1:1", description: "Have your resume reviewed", duration: 30, price: 25, color: "#ec4899", submissionType: "resume" },
+    { id: "7", name: "Collateral Review 1:1", description: "Get feedback on materials", duration: 45, price: 30, color: "#f43f5e", submissionType: "collateral" }
   ];
+
+  const selectedSessionType = sessionTypes.find(type => type.id === sessionType);
+
+  const getSubmissionTypeText = (type?: SubmissionType) => {
+    switch (type) {
+      case "resume":
+        return "You'll need to upload your resume before the session.";
+      case "portfolio":
+        return "You'll need to share your portfolio link before the session.";
+      case "collateral":
+        return "You'll need to upload your materials before the session.";
+      case "link":
+        return "You'll need to share relevant links before the session.";
+      default:
+        return "";
+    }
+  };
+
+  const getSubmissionTypeIcon = (type?: SubmissionType) => {
+    switch (type) {
+      case "resume":
+        return <FileText className="h-4 w-4 text-blue-500" />;
+      case "portfolio":
+        return <ExternalLink className="h-4 w-4 text-purple-500" />;
+      case "collateral":
+        return <FileSymlink className="h-4 w-4 text-orange-500" />;
+      case "link":
+        return <Link className="h-4 w-4 text-green-500" />;
+      default:
+        return null;
+    }
+  };
   
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -200,6 +300,13 @@ const BookSessionDialog = ({ open, setOpen }: { open: boolean; setOpen: (open: b
                 >
                   <div className="font-medium">{type.name}</div>
                   <div className="text-sm text-muted-foreground">Duration: {type.duration} min</div>
+                  <div className="text-sm text-muted-foreground">Price: ₹{type.price}</div>
+                  {type.submissionType && type.submissionType !== "none" && (
+                    <div className="mt-2 flex items-center gap-2 text-sm">
+                      {getSubmissionTypeIcon(type.submissionType)}
+                      <span className="text-blue-600">{getSubmissionTypeText(type.submissionType)}</span>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -275,6 +382,61 @@ const BookSessionDialog = ({ open, setOpen }: { open: boolean; setOpen: (open: b
             </div>
           </div>
         )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const SubmissionDialog = ({ 
+  open, 
+  setOpen, 
+  sessionId, 
+  sessionType 
+}: { 
+  open: boolean; 
+  setOpen: (open: boolean) => void;
+  sessionId: string;
+  sessionType: SessionType;
+}) => {
+  const { toast } = useToast();
+  const [existingSubmission, setExistingSubmission] = useState<Partial<SessionSubmission>>();
+  
+  const handleSubmit = (data: {
+    submissionType: SubmissionType;
+    fileUrl?: string;
+    linkUrl?: string;
+    notes?: string;
+  }) => {
+    console.log("Submission data:", data);
+    // In a real app, this would be sent to the server
+    setExistingSubmission(data);
+    
+    toast({
+      title: "Submission saved",
+      description: "Your submission has been saved and will be available to your mentor."
+    });
+    
+    setOpen(false);
+  };
+  
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Session Submission</DialogTitle>
+          <DialogDescription>
+            Add materials for your mentor to review before the session
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="py-4">
+          <SessionSubmissionUpload 
+            sessionType={sessionType}
+            sessionId={sessionId}
+            onSubmit={handleSubmit}
+            existingSubmission={existingSubmission}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -469,29 +631,45 @@ const StudentSessions = () => {
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [viewFeedbackDialogOpen, setViewFeedbackDialogOpen] = useState(false);
   const [meetingDialogOpen, setMeetingDialogOpen] = useState(false);
+  const [submissionDialogOpen, setSubmissionDialogOpen] = useState(false);
+  const [currentSessionId, setCurrentSessionId] = useState("");
+  const [currentSessionType, setCurrentSessionType] = useState<SessionType | null>(null);
+  const [submissions, setSubmissions] = useState<Record<string, Partial<SessionSubmission>>>({});
   
-  // Sample session data
+  // Updated session types with submission requirements
+  const sessionTypes: SessionType[] = [
+    { id: "1", name: "Weekly Mock Interview", description: "Practice interview scenarios", duration: 60, price: 40, color: "#7c3aed", submissionType: "none" },
+    { id: "2", name: "Behavioural 1:1", description: "Work on behavioral interview skills", duration: 45, price: 35, color: "#0ea5e9", submissionType: "none" },
+    { id: "5", name: "Portfolio Review 1:1", description: "Get feedback on your portfolio", duration: 45, price: 35, color: "#6366f1", submissionType: "portfolio" },
+    { id: "6", name: "Resume Review 1:1", description: "Have your resume reviewed", duration: 30, price: 25, color: "#ec4899", submissionType: "resume" }
+  ];
+
+  // Sample session data - now with sessionTypeId and sessionType
   const upcomingSessions = [
     {
       id: "1",
-      title: "Career Guidance Session",
+      title: "Resume Review 1:1",
       date: "May 16, 2025",
       time: "3:00 PM - 3:45 PM",
       mentor: "Taylor Smith",
       mentorImage: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
-      type: "Career Guidance",
+      type: "Resume Review",
       status: "scheduled" as const,
-      meetingLink: "https://meet.google.com/example-link"
+      meetingLink: "https://meet.google.com/example-link",
+      sessionTypeId: "6",
+      sessionType: sessionTypes.find(s => s.id === "6")
     },
     {
       id: "2",
-      title: "Technical Interview Prep",
+      title: "Portfolio Review 1:1",
       date: "May 18, 2025",
       time: "11:00 AM - 12:00 PM",
       mentor: "Jordan Lee",
       mentorImage: "https://images.unsplash.com/photo-1560250097-0b93528c311a",
-      type: "Interview Prep",
-      status: "scheduled" as const
+      type: "Portfolio Review",
+      status: "scheduled" as const,
+      sessionTypeId: "5",
+      sessionType: sessionTypes.find(s => s.id === "5")
     }
   ];
   
@@ -505,17 +683,21 @@ const StudentSessions = () => {
       mentorImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2",
       type: "Resume Review",
       status: "completed" as const,
-      feedbackReceived: true
+      feedbackReceived: true,
+      sessionTypeId: "6",
+      sessionType: sessionTypes.find(s => s.id === "6")
     },
     {
       id: "4",
-      title: "Job Search Strategy",
+      title: "Behavioural 1:1",
       date: "May 3, 2025",
       time: "10:00 AM - 10:45 AM",
       mentor: "Taylor Smith",
       mentorImage: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
-      type: "Career Guidance",
-      status: "cancelled" as const
+      type: "Behavioural Interview",
+      status: "cancelled" as const,
+      sessionTypeId: "2",
+      sessionType: sessionTypes.find(s => s.id === "2")
     }
   ];
   
@@ -527,32 +709,32 @@ const StudentSessions = () => {
   };
 
   const feedbackByType = {
-    "Career Guidance": { count: 10, avg: 4.8 },
-    "Technical Interview": { count: 15, avg: 4.5 },
-    "Resume Review": { count: 8, avg: 4.9 }
+    "Resume Review": { count: 10, avg: 4.8 },
+    "Portfolio Review": { count: 15, avg: 4.5 },
+    "Behavioural Interview": { count: 8, avg: 4.9 }
   };
 
   const recentFeedback: FeedbackItemProps[] = [
     {
       id: "1",
-      sessionType: "Career Guidance",
+      sessionType: "Resume Review",
       studentName: "Alex Johnson",
       rating: 5,
-      comment: "Really helpful session! The mentor provided excellent guidance for my career transition."
+      comment: "Really helpful session! The mentor provided excellent guidance for my resume improvement."
     },
     {
       id: "2",
-      sessionType: "Technical Interview",
+      sessionType: "Portfolio Review",
       studentName: "Jamie Rivera",
       rating: 4,
-      comment: "Good technical advice, but would have liked more practical examples."
+      comment: "Good advice on my portfolio, but would have liked more specific design feedback."
     },
     {
       id: "3",
-      sessionType: "Resume Review",
+      sessionType: "Behavioural Interview",
       studentName: "Casey Kim",
       rating: 5,
-      comment: "The mentor gave me excellent feedback on my resume. I've already gotten more interview invitations!"
+      comment: "The practice interview questions were exactly what I needed to prepare for my upcoming interviews!"
     }
   ];
   
@@ -571,6 +753,12 @@ const StudentSessions = () => {
       description: "Your session has been cancelled. You can book another one anytime.",
       variant: "destructive"
     });
+  };
+
+  const handleManageSubmission = (sessionId: string, sessionType: SessionType) => {
+    setCurrentSessionId(sessionId);
+    setCurrentSessionType(sessionType);
+    setSubmissionDialogOpen(true);
   };
   
   return (
@@ -592,7 +780,6 @@ const StudentSessions = () => {
         </Button>
       </div>
       
-      {/* Add the new Session Summary Section here */}
       <SessionSummarySection 
         sessionStats={sessionStats}
         feedbackByType={feedbackByType}
@@ -611,9 +798,9 @@ const StudentSessions = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All types</SelectItem>
-                    <SelectItem value="career">Career Guidance</SelectItem>
-                    <SelectItem value="interview">Interview Prep</SelectItem>
                     <SelectItem value="resume">Resume Review</SelectItem>
+                    <SelectItem value="portfolio">Portfolio Review</SelectItem>
+                    <SelectItem value="behavioural">Behavioural Interview</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -661,6 +848,7 @@ const StudentSessions = () => {
             upcomingSessions.map(session => (
               <SessionCard 
                 key={session.id}
+                id={session.id}
                 title={session.title}
                 date={session.date}
                 time={session.time}
@@ -669,11 +857,19 @@ const StudentSessions = () => {
                 type={session.type}
                 status={session.status}
                 meetingLink={session.meetingLink}
+                sessionTypeId={session.sessionTypeId}
+                sessionType={session.sessionType}
+                submission={submissions[session.id]}
                 onJoin={() => setMeetingDialogOpen(true)}
                 onReschedule={handleReschedule}
                 onCancel={handleCancel}
                 onLeaveFeedback={() => {}}
                 onViewFeedback={() => {}}
+                onManageSubmission={
+                  session.sessionType?.submissionType && session.sessionType.submissionType !== "none"
+                    ? () => handleManageSubmission(session.id, session.sessionType!)
+                    : undefined
+                }
               />
             ))
           ) : (
@@ -691,6 +887,7 @@ const StudentSessions = () => {
             pastSessions.map(session => (
               <SessionCard 
                 key={session.id}
+                id={session.id}
                 title={session.title}
                 date={session.date}
                 time={session.time}
@@ -699,6 +896,8 @@ const StudentSessions = () => {
                 type={session.type}
                 status={session.status}
                 feedbackReceived={session.feedbackReceived}
+                sessionTypeId={session.sessionTypeId}
+                sessionType={session.sessionType}
                 onJoin={() => {}}
                 onReschedule={() => {}}
                 onCancel={() => {}}
@@ -720,6 +919,15 @@ const StudentSessions = () => {
       <FeedbackDialog open={feedbackDialogOpen} setOpen={setFeedbackDialogOpen} type="leave" />
       <FeedbackDialog open={viewFeedbackDialogOpen} setOpen={setViewFeedbackDialogOpen} type="view" />
       <MeetingDialog open={meetingDialogOpen} setOpen={setMeetingDialogOpen} />
+      
+      {currentSessionType && (
+        <SubmissionDialog 
+          open={submissionDialogOpen} 
+          setOpen={setSubmissionDialogOpen}
+          sessionId={currentSessionId}
+          sessionType={currentSessionType}
+        />
+      )}
     </MainLayout>
   );
 };

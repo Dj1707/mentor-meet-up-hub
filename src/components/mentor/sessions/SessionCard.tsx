@@ -8,10 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { Calendar, Clock, File, FileSpreadsheet, FileText, Check, X, Plus, ExternalLink } from "lucide-react";
+import { Calendar, Clock, File, FileSpreadsheet, FileText, Check, X, Plus, ExternalLink, FileSymlink, Link } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { SessionStatus, SessionTypeResource } from "@/types";
+import { SessionStatus, SessionTypeResource, SessionSubmission, SessionType } from "@/types";
 import { StudentResumeDialog } from "./StudentResumeDialog";
+import { ViewSubmission } from "./ViewSubmission";
 
 interface SessionFeedback {
   rating: number;
@@ -32,7 +33,9 @@ interface SessionCardProps {
   type: string;
   status: SessionStatus;
   sessionTypeId: string;
+  sessionType?: SessionType;
   sessionResources?: SessionTypeResource[];
+  submission?: Partial<SessionSubmission>;
   onFeedbackSubmit?: (sessionId: string, feedback: SessionFeedback) => void;
 }
 
@@ -60,7 +63,9 @@ export const SessionCard = ({
   type,
   status,
   sessionTypeId,
+  sessionType,
   sessionResources = [],
+  submission,
   onFeedbackSubmit
 }: SessionCardProps) => {
   const { toast } = useToast();
@@ -69,6 +74,7 @@ export const SessionCard = ({
   const [confirmCancelDialog, setConfirmCancelDialog] = useState(false);
   const [rescheduleDialog, setRescheduleDialog] = useState(false);
   const [resumeDialogOpen, setResumeDialogOpen] = useState(false);
+  const [submissionDialogOpen, setSubmissionDialogOpen] = useState(false);
 
   const [feedback, setFeedback] = useState<SessionFeedback>({
     rating: 5,
@@ -77,6 +83,24 @@ export const SessionCard = ({
   });
 
   const hasResume = studentProfile?.resumeUrl && studentProfile.resumeUrl.trim() !== '';
+  const hasSubmission = !!submission;
+  
+  const getSubmissionIcon = () => {
+    if (!submission || !sessionType?.submissionType) return null;
+    
+    switch (sessionType.submissionType) {
+      case "resume":
+        return <FileText className="h-4 w-4 text-blue-500" />;
+      case "portfolio":
+        return <ExternalLink className="h-4 w-4 text-purple-500" />;
+      case "collateral":
+        return <File className="h-4 w-4 text-orange-500" />;
+      case "link":
+        return <Link className="h-4 w-4 text-green-500" />;
+      default:
+        return null;
+    }
+  };
 
   const addActionItem = () => {
     setFeedback(prev => ({
@@ -163,6 +187,26 @@ export const SessionCard = ({
       </CardHeader>
       <CardContent>
         <p className="text-sm mb-4">Student: {student}</p>
+
+        {hasSubmission && (
+          <div className="mb-4 p-3 bg-blue-50 rounded-md">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-blue-800">
+                {getSubmissionIcon()}
+                <p className="font-medium">Student Submission Available</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-blue-700" 
+                onClick={() => setSubmissionDialogOpen(true)}
+              >
+                View Submission
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-wrap gap-2 mb-4">
           {status === "scheduled" && (
             <>
@@ -207,6 +251,15 @@ export const SessionCard = ({
                   onClick={() => setResumeDialogOpen(true)}
                 >
                   <FileText className="h-4 w-4 mr-1" /> View Resume
+                </Button>
+              )}
+              {hasSubmission && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSubmissionDialogOpen(true)}
+                >
+                  <FileSymlink className="h-4 w-4 mr-1" /> View Submission
                 </Button>
               )}
             </>
@@ -272,6 +325,17 @@ export const SessionCard = ({
             open={resumeDialogOpen}
             setOpen={setResumeDialogOpen}
             resumeUrl={studentProfile?.resumeUrl || ""}
+            studentName={student}
+          />
+        )}
+
+        {/* Submission Dialog */}
+        {sessionType && submission && (
+          <ViewSubmission
+            open={submissionDialogOpen}
+            setOpen={setSubmissionDialogOpen}
+            sessionType={sessionType}
+            submission={submission}
             studentName={student}
           />
         )}

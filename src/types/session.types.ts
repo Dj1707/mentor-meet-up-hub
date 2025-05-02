@@ -8,7 +8,21 @@ export interface SessionType {
   duration: number;
   price: number;
   color: string;
+  submissionType?: SubmissionType;
   resources?: SessionTypeResource[];
+}
+
+export type SubmissionType = 'resume' | 'portfolio' | 'collateral' | 'link' | 'none';
+
+export interface SessionSubmission {
+  id: string;
+  sessionId: string;
+  studentId: string;
+  submissionType: SubmissionType;
+  fileUrl?: string;
+  linkUrl?: string;
+  notes?: string;
+  timestamp: Date;
 }
 
 export interface SessionTypeResource {
@@ -38,6 +52,7 @@ export interface Session {
   notes?: string;
   feedbackId?: string;
   meetingLink?: string;
+  submission?: SessionSubmission;
 }
 
 export interface TimeSlot {

@@ -8,56 +8,142 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Edit, Trash, Plus, FileText, FileSpreadsheet, File } from "lucide-react";
+import { Edit, Trash, Plus, FileText, FileSpreadsheet, File, Link, ExternalLink } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { SessionType, SessionTypeResource } from "@/types";
+import { SessionType, SessionTypeResource, SubmissionType } from "@/types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const ManageSessionTypes = () => {
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingType, setEditingType] = useState<SessionType | null>(null);
   
-  // Sample session types with resources
+  // Updated session types with new submission types
   const [sessionTypes, setSessionTypes] = useState<SessionType[]>([
     {
       id: "1",
-      name: "Career Guidance",
-      description: "Get professional advice on career paths, job opportunities, and professional development strategies.",
-      duration: 45,
-      price: 30,
+      name: "Weekly Mock Interview",
+      description: "Practice interview scenarios with feedback on your performance and approach.",
+      duration: 60,
+      price: 40,
       color: "#7c3aed",
+      submissionType: "none"
+    },
+    {
+      id: "2",
+      name: "Behavioural 1:1",
+      description: "Work on behavioral interview skills and practice answering common questions.",
+      duration: 45,
+      price: 35,
+      color: "#0ea5e9",
+      submissionType: "none"
+    },
+    {
+      id: "3",
+      name: "Data 1:1",
+      description: "Review data analysis techniques, SQL queries, and data visualization approaches.",
+      duration: 45,
+      price: 35,
+      color: "#f97316",
+      submissionType: "link"
+    },
+    {
+      id: "4",
+      name: "Problem Solving 1:1",
+      description: "Tackle technical problems with guidance and learn strategies for problem-solving.",
+      duration: 60,
+      price: 40,
+      color: "#10b981",
+      submissionType: "none"
+    },
+    {
+      id: "5",
+      name: "Portfolio Review 1:1",
+      description: "Get detailed feedback on your portfolio with suggestions for improvement.",
+      duration: 45,
+      price: 35,
+      color: "#6366f1",
+      submissionType: "portfolio"
+    },
+    {
+      id: "6",
+      name: "Resume Review 1:1",
+      description: "Have your resume professionally reviewed with actionable feedback.",
+      duration: 30,
+      price: 25,
+      color: "#ec4899",
+      submissionType: "resume",
       resources: [
         {
           id: "r1",
-          name: "Career Assessment Template",
-          url: "https://example.com/career-template.pdf",
+          name: "Resume Template",
+          url: "https://example.com/resume-template.pdf",
           type: "pdf"
         }
       ]
     },
     {
-      id: "2",
-      name: "Technical Interview Prep",
-      description: "Practice technical interview questions and receive feedback on your approach and solutions.",
-      duration: 60,
-      price: 40,
-      color: "#0ea5e9"
-    },
-    {
-      id: "3",
-      name: "Resume Review",
-      description: "Get your resume reviewed by a professional who will provide feedback and suggestions for improvement.",
-      duration: 30,
-      price: 25,
-      color: "#f97316"
-    },
-    {
-      id: "4",
-      name: "Job Search Strategy",
-      description: "Develop a personalized job search strategy tailored to your skills, experience, and career goals.",
+      id: "7",
+      name: "Collateral Review 1:1",
+      description: "Get feedback on your business documents, presentations, or other materials.",
       duration: 45,
       price: 30,
-      color: "#10b981"
+      color: "#f43f5e",
+      submissionType: "collateral"
+    },
+    {
+      id: "8",
+      name: "Office Hour",
+      description: "Open discussion for any questions or guidance on your learning journey.",
+      duration: 30,
+      price: 20,
+      color: "#8b5cf6",
+      submissionType: "none"
+    },
+    {
+      id: "9",
+      name: "Figma 1:1",
+      description: "Learn Figma best practices and get help with your design projects.",
+      duration: 45,
+      price: 35,
+      color: "#06b6d4",
+      submissionType: "link"
+    },
+    {
+      id: "10",
+      name: "Mixpanel 1:1",
+      description: "Get guidance on analytics implementation and data interpretation with Mixpanel.",
+      duration: 45,
+      price: 35,
+      color: "#14b8a6",
+      submissionType: "link"
+    },
+    {
+      id: "11",
+      name: "Notion 1:1",
+      description: "Learn how to use Notion effectively for personal or team productivity.",
+      duration: 30,
+      price: 25,
+      color: "#a855f7",
+      submissionType: "link"
+    },
+    {
+      id: "12",
+      name: "Product Overview 1:1",
+      description: "General product consultation and strategy discussions.",
+      duration: 60,
+      price: 45,
+      color: "#d946ef",
+      submissionType: "none"
+    },
+    {
+      id: "13",
+      name: "SQL 1:1",
+      description: "Learn SQL queries, database design, and optimization techniques.",
+      duration: 45,
+      price: 35,
+      color: "#6b7280",
+      submissionType: "link"
     }
   ]);
   
@@ -89,6 +175,7 @@ const ManageSessionTypes = () => {
     duration: number;
     price: number;
     color: string;
+    submissionType: SubmissionType;
     resources: SessionTypeResource[];
   }>({
     name: "",
@@ -96,6 +183,7 @@ const ManageSessionTypes = () => {
     duration: 30,
     price: 0,
     color: "#7c3aed",
+    submissionType: "none",
     resources: []
   });
 
@@ -107,6 +195,7 @@ const ManageSessionTypes = () => {
         duration: editingType.duration,
         price: editingType.price,
         color: editingType.color,
+        submissionType: editingType.submissionType || "none",
         resources: editingType.resources || []
       });
     } else {
@@ -116,6 +205,7 @@ const ManageSessionTypes = () => {
         duration: 30,
         price: 0,
         color: "#7c3aed",
+        submissionType: "none",
         resources: []
       });
     }
@@ -123,6 +213,10 @@ const ManageSessionTypes = () => {
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectChange = (name: string, value: any) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -193,6 +287,22 @@ const ManageSessionTypes = () => {
         return <FileSpreadsheet className="h-4 w-4" />;
     }
   };
+
+  const getSubmissionTypeLabel = (type?: SubmissionType) => {
+    switch (type) {
+      case 'resume':
+        return <span className="flex items-center gap-1"><FileText className="h-3 w-3" /> Resume</span>;
+      case 'portfolio':
+        return <span className="flex items-center gap-1"><ExternalLink className="h-3 w-3" /> Portfolio</span>;
+      case 'collateral':
+        return <span className="flex items-center gap-1"><File className="h-3 w-3" /> Collateral</span>;
+      case 'link':
+        return <span className="flex items-center gap-1"><Link className="h-3 w-3" /> Link</span>;
+      case 'none':
+      default:
+        return <span>None</span>;
+    }
+  };
   
   return (
     <MainLayout title="Manage Session Types">
@@ -218,6 +328,7 @@ const ManageSessionTypes = () => {
                 <TableHead>Description</TableHead>
                 <TableHead>Duration</TableHead>
                 <TableHead>Price</TableHead>
+                <TableHead>Submission Type</TableHead>
                 <TableHead>Resources</TableHead>
                 <TableHead>Color</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -230,6 +341,9 @@ const ManageSessionTypes = () => {
                   <TableCell className="max-w-md truncate">{type.description}</TableCell>
                   <TableCell>{type.duration} min</TableCell>
                   <TableCell>₹{type.price}</TableCell>
+                  <TableCell>
+                    {getSubmissionTypeLabel(type.submissionType)}
+                  </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
                       {type.resources?.map(resource => (
@@ -300,7 +414,7 @@ const ManageSessionTypes = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="e.g. Career Guidance"
+                  placeholder="e.g. Resume Review 1:1"
                   required
                 />
               </div>
@@ -365,6 +479,32 @@ const ManageSessionTypes = () => {
                     className="flex-1"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="submissionType">Submission Type</Label>
+                <Select
+                  value={formData.submissionType}
+                  onValueChange={(value) => handleSelectChange("submissionType", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select submission type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="resume">Resume</SelectItem>
+                    <SelectItem value="portfolio">Portfolio</SelectItem>
+                    <SelectItem value="collateral">Collateral</SelectItem>
+                    <SelectItem value="link">Link</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {formData.submissionType === "resume" && "Students can upload their resume before the session"}
+                  {formData.submissionType === "portfolio" && "Students can share their portfolio link before the session"}
+                  {formData.submissionType === "collateral" && "Students can upload collateral materials before the session"}
+                  {formData.submissionType === "link" && "Students can share relevant links before the session"}
+                  {formData.submissionType === "none" && "No pre-session submission required from students"}
+                </p>
               </div>
               
               <div className="space-y-2">
