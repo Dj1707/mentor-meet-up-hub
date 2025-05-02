@@ -15,6 +15,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SessionSummarySection, FeedbackItemProps } from "@/components/student/sessions/SessionSummarySection";
 import { SessionSubmissionUpload } from "@/components/student/sessions/SessionSubmissionUpload";
 import { SessionType, SubmissionType, SessionSubmission } from "@/types";
+import { sessionTypes, getSessionTypeById } from "@/data/sessionTypes";
+import { BookSessionDialog } from "@/components/student/sessions/BookSessionDialog";
 
 interface SessionCardProps {
   id: string;
@@ -626,10 +628,8 @@ const StudentSessions = () => {
   const [currentSessionId, setCurrentSessionId] = useState("");
   const [currentSessionType, setCurrentSessionType] = useState<SessionType | null>(null);
   const [submissions, setSubmissions] = useState<Record<string, Partial<SessionSubmission>>>({});
+  const { toast } = useToast();
   
-  // Update the session types to use our centralized data source
-  const { sessionTypes } = require('@/data/sessionTypes');
-
   // Updated sample data for upcoming sessions - now with proper session types
   const upcomingSessions = [
     {
@@ -638,12 +638,12 @@ const StudentSessions = () => {
       date: "May 16, 2025",
       time: "3:00 PM - 3:45 PM",
       mentor: "Taylor Smith",
-      mentorImage: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
+      mentorImage: "",
       type: "Resume Review",
       status: "scheduled" as const,
       meetingLink: "https://meet.google.com/example-link",
       sessionTypeId: "6",
-      sessionType: sessionTypes.find(s => s.id === "6")
+      sessionType: getSessionTypeById("6")
     },
     {
       id: "2",
@@ -651,11 +651,11 @@ const StudentSessions = () => {
       date: "May 18, 2025",
       time: "11:00 AM - 12:00 PM",
       mentor: "Jordan Lee",
-      mentorImage: "https://images.unsplash.com/photo-1560250097-0b93528c311a",
+      mentorImage: "",
       type: "Portfolio Review",
       status: "scheduled" as const,
       sessionTypeId: "5",
-      sessionType: sessionTypes.find(s => s.id === "5")
+      sessionType: getSessionTypeById("5")
     }
   ];
   
@@ -666,12 +666,12 @@ const StudentSessions = () => {
       date: "May 10, 2025",
       time: "2:00 PM - 2:30 PM",
       mentor: "Morgan Jones",
-      mentorImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2",
+      mentorImage: "",
       type: "Resume Review",
       status: "completed" as const,
       feedbackReceived: true,
       sessionTypeId: "6",
-      sessionType: sessionTypes.find(s => s.id === "6")
+      sessionType: getSessionTypeById("6")
     },
     {
       id: "4",
@@ -679,11 +679,11 @@ const StudentSessions = () => {
       date: "May 3, 2025",
       time: "10:00 AM - 10:45 AM",
       mentor: "Taylor Smith",
-      mentorImage: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
+      mentorImage: "",
       type: "Behavioural Interview",
       status: "cancelled" as const,
       sessionTypeId: "2",
-      sessionType: sessionTypes.find(s => s.id === "2")
+      sessionType: getSessionTypeById("2")
     }
   ];
   
@@ -724,8 +724,6 @@ const StudentSessions = () => {
     }
   ];
   
-  const { toast } = useToast();
-  
   const handleReschedule = () => {
     toast({
       title: "Reschedule requested",
@@ -745,6 +743,21 @@ const StudentSessions = () => {
     setCurrentSessionId(sessionId);
     setCurrentSessionType(sessionType);
     setSubmissionDialogOpen(true);
+  };
+
+  const handleSubmissionSave = (data: any) => {
+    // Save submission data
+    setSubmissions(prev => ({
+      ...prev,
+      [currentSessionId]: data
+    }));
+    
+    toast({
+      title: "Submission saved",
+      description: "Your materials have been submitted successfully."
+    });
+    
+    setSubmissionDialogOpen(false);
   };
   
   return (
@@ -767,9 +780,39 @@ const StudentSessions = () => {
       </div>
       
       <SessionSummarySection 
-        sessionStats={sessionStats}
-        feedbackByType={feedbackByType}
-        recentFeedback={recentFeedback}
+        sessionStats={{
+          totalSessions: 33,
+          avgRating: 4.7,
+          sessionsThisMonth: 5
+        }}
+        feedbackByType={{
+          "Resume Review": { count: 10, avg: 4.8 },
+          "Portfolio Review": { count: 15, avg: 4.5 },
+          "Behavioural Interview": { count: 8, avg: 4.9 }
+        }}
+        recentFeedback={[
+          {
+            id: "1",
+            sessionType: "Resume Review",
+            studentName: "Alex Johnson",
+            rating: 5,
+            comment: "Really helpful session! The mentor provided excellent guidance for my resume improvement."
+          },
+          {
+            id: "2",
+            sessionType: "Portfolio Review",
+            studentName: "Jamie Rivera",
+            rating: 4,
+            comment: "Good advice on my portfolio, but would have liked more specific design feedback."
+          },
+          {
+            id: "3",
+            sessionType: "Behavioural Interview",
+            studentName: "Casey Kim",
+            rating: 5,
+            comment: "The practice interview questions were exactly what I needed to prepare for my upcoming interviews!"
+          }
+        ]}
       />
       
       {showFilters && (
@@ -902,17 +945,31 @@ const StudentSessions = () => {
       </Tabs>
       
       <BookSessionDialog open={bookingDialogOpen} setOpen={setBookingDialogOpen} />
+      
       <FeedbackDialog open={feedbackDialogOpen} setOpen={setFeedbackDialogOpen} type="leave" />
       <FeedbackDialog open={viewFeedbackDialogOpen} setOpen={setViewFeedbackDialogOpen} type="view" />
       <MeetingDialog open={meetingDialogOpen} setOpen={setMeetingDialogOpen} />
       
       {currentSessionType && (
-        <SubmissionDialog 
-          open={submissionDialogOpen} 
-          setOpen={setSubmissionDialogOpen}
-          sessionId={currentSessionId}
-          sessionType={currentSessionType}
-        />
+        <Dialog open={submissionDialogOpen} onOpenChange={setSubmissionDialogOpen}>
+          <DialogContent className="sm:max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Session Submission</DialogTitle>
+              <DialogDescription>
+                Add materials for your mentor to review before the session
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="py-4">
+              <SessionSubmissionUpload 
+                sessionType={currentSessionType}
+                sessionId={currentSessionId}
+                onSubmit={handleSubmissionSave}
+                existingSubmission={submissions[currentSessionId]}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </MainLayout>
   );

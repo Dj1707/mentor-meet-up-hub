@@ -10,6 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
+import { BookSessionDialog } from "@/components/student/sessions/BookSessionDialog";
+import { sessionTypes, getSessionTypeById } from "@/data/sessionTypes";
 
 const SessionCard = ({ 
   title, 
@@ -18,7 +20,11 @@ const SessionCard = ({
   mentor,
   type,
   isPast = false,
-  meetingLink = null
+  meetingLink = null,
+  sessionTypeId,
+  sessionType,
+  needsSubmission = false,
+  hasSubmitted = false
 }: { 
   title: string; 
   date: string; 
@@ -27,10 +33,18 @@ const SessionCard = ({
   type: string;
   isPast?: boolean;
   meetingLink?: string | null;
+  sessionTypeId?: string;
+  sessionType?: any;
+  needsSubmission?: boolean;
+  hasSubmitted?: boolean;
 }) => {
   const [viewFeedbackDialog, setViewFeedbackDialog] = useState(false);
   const [viewMentorDialog, setViewMentorDialog] = useState(false);
-  const { toast } = useToast();
+  const [submissionDialog, setSubmissionDialog] = useState(false);
+  
+  const handleManageSubmission = () => {
+    setSubmissionDialog(true);
+  };
   
   return (
     <Card className={`${isPast ? "opacity-70" : ""}`}>
@@ -57,6 +71,40 @@ const SessionCard = ({
             View Profile
           </Button>
         </p>
+        
+        {/* Submission Info for sessions that require it */}
+        {needsSubmission && !isPast && (
+          <div className={`p-3 ${hasSubmitted ? 'bg-green-50' : 'bg-blue-50'} rounded-md mb-4`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                {sessionType?.submissionType === "resume" && <FileText className="h-4 w-4 mr-1 text-blue-600" />}
+                <span className={`${hasSubmitted ? 'text-green-700' : 'text-blue-700'} font-medium`}>
+                  {hasSubmitted ? "Submission Ready" : "Submission Required"}
+                </span>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className={hasSubmitted ? "text-green-700" : "text-blue-700"}
+                onClick={handleManageSubmission}
+              >
+                {hasSubmitted ? "Edit Submission" : "Add Submission"}
+              </Button>
+            </div>
+            <p className="text-xs mt-1 text-muted-foreground">
+              {!hasSubmitted && sessionType?.submissionType === "resume" && 
+                "Please upload your resume before the session"
+              }
+              {!hasSubmitted && sessionType?.submissionType === "portfolio" && 
+                "Please share your portfolio link before the session"
+              }
+              {!hasSubmitted && sessionType?.submissionType === "collateral" && 
+                "Please upload your materials before the session"
+              }
+            </p>
+          </div>
+        )}
+        
         <div className="flex justify-between mt-4">
           {isPast ? (
             <Button 
@@ -564,16 +612,23 @@ const StudentDashboard = () => {
       time: "3:00 PM - 3:45 PM",
       mentor: "Taylor Smith",
       type: "Career Guidance",
-      meetingLink: "https://meet.google.com/abc-defg-hij"
+      meetingLink: "https://meet.google.com/abc-defg-hij",
+      sessionTypeId: "1",
+      sessionType: getSessionTypeById("1"),
+      needsSubmission: false
     },
     {
       id: "2",
-      title: "Technical Interview Prep",
+      title: "Resume Review 1:1",
       date: "Apr 18, 2025",
       time: "11:00 AM - 12:00 PM",
       mentor: "Jordan Lee",
-      type: "Interview Prep",
-      meetingLink: null
+      type: "Resume Review",
+      meetingLink: null,
+      sessionTypeId: "6",
+      sessionType: getSessionTypeById("6"),
+      needsSubmission: true,
+      hasSubmitted: false
     }
   ];
   
@@ -584,7 +639,9 @@ const StudentDashboard = () => {
       date: "Apr 10, 2025",
       time: "2:00 PM - 2:30 PM",
       mentor: "Morgan Jones",
-      type: "Resume Review"
+      type: "Resume Review",
+      sessionTypeId: "6",
+      sessionType: getSessionTypeById("6")
     }
   ];
   
@@ -605,6 +662,10 @@ const StudentDashboard = () => {
                     mentor={session.mentor}
                     type={session.type}
                     meetingLink={session.meetingLink}
+                    sessionTypeId={session.sessionTypeId}
+                    sessionType={session.sessionType}
+                    needsSubmission={session.needsSubmission}
+                    hasSubmitted={session.hasSubmitted}
                   />
                 ))
               ) : (
@@ -630,6 +691,8 @@ const StudentDashboard = () => {
                     time={session.time}
                     mentor={session.mentor}
                     type={session.type}
+                    sessionTypeId={session.sessionTypeId}
+                    sessionType={session.sessionType}
                     isPast
                   />
                 ))
@@ -766,7 +829,7 @@ const StudentDashboard = () => {
         </div>
       </div>
       
-      <AvailableSessionsDialog open={bookingDialogOpen} setOpen={setBookingDialogOpen} />
+      <BookSessionDialog open={bookingDialogOpen} setOpen={setBookingDialogOpen} />
     </MainLayout>
   );
 };

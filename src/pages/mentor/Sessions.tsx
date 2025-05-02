@@ -11,10 +11,12 @@ import { AddAvailabilityDialog } from "@/components/mentor/sessions/AddAvailabil
 import { StudentFeedbackDisplay } from "@/components/mentor/sessions/StudentFeedbackDisplay";
 import { InvoiceTab } from "@/components/mentor/sessions/InvoiceTab";
 import { SessionFeedback } from "@/types";
-import { sessionTypes } from "@/data/sessionTypes";
+import { sessionTypes, getSessionTypeById } from "@/data/sessionTypes";
 import { ViewSubmission } from "@/components/mentor/sessions/ViewSubmission";
+import { useToast } from "@/components/ui/use-toast";
 
 const MentorSessions = () => {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("upcoming");
   const [showFilters, setShowFilters] = useState(false);
   const [availabilityDialogOpen, setAvailabilityDialogOpen] = useState(false);
@@ -30,6 +32,11 @@ const MentorSessions = () => {
 
   const handleFeedbackSubmit = (sessionId: string, feedback: SessionFeedback) => {
     console.log("Submitting feedback for session", sessionId, feedback);
+    
+    toast({
+      title: "Feedback submitted",
+      description: "Your feedback has been sent to the student."
+    });
     
     setSessionsNeedingFeedback(prev => prev.filter(id => id !== sessionId));
   };
@@ -71,7 +78,7 @@ const MentorSessions = () => {
       type: "Resume Review",
       status: "scheduled" as const,
       sessionTypeId: "6",
-      sessionType: sessionTypes.find(s => s.id === "6"),
+      sessionType: getSessionTypeById("6"),
       hasSubmission: true,
       sessionResources: [
         {
@@ -102,7 +109,7 @@ const MentorSessions = () => {
       type: "Portfolio Review",
       status: "scheduled" as const,
       sessionTypeId: "5",
-      sessionType: sessionTypes.find(s => s.id === "5"),
+      sessionType: getSessionTypeById("5"),
       hasSubmission: true
     }
   ];
@@ -122,7 +129,7 @@ const MentorSessions = () => {
       type: "Resume Review",
       status: "completed" as const,
       sessionTypeId: "6",
-      sessionType: sessionTypes.find(s => s.id === "6")
+      sessionType: getSessionTypeById("6")
     },
     {
       id: "4",
@@ -136,110 +143,106 @@ const MentorSessions = () => {
         linkedIn: "https://linkedin.com/in/morgansmith"
       },
       type: "Behavioural 1:1",
-      status: "no-show" as const,
+      status: "completed" as const,
       sessionTypeId: "2",
-      sessionType: sessionTypes.find(s => s.id === "2")
+      sessionType: getSessionTypeById("2")
     }
   ];
 
   return (
-    <MainLayout title="Sessions">
-      <div className="container mx-auto py-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Sessions</h1>
-          <div className="space-x-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <Filter className="w-4 h-4 mr-2" />
-              Filters
-            </Button>
-            <Button 
-              onClick={() => setAvailabilityDialogOpen(true)}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Availability
-            </Button>
-          </div>
-        </div>
-
-        {showFilters && (
-          <Card className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Input type="date" placeholder="Filter by date" />
-              </div>
-              <div>
-                <Input type="text" placeholder="Search by student name" />
-              </div>
-              <div>
-                <Input type="text" placeholder="Filter by session type" />
-              </div>
-            </div>
-          </Card>
-        )}
-
-        <Tabs defaultValue="upcoming" className="w-full" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
-            <TabsTrigger value="feedback">Student Feedback</TabsTrigger>
-            <TabsTrigger value="invoice">Invoice</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="upcoming" className="space-y-4">
-            {upcomingSessions.map(session => (
-              <SessionCard
-                key={session.id}
-                {...session}
-                onViewSubmission={
-                  session.hasSubmission 
-                    ? () => handleViewSubmission(session.id, session.student)
-                    : undefined
-                }
-              />
-            ))}
-          </TabsContent>
-
-          <TabsContent value="completed" className="space-y-4">
-            {completedSessions.map(session => (
-              <SessionCard
-                key={session.id}
-                {...session}
-                onFeedbackSubmit={
-                  sessionsNeedingFeedback.includes(session.id)
-                    ? handleFeedbackSubmit
-                    : undefined
-                }
-              />
-            ))}
-          </TabsContent>
-
-          <TabsContent value="feedback">
-            <StudentFeedbackDisplay />
-          </TabsContent>
-
-          <TabsContent value="invoice">
-            <InvoiceTab />
-          </TabsContent>
-        </Tabs>
-
-        <AddAvailabilityDialog
-          open={availabilityDialogOpen}
-          setOpen={setAvailabilityDialogOpen}
-        />
-
-        {currentSessionType && (
-          <ViewSubmission
-            open={submissionDialogOpen}
-            setOpen={setSubmissionDialogOpen}
-            sessionType={currentSessionType}
-            submission={currentSubmission}
-            studentName={currentStudentName}
+    <MainLayout title="Mentor Sessions">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-2">
+          <Input 
+            placeholder="Search sessions..."
+            className="w-64"
           />
-        )}
+          <Button variant="outline" size="icon" onClick={() => setShowFilters(!showFilters)}>
+            <Filter className="h-4 w-4" />
+          </Button>
+        </div>
+        <Button onClick={() => setAvailabilityDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" /> Add Availability
+        </Button>
       </div>
+
+      <Tabs defaultValue="upcoming" value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <TabsList>
+          <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+          <TabsTrigger value="completed">Completed</TabsTrigger>
+          <TabsTrigger value="feedback">Feedback</TabsTrigger>
+          <TabsTrigger value="invoices">Invoices</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {activeTab === "upcoming" && (
+        <div className="grid grid-cols-1 gap-4">
+          {upcomingSessions.map((session) => (
+            <SessionCard 
+              key={session.id}
+              id={session.id}
+              title={session.title}
+              date={session.date}
+              time={session.time}
+              student={session.student}
+              studentEmail={session.studentEmail}
+              studentProfile={session.studentProfile}
+              type={session.type}
+              status={session.status}
+              sessionTypeId={session.sessionTypeId}
+              sessionType={session.sessionType}
+              hasSubmission={session.hasSubmission}
+              sessionResources={session.sessionResources}
+              onViewSubmission={() => handleViewSubmission(session.id, session.student)}
+            />
+          ))}
+        </div>
+      )}
+
+      {activeTab === "completed" && (
+        <div className="grid grid-cols-1 gap-4">
+          {completedSessions.map((session) => (
+            <SessionCard 
+              key={session.id}
+              id={session.id}
+              title={session.title}
+              date={session.date}
+              time={session.time}
+              student={session.student}
+              studentEmail={session.studentEmail}
+              studentProfile={session.studentProfile}
+              type={session.type}
+              status={session.status}
+              sessionTypeId={session.sessionTypeId}
+              sessionType={session.sessionType}
+              onFeedbackSubmit={sessionsNeedingFeedback.includes(session.id) ? handleFeedbackSubmit : undefined}
+            />
+          ))}
+        </div>
+      )}
+
+      {activeTab === "feedback" && (
+        <StudentFeedbackDisplay />
+      )}
+
+      {activeTab === "invoices" && (
+        <InvoiceTab />
+      )}
+
+      <AddAvailabilityDialog 
+        open={availabilityDialogOpen} 
+        setOpen={setAvailabilityDialogOpen} 
+      />
+
+      {currentSessionType && (
+        <ViewSubmission
+          open={submissionDialogOpen}
+          setOpen={setSubmissionDialogOpen}
+          sessionType={currentSessionType}
+          submission={currentSubmission}
+          studentName={currentStudentName}
+        />
+      )}
     </MainLayout>
   );
 };

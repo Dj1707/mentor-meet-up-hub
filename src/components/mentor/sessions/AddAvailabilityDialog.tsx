@@ -109,7 +109,11 @@ export const AddAvailabilityDialog = ({ open, setOpen }: AddAvailabilityDialogPr
                     checked={selectedSessionTypes.includes(type.id)}
                     onChange={() => toggleSessionType(type.id)}
                   />
-                  <Label htmlFor={`type-${type.id}`} className="text-sm cursor-pointer">
+                  <Label htmlFor={`type-${type.id}`} className="text-sm cursor-pointer flex items-center gap-1">
+                    <span 
+                      className="inline-block w-2 h-2 rounded-full" 
+                      style={{ backgroundColor: type.color }}
+                    ></span>
                     {type.name} ({type.duration} min)
                   </Label>
                 </div>
