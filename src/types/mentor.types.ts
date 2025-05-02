@@ -28,7 +28,7 @@ export interface MentorProfile {
     country: string;
   };
   pastSectors?: string[];
-  onboardingStatus?: "invited" | "active" | "inactive";
+  onboardingStatus?: "invited" | "active" | "inactive" | "pending";
   availability?: {
     date: string;
     slots: string[];
