@@ -11,11 +11,17 @@ import { AddAvailabilityDialog } from "@/components/mentor/sessions/AddAvailabil
 import { StudentFeedbackDisplay } from "@/components/mentor/sessions/StudentFeedbackDisplay";
 import { InvoiceTab } from "@/components/mentor/sessions/InvoiceTab";
 import { SessionFeedback } from "@/types";
+import { sessionTypes } from "@/data/sessionTypes";
+import { ViewSubmission } from "@/components/mentor/sessions/ViewSubmission";
 
 const MentorSessions = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
   const [showFilters, setShowFilters] = useState(false);
   const [availabilityDialogOpen, setAvailabilityDialogOpen] = useState(false);
+  const [submissionDialogOpen, setSubmissionDialogOpen] = useState(false);
+  const [currentSessionType, setCurrentSessionType] = useState<any>(null);
+  const [currentSubmission, setCurrentSubmission] = useState<any>(null);
+  const [currentStudentName, setCurrentStudentName] = useState("");
   
   const [sessionsNeedingFeedback, setSessionsNeedingFeedback] = useState<string[]>([
     "3",
@@ -28,10 +34,32 @@ const MentorSessions = () => {
     setSessionsNeedingFeedback(prev => prev.filter(id => id !== sessionId));
   };
 
+  // Sample submissions for testing
+  const studentSubmissions = {
+    "1": {
+      fileUrl: "https://example.com/resume.pdf",
+      notes: "Here is my updated resume with recent projects."
+    },
+    "2": {
+      linkUrl: "https://portfolio.example.com",
+      notes: "Please review my latest UX work."
+    }
+  };
+
+  const handleViewSubmission = (sessionId: string, studentName: string) => {
+    const session = [...upcomingSessions, ...completedSessions].find(s => s.id === sessionId);
+    if (session) {
+      setCurrentSessionType(session.sessionType);
+      setCurrentSubmission(studentSubmissions[sessionId]);
+      setCurrentStudentName(studentName);
+      setSubmissionDialogOpen(true);
+    }
+  };
+
   const upcomingSessions = [
     {
       id: "1",
-      title: "Career Guidance Session",
+      title: "Resume Review 1:1",
       date: "Apr 16, 2025",
       time: "3:00 PM - 3:45 PM",
       student: "Alex Johnson",
@@ -40,9 +68,11 @@ const MentorSessions = () => {
         resumeUrl: "https://example.com/resume/alex_johnson_resume.pdf",
         linkedIn: "https://linkedin.com/in/alexjohnson"
       },
-      type: "Career Guidance",
+      type: "Resume Review",
       status: "scheduled" as const,
-      sessionTypeId: "1",
+      sessionTypeId: "6",
+      sessionType: sessionTypes.find(s => s.id === "6"),
+      hasSubmission: true,
       sessionResources: [
         {
           id: "1",
@@ -60,7 +90,7 @@ const MentorSessions = () => {
     },
     {
       id: "2",
-      title: "Technical Interview Preparation",
+      title: "Portfolio Review 1:1",
       date: "Apr 18, 2025",
       time: "2:00 PM - 3:00 PM",
       student: "Jamie Rivera",
@@ -69,9 +99,11 @@ const MentorSessions = () => {
         resumeUrl: "",
         linkedIn: "https://linkedin.com/in/jamierivera"
       },
-      type: "Technical Interview",
+      type: "Portfolio Review",
       status: "scheduled" as const,
-      sessionTypeId: "2"
+      sessionTypeId: "5",
+      sessionType: sessionTypes.find(s => s.id === "5"),
+      hasSubmission: true
     }
   ];
 
@@ -89,7 +121,8 @@ const MentorSessions = () => {
       },
       type: "Resume Review",
       status: "completed" as const,
-      sessionTypeId: "3"
+      sessionTypeId: "6",
+      sessionType: sessionTypes.find(s => s.id === "6")
     },
     {
       id: "4",
@@ -102,9 +135,10 @@ const MentorSessions = () => {
         resumeUrl: "https://example.com/resume/morgan_smith_resume.pdf",
         linkedIn: "https://linkedin.com/in/morgansmith"
       },
-      type: "Career Guidance",
+      type: "Behavioural 1:1",
       status: "no-show" as const,
-      sessionTypeId: "1"
+      sessionTypeId: "2",
+      sessionType: sessionTypes.find(s => s.id === "2")
     }
   ];
 
@@ -159,6 +193,11 @@ const MentorSessions = () => {
               <SessionCard
                 key={session.id}
                 {...session}
+                onViewSubmission={
+                  session.hasSubmission 
+                    ? () => handleViewSubmission(session.id, session.student)
+                    : undefined
+                }
               />
             ))}
           </TabsContent>
@@ -190,6 +229,16 @@ const MentorSessions = () => {
           open={availabilityDialogOpen}
           setOpen={setAvailabilityDialogOpen}
         />
+
+        {currentSessionType && (
+          <ViewSubmission
+            open={submissionDialogOpen}
+            setOpen={setSubmissionDialogOpen}
+            sessionType={currentSessionType}
+            submission={currentSubmission}
+            studentName={currentStudentName}
+          />
+        )}
       </div>
     </MainLayout>
   );

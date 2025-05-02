@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -232,16 +231,8 @@ const BookSessionDialog = ({ open, setOpen }: { open: boolean; setOpen: (open: b
     { id: "3", name: "Morgan Jones", expertise: "Resume Review", image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2" },
   ];
   
-  // Updated session types with submission types
-  const sessionTypes: SessionType[] = [
-    { id: "1", name: "Weekly Mock Interview", description: "Practice interview scenarios", duration: 60, price: 40, color: "#7c3aed", submissionType: "none" },
-    { id: "2", name: "Behavioural 1:1", description: "Work on behavioral interview skills", duration: 45, price: 35, color: "#0ea5e9", submissionType: "none" },
-    { id: "3", name: "Data 1:1", description: "Review data analysis techniques", duration: 45, price: 35, color: "#f97316", submissionType: "link" },
-    { id: "4", name: "Problem Solving 1:1", description: "Tackle technical problems", duration: 60, price: 40, color: "#10b981", submissionType: "none" },
-    { id: "5", name: "Portfolio Review 1:1", description: "Get feedback on your portfolio", duration: 45, price: 35, color: "#6366f1", submissionType: "portfolio" },
-    { id: "6", name: "Resume Review 1:1", description: "Have your resume reviewed", duration: 30, price: 25, color: "#ec4899", submissionType: "resume" },
-    { id: "7", name: "Collateral Review 1:1", description: "Get feedback on materials", duration: 45, price: 30, color: "#f43f5e", submissionType: "collateral" }
-  ];
+  // Import session types from our centralized data source
+  const { sessionTypes } = require('@/data/sessionTypes');
 
   const selectedSessionType = sessionTypes.find(type => type.id === sessionType);
 
@@ -636,15 +627,10 @@ const StudentSessions = () => {
   const [currentSessionType, setCurrentSessionType] = useState<SessionType | null>(null);
   const [submissions, setSubmissions] = useState<Record<string, Partial<SessionSubmission>>>({});
   
-  // Updated session types with submission requirements
-  const sessionTypes: SessionType[] = [
-    { id: "1", name: "Weekly Mock Interview", description: "Practice interview scenarios", duration: 60, price: 40, color: "#7c3aed", submissionType: "none" },
-    { id: "2", name: "Behavioural 1:1", description: "Work on behavioral interview skills", duration: 45, price: 35, color: "#0ea5e9", submissionType: "none" },
-    { id: "5", name: "Portfolio Review 1:1", description: "Get feedback on your portfolio", duration: 45, price: 35, color: "#6366f1", submissionType: "portfolio" },
-    { id: "6", name: "Resume Review 1:1", description: "Have your resume reviewed", duration: 30, price: 25, color: "#ec4899", submissionType: "resume" }
-  ];
+  // Update the session types to use our centralized data source
+  const { sessionTypes } = require('@/data/sessionTypes');
 
-  // Sample session data - now with sessionTypeId and sessionType
+  // Updated sample data for upcoming sessions - now with proper session types
   const upcomingSessions = [
     {
       id: "1",
