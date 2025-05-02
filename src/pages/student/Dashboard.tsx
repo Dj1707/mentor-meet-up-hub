@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
+import { useToast, toast } from "@/hooks/use-toast";
 import { BookSessionDialog } from "@/components/student/sessions/BookSessionDialog";
 import { sessionTypes, getSessionTypeById } from "@/data/sessionTypes";
 
@@ -331,7 +331,7 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
   ];
   
   const handleBookSession = () => {
-    // Use the properly imported toast from useToast hook
+    // Use toast directly since it's imported at the top
     toast({
       title: "Session Booked Successfully!",
       description: `Your ${selectedType ? sessionTypes.find(type => type.id === selectedType)?.name : 'session'} has been scheduled.`,
@@ -602,7 +602,8 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
 
 const StudentDashboard = () => {
   const { user } = useAuth();
-  const { toast } = useToast(); // Properly get the toast function from useToast hook
+  // We don't need to destructure toast here since we're importing it at the top level
+  const { toast: toastFromHook } = useToast(); // Rename to avoid confusion but we'll use the imported toast
   const studentName = user?.studentProfile?.name || "Student";
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   
