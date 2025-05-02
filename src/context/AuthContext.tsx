@@ -1,5 +1,7 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { MentorProfile, StudentProfile } from "@/types"; // Import types from central location
+import userService from "@/services/userService"; // Import the user service
 
 // User roles
 export type UserRole = "student" | "mentor" | "admin";
@@ -27,65 +29,6 @@ interface AuthContextType {
 // Create auth context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock user data for development
-const mockUsers: User[] = [
-  {
-    id: "student1",
-    role: "student",
-    email: "student@example.com",
-    studentProfile: {
-      name: "Alex Johnson",
-      email: "student@example.com",
-      phone: "555-123-4567",
-      linkedIn: "linkedin.com/in/alexjohnson",
-      profilePicture: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
-      targetRole: "Software Engineer",
-      targetDomain: "Web Development",
-      targetCTC: "₹12,00,000",
-      targetSectors: ["Tech", "Startups", "Education"],
-      pastJobRole: "Junior Developer",
-      pastIndustry: "E-commerce",
-      whatsappReminders: true
-    }
-  },
-  {
-    id: "mentor1",
-    role: "mentor",
-    email: "mentor@example.com",
-    mentorProfile: {
-      name: "Taylor Smith",
-      email: "mentor@example.com",
-      phone: "555-987-6543",
-      linkedIn: "linkedin.com/in/taylorsmith",
-      profilePicture: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
-      jobTitle: "Senior Software Engineer",
-      company: "Tech Innovations Inc.",
-      role: "Technical Mentor",
-      bio: "Experienced software engineer with 10+ years in the industry. Passionate about helping new developers grow their skills and career.",
-      panNumber: "ABCPK1234Z", // Added PAN number
-      bankDetails: {
-        accountName: "Taylor Smith",
-        accountNumber: "1234567890",
-        ifscCode: "BANK0001234",
-        bankName: "State Bank"
-      },
-      address: {
-        street: "123 Tech Park",
-        city: "Bangalore",
-        state: "Karnataka",
-        zipCode: "560001",
-        country: "India"
-      },
-      pastSectors: ["Technology", "Education", "Finance"]
-    }
-  },
-  {
-    id: "admin1",
-    role: "admin",
-    email: "admin@example.com"
-  }
-];
-
 // Auth provider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -107,8 +50,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Find user by email
-      const foundUser = mockUsers.find(u => u.email === email);
+      // Find user by email using userService instead of local mockUsers array
+      const foundUser = userService.getUserByEmail(email);
       if (!foundUser) {
         throw new Error("Invalid credentials");
       }
@@ -132,7 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Check if user already exists
-      const existingUser = mockUsers.find(u => u.email === email);
+      const existingUser = userService.getUserByEmail(email);
       if (existingUser) {
         throw new Error("User already exists");
       }
@@ -148,18 +91,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (role === "mentor") {
         newUser.mentorProfile = {
           name,
-          email
+          email,
+          // Default values for admin display
+          rating: 0,
+          sessionCount: 0,
+          onboardingStatus: "pending"
         };
       } else if (role === "student") {
         newUser.studentProfile = {
           name,
           email,
-          whatsappReminders: false
+          whatsappReminders: false,
+          // We'll add this property for admin display
+          targetSectors: []
         };
       }
       
-      // Store user
-      mockUsers.push(newUser);
+      // Add user to userService
+      userService.addUser(newUser);
+      
+      // Store user in local state and localStorage
       setUser(newUser);
       localStorage.setItem("user", JSON.stringify(newUser));
     } catch (error) {
@@ -190,6 +141,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
     
+    // Update in userService
+    userService.updateUser(user.id, updatedUser);
+    
+    // Update local state and localStorage
     setUser(updatedUser);
     localStorage.setItem("user", JSON.stringify(updatedUser));
     return Promise.resolve();
@@ -209,6 +164,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
     
+    // Update in userService
+    userService.updateUser(user.id, updatedUser);
+    
+    // Update local state and localStorage
     setUser(updatedUser);
     localStorage.setItem("user", JSON.stringify(updatedUser));
     return Promise.resolve();

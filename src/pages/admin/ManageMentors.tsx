@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -13,74 +12,23 @@ import MentorSessionRatesDialog from "@/components/admin/mentors/MentorSessionRa
 import MentorAddDialog from "@/components/admin/mentors/MentorAddDialog";
 import { sendMentorInviteEmail } from "@/services/emailService";
 import { MentorInvite, MentorRate } from "@/types";
-
-interface Mentor {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  jobTitle: string;
-  company: string;
-  status: "active" | "pending" | "inactive";
-  sessions: number;
-  rating: number;
-}
+import userService, { AdminDisplayMentor } from "@/services/userService";
 
 const ManageMentors = () => {
   const { toast } = useToast();
-  const [mentors, setMentors] = useState<Mentor[]>([
-    {
-      id: "m1",
-      name: "Jane Smith",
-      email: "jane@example.com",
-      phone: "(555) 123-4567",
-      jobTitle: "Senior Software Engineer",
-      company: "Tech Solutions Inc.",
-      status: "active",
-      sessions: 24,
-      rating: 4.8
-    },
-    {
-      id: "m2",
-      name: "David Wilson",
-      email: "david@example.com",
-      phone: "(555) 987-6543",
-      jobTitle: "Product Manager",
-      company: "Innovative Products Ltd.",
-      status: "active",
-      sessions: 18,
-      rating: 4.6
-    },
-    {
-      id: "m3",
-      name: "Emily Johnson",
-      email: "emily@example.com",
-      phone: "(555) 234-5678",
-      jobTitle: "UX Designer",
-      company: "Creative Designs Co.",
-      status: "pending",
-      sessions: 0,
-      rating: 0
-    },
-    {
-      id: "m4",
-      name: "Michael Brown",
-      email: "michael@example.com",
-      phone: "(555) 876-5432",
-      jobTitle: "Data Scientist",
-      company: "Data Analytics Inc.",
-      status: "inactive",
-      sessions: 7,
-      rating: 4.2
-    }
-  ]);
+  const [mentors, setMentors] = useState<AdminDisplayMentor[]>([]);
   
   const [searchTerm, setSearchTerm] = useState("");
   const [tab, setTab] = useState("all");
   const [mentorAddDialogOpen, setMentorAddDialogOpen] = useState(false);
   const [sessionRatesDialogOpen, setSessionRatesDialogOpen] = useState(false);
-  const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
+  const [selectedMentor, setSelectedMentor] = useState<AdminDisplayMentor | null>(null);
   const [pendingMentor, setPendingMentor] = useState<{ id?: string; name: string; email: string } | null>(null);
+  
+  // Fetch mentors from userService on mount
+  useEffect(() => {
+    setMentors(userService.getMentorsForAdmin());
+  }, []);
   
   // Sample session types (in a real app, these would come from an API or store)
   const sessionTypes = [
@@ -107,29 +55,52 @@ const ManageMentors = () => {
   });
   
   const handleStatusChange = (mentorId: string, newStatus: "active" | "pending" | "inactive") => {
-    setMentors(mentors.map(mentor => 
-      mentor.id === mentorId ? { ...mentor, status: newStatus } : mentor
-    ));
+    // Update status in userService
+    const success = userService.updateMentorStatus(mentorId, newStatus);
     
-    const mentor = mentors.find(m => m.id === mentorId);
-    
-    toast({
-      title: "Mentor Status Updated",
-      description: `${mentor?.name}'s status is now ${newStatus}.`
-    });
+    if (success) {
+      // Refresh mentors list
+      setMentors(userService.getMentorsForAdmin());
+      
+      const mentor = mentors.find(m => m.id === mentorId);
+      
+      toast({
+        title: "Mentor Status Updated",
+        description: `${mentor?.name}'s status is now ${newStatus}.`
+      });
+    } else {
+      toast({
+        title: "Update Failed",
+        description: "Could not update mentor status.",
+        variant: "destructive"
+      });
+    }
   };
   
   const handleDelete = (mentorId: string) => {
     const mentor = mentors.find(m => m.id === mentorId);
-    setMentors(mentors.filter(mentor => mentor.id !== mentorId));
     
-    toast({
-      title: "Mentor Removed",
-      description: `${mentor?.name} has been removed from the platform.`
-    });
+    // Delete from userService
+    const success = userService.deleteUser(mentorId);
+    
+    if (success) {
+      // Refresh mentors list
+      setMentors(userService.getMentorsForAdmin());
+      
+      toast({
+        title: "Mentor Removed",
+        description: `${mentor?.name} has been removed from the platform.`
+      });
+    } else {
+      toast({
+        title: "Deletion Failed",
+        description: "Could not remove mentor.",
+        variant: "destructive"
+      });
+    }
   };
   
-  const handleOpenSessionRatesDialog = (mentor: Mentor) => {
+  const handleOpenSessionRatesDialog = (mentor: AdminDisplayMentor) => {
     setSelectedMentor(mentor);
     setSessionRatesDialogOpen(true);
   };
@@ -144,21 +115,22 @@ const ManageMentors = () => {
     if (pendingMentor) {
       const newMentorId = `m${Date.now()}`;
       
-      // Create the new mentor
-      const newMentor: Mentor = {
+      // Create the new mentor in userService
+      userService.addUser({
         id: newMentorId,
-        name: pendingMentor.name,
+        role: "mentor",
         email: pendingMentor.email,
-        phone: "",
-        jobTitle: "",
-        company: "",
-        status: "pending",
-        sessions: 0,
-        rating: 0
-      };
+        mentorProfile: {
+          name: pendingMentor.name,
+          email: pendingMentor.email,
+          onboardingStatus: "pending",
+          rating: 0,
+          sessionCount: 0
+        }
+      });
       
-      // Add the mentor to the list
-      setMentors([...mentors, newMentor]);
+      // Refresh mentors list
+      setMentors(userService.getMentorsForAdmin());
       
       // Save the session rates
       const mentorRatesWithId = rates.map(rate => ({
@@ -205,21 +177,24 @@ const ManageMentors = () => {
   const handleMentorInvite = (mentorData: MentorInvite) => {
     const newMentorId = `m${Date.now()}`;
     
-    // Create the new mentor
-    const newMentor: Mentor = {
+    // Create the new mentor in userService
+    userService.addUser({
       id: newMentorId,
-      name: mentorData.name,
+      role: "mentor",
       email: mentorData.email,
-      phone: "",
-      jobTitle: mentorData.jobTitle || "",
-      company: mentorData.company || "",
-      status: "pending",
-      sessions: 0,
-      rating: 0
-    };
+      mentorProfile: {
+        name: mentorData.name,
+        email: mentorData.email,
+        jobTitle: mentorData.jobTitle || "",
+        company: mentorData.company || "",
+        onboardingStatus: "pending",
+        rating: 0,
+        sessionCount: 0
+      }
+    });
     
-    // Add the mentor to the list
-    setMentors([...mentors, newMentor]);
+    // Refresh mentors list
+    setMentors(userService.getMentorsForAdmin());
     
     // Send invitation email
     sendMentorInviteEmail(mentorData);
@@ -337,10 +312,10 @@ const ManageMentors = () => {
 };
 
 interface MentorTableProps {
-  mentors: Mentor[];
+  mentors: AdminDisplayMentor[];
   onStatusChange: (mentorId: string, status: "active" | "pending" | "inactive") => void;
   onDelete: (mentorId: string) => void;
-  onManageRates: (mentor: Mentor) => void;
+  onManageRates: (mentor: AdminDisplayMentor) => void;
 }
 
 const MentorTable = ({ mentors, onStatusChange, onDelete, onManageRates }: MentorTableProps) => {
@@ -366,8 +341,8 @@ const MentorTable = ({ mentors, onStatusChange, onDelete, onManageRates }: Mento
                   <div className="text-sm text-muted-foreground">{mentor.email}</div>
                 </TableCell>
                 <TableCell>
-                  <div>{mentor.jobTitle}</div>
-                  <div className="text-sm text-muted-foreground">{mentor.company}</div>
+                  <div>{mentor.jobTitle || "Not specified"}</div>
+                  <div className="text-sm text-muted-foreground">{mentor.company || "Not specified"}</div>
                 </TableCell>
                 <TableCell>{mentor.sessions}</TableCell>
                 <TableCell>

@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,92 +9,109 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Badge } from "@/components/ui/badge";
 import { PlusCircle, Search, Edit, Trash, UserCheck, UserX } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-
-interface Student {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  targetRole: string;
-  targetDomain: string;
-  targetSectors: string[];
-  status: "active" | "pending" | "inactive";
-  sessions: number;
-}
+import userService, { AdminDisplayStudent } from "@/services/userService";
 
 const ManageStudents = () => {
   const { toast } = useToast();
-  const [students, setStudents] = useState<Student[]>([
-    {
-      id: "s1",
-      name: "Alex Johnson",
-      email: "alex@example.com",
-      phone: "(555) 123-4567",
-      targetRole: "Software Developer",
-      targetDomain: "Web Development",
-      targetSectors: ["Technology", "Healthcare"],
-      status: "active",
-      sessions: 8
-    },
-    {
-      id: "s2",
-      name: "Sarah Williams",
-      email: "sarah@example.com",
-      phone: "(555) 234-5678",
-      targetRole: "Data Analyst",
-      targetDomain: "Business Intelligence",
-      targetSectors: ["Finance", "E-commerce"],
-      status: "active",
-      sessions: 4
-    },
-    {
-      id: "s3",
-      name: "James Miller",
-      email: "james@example.com",
-      phone: "(555) 345-6789",
-      targetRole: "Product Manager",
-      targetDomain: "SaaS Products",
-      targetSectors: ["Technology", "Education"],
-      status: "pending",
-      sessions: 0
-    },
-    {
-      id: "s4",
-      name: "Emma Davis",
-      email: "emma@example.com",
-      phone: "(555) 456-7890",
-      targetRole: "UX Designer",
-      targetDomain: "Mobile Applications",
-      targetSectors: ["Technology", "Media"],
-      status: "inactive",
-      sessions: 2
-    }
-  ]);
-  
+  const [students, setStudents] = useState<AdminDisplayStudent[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [tab, setTab] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [newStudentEmail, setNewStudentEmail] = useState("");
+  const [newStudentName, setNewStudentName] = useState("");
+  
+  // Fetch students from userService on mount and when students might change
+  useEffect(() => {
+    setStudents(userService.getStudentsForAdmin());
+  }, []);
   
   const handleStatusChange = (studentId: string, newStatus: "active" | "pending" | "inactive") => {
-    setStudents(students.map(student => 
-      student.id === studentId ? { ...student, status: newStatus } : student
-    ));
+    // Update status in userService
+    const success = userService.updateStudentStatus(studentId, newStatus);
     
-    const student = students.find(s => s.id === studentId);
-    
-    toast({
-      title: "Student Status Updated",
-      description: `${student?.name}'s status is now ${newStatus}.`
-    });
+    if (success) {
+      // Refresh students list
+      setStudents(userService.getStudentsForAdmin());
+      
+      const student = students.find(s => s.id === studentId);
+      
+      toast({
+        title: "Student Status Updated",
+        description: `${student?.name}'s status is now ${newStatus}.`
+      });
+    } else {
+      toast({
+        title: "Update Failed",
+        description: "Could not update student status.",
+        variant: "destructive"
+      });
+    }
   };
   
   const handleDelete = (studentId: string) => {
     const student = students.find(s => s.id === studentId);
-    setStudents(students.filter(student => student.id !== studentId));
+    
+    // Delete from userService
+    const success = userService.deleteUser(studentId);
+    
+    if (success) {
+      // Refresh students list
+      setStudents(userService.getStudentsForAdmin());
+      
+      toast({
+        title: "Student Removed",
+        description: `${student?.name} has been removed from the platform.`
+      });
+    } else {
+      toast({
+        title: "Deletion Failed",
+        description: "Could not remove student.",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  // Handle invitation of new student
+  const handleInviteStudent = () => {
+    // In a real app, this would send an email invitation
+    // For now, we'll simulate by adding a new pending user
+    
+    const newStudent: AdminDisplayStudent = {
+      id: `s${Date.now()}`,
+      name: newStudentName,
+      email: newStudentEmail,
+      phone: "",
+      targetRole: "",
+      targetDomain: "",
+      targetSectors: [],
+      status: "pending",
+      sessions: 0
+    };
+    
+    // Add new user to userService
+    userService.addUser({
+      id: newStudent.id,
+      role: "student",
+      email: newStudent.email,
+      studentProfile: {
+        name: newStudent.name,
+        email: newStudent.email,
+        whatsappReminders: false,
+        targetSectors: []
+      }
+    });
+    
+    // Refresh students list
+    setStudents(userService.getStudentsForAdmin());
+    
+    // Reset form and close dialog
+    setNewStudentEmail("");
+    setNewStudentName("");
+    setDialogOpen(false);
     
     toast({
-      title: "Student Removed",
-      description: `${student?.name} has been removed from the platform.`
+      title: "Invitation Sent",
+      description: "The student will receive an email with instructions to complete their profile."
     });
   };
   
@@ -103,7 +119,7 @@ const ManageStudents = () => {
     const matchesSearch = 
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.targetRole.toLowerCase().includes(searchTerm.toLowerCase());
+      (student.targetRole && student.targetRole.toLowerCase().includes(searchTerm.toLowerCase()));
     
     if (tab === "all") {
       return matchesSearch;
@@ -192,22 +208,27 @@ const ManageStudents = () => {
               <label htmlFor="email" className="text-sm font-medium">
                 Email Address
               </label>
-              <Input id="email" placeholder="student@example.com" type="email" />
+              <Input 
+                id="email" 
+                placeholder="student@example.com" 
+                type="email"
+                value={newStudentEmail}
+                onChange={(e) => setNewStudentEmail(e.target.value)} 
+              />
             </div>
             <div className="space-y-2">
               <label htmlFor="name" className="text-sm font-medium">
                 Full Name
               </label>
-              <Input id="name" placeholder="Jane Doe" />
+              <Input 
+                id="name" 
+                placeholder="Jane Doe"
+                value={newStudentName}
+                onChange={(e) => setNewStudentName(e.target.value)}
+              />
             </div>
             <div className="flex justify-end">
-              <Button onClick={() => {
-                setDialogOpen(false);
-                toast({
-                  title: "Invitation Sent",
-                  description: "The student will receive an email with instructions to complete their profile."
-                });
-              }}>
+              <Button onClick={handleInviteStudent}>
                 Send Invitation
               </Button>
             </div>
@@ -218,8 +239,9 @@ const ManageStudents = () => {
   );
 };
 
+// Keep the StudentTable component as it was
 interface StudentTableProps {
-  students: Student[];
+  students: AdminDisplayStudent[];
   onStatusChange: (studentId: string, status: "active" | "pending" | "inactive") => void;
   onDelete: (studentId: string) => void;
 }
@@ -247,17 +269,21 @@ const StudentTable = ({ students, onStatusChange, onDelete }: StudentTableProps)
                   <div className="text-sm text-muted-foreground">{student.email}</div>
                 </TableCell>
                 <TableCell>
-                  <div>{student.targetRole}</div>
-                  <div className="text-sm text-muted-foreground">{student.targetDomain}</div>
+                  <div>{student.targetRole || "Not specified"}</div>
+                  <div className="text-sm text-muted-foreground">{student.targetDomain || "Not specified"}</div>
                 </TableCell>
                 <TableCell>{student.sessions}</TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
-                    {student.targetSectors.map((sector, index) => (
-                      <Badge key={index} variant="outline" className="bg-secondary/50">
-                        {sector}
-                      </Badge>
-                    ))}
+                    {student.targetSectors && student.targetSectors.length > 0 ? (
+                      student.targetSectors.map((sector, index) => (
+                        <Badge key={index} variant="outline" className="bg-secondary/50">
+                          {sector}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-muted-foreground">None</span>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell>
