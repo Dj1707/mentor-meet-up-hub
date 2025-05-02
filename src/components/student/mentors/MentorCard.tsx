@@ -25,6 +25,7 @@ export interface MentorCardProps {
     sessionCount: number;
     expertise: string[];
     pastSectors?: string[];
+    sessionTypeIds?: string[]; // Added this property to match the filter usage
     availability: {
       date: string;
       slots: string[];

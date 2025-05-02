@@ -26,7 +26,7 @@ const StudentMentors = () => {
       return false;
     }
     
-    // Apply session type filter (assuming mentors have sessionTypeIds property)
+    // Apply session type filter - check if mentor.sessionTypeIds exists first
     if (sessionTypeFilter && mentor.sessionTypeIds && 
         !mentor.sessionTypeIds.includes(sessionTypeFilter)) {
       return false;

@@ -13,6 +13,7 @@ export const mentors = [
     sessionCount: 120,
     expertise: ["Career Guidance", "Technical Interviews", "Resume Review"],
     pastSectors: ["Technology", "Finance", "Education"],
+    sessionTypeIds: ["1", "2", "6"], // Adding session type IDs that match with sessionTypes.ts
     availability: [
       { date: "May 10, 2025", slots: ["10:00 AM", "2:00 PM", "4:00 PM"] },
       { date: "May 11, 2025", slots: ["11:00 AM", "3:00 PM"] },
@@ -31,6 +32,7 @@ export const mentors = [
     sessionCount: 87,
     expertise: ["Product Management", "Career Transition", "Interview Prep"],
     pastSectors: ["Technology", "Retail", "Healthcare"],
+    sessionTypeIds: ["2", "4", "8"], // Adding session type IDs
     availability: [
       { date: "May 9, 2025", slots: ["1:00 PM", "5:00 PM"] },
       { date: "May 10, 2025", slots: ["11:00 AM", "4:00 PM"] },
@@ -49,6 +51,7 @@ export const mentors = [
     sessionCount: 156,
     expertise: ["Leadership Development", "Career Growth", "Technical Management"],
     pastSectors: ["Technology", "Manufacturing", "Consulting"],
+    sessionTypeIds: ["4", "5", "12"], // Adding session type IDs
     availability: [
       { date: "May 11, 2025", slots: ["9:00 AM", "2:00 PM"] },
       { date: "May 12, 2025", slots: ["11:00 AM", "3:00 PM"] },
