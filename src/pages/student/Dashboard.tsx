@@ -1,8 +1,9 @@
+
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, BookOpen, Check, Link as LinkIcon, Star, Linkedin } from "lucide-react";
+import { Calendar, Clock, BookOpen, Check, Star, Linkedin, FileText } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -330,6 +331,7 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
   ];
   
   const handleBookSession = () => {
+    // Use the properly imported toast from useToast hook
     toast({
       title: "Session Booked Successfully!",
       description: `Your ${selectedType ? sessionTypes.find(type => type.id === selectedType)?.name : 'session'} has been scheduled.`,
@@ -600,7 +602,7 @@ const AvailableSessionsDialog = ({ open, setOpen }) => {
 
 const StudentDashboard = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
+  const { toast } = useToast(); // Properly get the toast function from useToast hook
   const studentName = user?.studentProfile?.name || "Student";
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   

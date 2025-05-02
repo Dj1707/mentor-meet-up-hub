@@ -16,7 +16,7 @@ import { SessionSummarySection, FeedbackItemProps } from "@/components/student/s
 import { SessionSubmissionUpload } from "@/components/student/sessions/SessionSubmissionUpload";
 import { SessionType, SubmissionType, SessionSubmission } from "@/types";
 import { sessionTypes, getSessionTypeById } from "@/data/sessionTypes";
-import { BookSessionDialog } from "@/components/student/sessions/BookSessionDialog";
+import { BookSessionDialog as ImportedBookSessionDialog } from "@/components/student/sessions/BookSessionDialog";
 
 interface SessionCardProps {
   id: string;
@@ -202,7 +202,7 @@ const SessionCard: React.FC<SessionCardProps> = ({
   );
 };
 
-const BookSessionDialog = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) => {
+const SessionBookingDialog = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) => {
   const [step, setStep] = useState(1);
   const [sessionType, setSessionType] = useState("");
   const [mentor, setMentor] = useState("");
@@ -944,7 +944,8 @@ const StudentSessions = () => {
         </TabsContent>
       </Tabs>
       
-      <BookSessionDialog open={bookingDialogOpen} setOpen={setBookingDialogOpen} />
+      {/* Use the imported BookSessionDialog component */}
+      <ImportedBookSessionDialog open={bookingDialogOpen} setOpen={setBookingDialogOpen} />
       
       <FeedbackDialog open={feedbackDialogOpen} setOpen={setFeedbackDialogOpen} type="leave" />
       <FeedbackDialog open={viewFeedbackDialogOpen} setOpen={setViewFeedbackDialogOpen} type="view" />

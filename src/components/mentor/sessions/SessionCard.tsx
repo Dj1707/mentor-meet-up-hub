@@ -1,9 +1,9 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, FileText, MessageSquare } from "lucide-react";
 import { SessionType, SessionFeedback } from "@/types";
+import { useToast } from "@/components/ui/use-toast";
 
 interface SessionCardProps {
   id: string;
@@ -48,6 +48,7 @@ export const SessionCard = ({
   onFeedbackSubmit,
   onViewSubmission
 }: SessionCardProps) => {
+  const { toast } = useToast();
   const needsSubmissionType = sessionType?.submissionType && sessionType.submissionType !== "none";
   
   return (
@@ -118,8 +119,8 @@ export const SessionCard = ({
                 // This is just a placeholder. In a real app, you would open a dialog to collect feedback
                 const feedback: SessionFeedback = {
                   rating: 5,
-                  notes: "Great session!", // Changed from 'comment' to 'notes'
-                  actionItems: ["Review resume format", "Practice interview questions"], // Added actionItems
+                  notes: "Great session!",
+                  actionItems: ["Review resume format", "Practice interview questions"],
                   timestamp: Date.now(),
                 };
                 onFeedbackSubmit(id, feedback);
