@@ -33,10 +33,12 @@ export const loadGoogleApiScript = (): Promise<void> => {
     script.defer = true;
     
     script.onload = () => {
+      console.log('Google API script loaded successfully');
       resolve();
     };
     
     script.onerror = () => {
+      console.error('Failed to load Google API script');
       reject(new Error('Failed to load Google API script'));
     };
     

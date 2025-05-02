@@ -3,7 +3,6 @@ import { toast } from "@/hooks/use-toast";
 import googleAuthService from "./googleAuthService";
 import { GoogleCalendarEvent, GoogleCalendarAttendee } from "@/types/calendar.types";
 import { Session } from "@/types/session.types";
-import { format } from "date-fns";
 
 /**
  * Service to handle Google Calendar operations
@@ -20,6 +19,11 @@ class GoogleCalendarService {
       
       if (!token) {
         console.error('No auth token available');
+        toast({
+          title: "Not Connected",
+          description: "Please connect your Google Calendar first.",
+          variant: "destructive"
+        });
         return null;
       }
       
@@ -28,7 +32,7 @@ class GoogleCalendarService {
       
       // Format event title
       const sessionType = session.sessionType?.name || "Mentoring Session";
-      const eventTitle = `${sessionType} with ${mentorEmail.split('@')[0]}`;
+      const eventTitle = `${sessionType} with ${session.mentorName || mentorEmail.split('@')[0]}`;
       
       // Prepare attendees
       const attendees: GoogleCalendarAttendee[] = [
@@ -70,7 +74,9 @@ class GoogleCalendarService {
         }
       };
       
-      // Make an actual API call to create the event
+      console.log("Creating calendar event:", event);
+      
+      // Make an API call to create the event
       const response = await fetch(`${this.apiBase}/calendars/primary/events?conferenceDataVersion=1`, {
         method: 'POST',
         headers: {

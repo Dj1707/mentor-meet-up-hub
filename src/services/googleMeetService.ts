@@ -19,6 +19,11 @@ class GoogleMeetService {
       
       if (!token) {
         console.error('No auth token available');
+        toast({
+          title: "Not Connected",
+          description: "Please connect your Google Calendar first.",
+          variant: "destructive"
+        });
         return null;
       }
       
@@ -40,6 +45,8 @@ class GoogleMeetService {
           }
         }
       };
+      
+      console.log("Creating Meet conference:", event);
       
       const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1', {
         method: 'POST',
@@ -114,8 +121,10 @@ class GoogleMeetService {
       }
       
       // Unfortunately, there's no direct API to get Meet conference details.
-      // We'd need to find the associated calendar event.
-      // This is a simplified approach that assumes the Meet link follows a pattern.
+      // The conferenceId is typically associated with a calendar event.
+      // In a production app, we'd query the calendar for events with this conference ID.
+      
+      // For now, construct the Meet link directly
       const meetLink = `https://meet.google.com/${conferenceId}`;
       
       return { meetLink };

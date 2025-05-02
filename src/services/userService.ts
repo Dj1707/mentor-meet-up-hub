@@ -73,7 +73,7 @@ class UserService {
             linkedIn: "linkedin.com/in/taylorsmith",
             profilePicture: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
             jobTitle: "Senior Software Engineer",
-            company: "Tech Innovations Inc.",
+            company: "Google",
             role: "Technical Mentor",
             bio: "Experienced software engineer with 10+ years in the industry. Passionate about helping new developers grow their skills and career.",
             panNumber: "ABCPK1234Z",
@@ -93,7 +93,53 @@ class UserService {
             pastSectors: ["Technology", "Education", "Finance"],
             sessionCount: 24,
             rating: 4.8,
-            onboardingStatus: "active"
+            onboardingStatus: "active",
+            expertise: ["Career Guidance", "Technical Interviews", "Resume Review"],
+            sessionTypeIds: ["1", "2", "6"]
+          }
+        },
+        {
+          id: "mentor2",
+          role: "mentor",
+          email: "alex@example.com",
+          mentorProfile: {
+            name: "Alex Johnson",
+            email: "alex@example.com",
+            phone: "555-456-7890",
+            linkedIn: "linkedin.com/in/alexjohnson",
+            profilePicture: "https://images.unsplash.com/photo-1560250097-0b93528c311a",
+            jobTitle: "Product Manager",
+            company: "Amazon",
+            role: "Product Mentor",
+            bio: "Experienced PM with background in both startups and large tech companies. Specialized in product strategy and user research.",
+            pastSectors: ["Technology", "Retail", "Healthcare"],
+            sessionCount: 87,
+            rating: 4.7,
+            onboardingStatus: "active",
+            expertise: ["Product Management", "Career Transition", "Interview Prep"],
+            sessionTypeIds: ["2", "4", "8"]
+          }
+        },
+        {
+          id: "mentor3",
+          role: "mentor",
+          email: "priya@example.com",
+          mentorProfile: {
+            name: "Priya Singh",
+            email: "priya@example.com",
+            phone: "555-789-0123",
+            linkedIn: "linkedin.com/in/priyasingh",
+            profilePicture: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2",
+            jobTitle: "Engineering Director",
+            company: "Microsoft",
+            role: "Leadership Mentor",
+            bio: "15+ years in tech leadership. Specialized in helping engineers advance their careers and develop leadership skills.",
+            pastSectors: ["Technology", "Manufacturing", "Consulting"],
+            sessionCount: 156,
+            rating: 4.8,
+            onboardingStatus: "active",
+            expertise: ["Leadership Development", "Career Growth", "Technical Management"],
+            sessionTypeIds: ["4", "5", "12"]
           }
         },
         {

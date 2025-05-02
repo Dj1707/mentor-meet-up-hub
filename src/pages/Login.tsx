@@ -116,29 +116,7 @@ const Login = () => {
               </p>
             </div>
             
-            <div className="mt-8 border-t pt-4">
-              <p className="text-xs text-muted-foreground text-center mb-2">Demo accounts:</p>
-              <div className="grid grid-cols-3 gap-2">
-                <Button variant="outline" size="sm" onClick={() => {
-                  setEmail("student@example.com");
-                  setPassword("password");
-                }}>
-                  Student
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => {
-                  setEmail("mentor@example.com");
-                  setPassword("password");
-                }}>
-                  Mentor
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => {
-                  setEmail("admin@example.com");
-                  setPassword("password");
-                }}>
-                  Admin
-                </Button>
-              </div>
-            </div>
+            {/* Demo accounts section removed */}
           </CardContent>
         </Card>
       </div>
