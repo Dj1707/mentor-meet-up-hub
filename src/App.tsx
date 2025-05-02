@@ -10,6 +10,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
+import GoogleAuthCallback from "./components/auth/GoogleAuthCallback";
 
 // Dashboard pages
 import StudentDashboard from "./pages/student/Dashboard";
@@ -79,6 +80,7 @@ const App = () => {
                 {/* Auth Routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
                 
                 {/* Student Routes */}
                 <Route path="/student" element={<StudentDashboard />} />

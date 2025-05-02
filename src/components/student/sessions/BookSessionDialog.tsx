@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -125,7 +124,7 @@ export const BookSessionDialog = ({ open, setOpen, onSessionBooked }: BookSessio
                 studentId: user?.id || "",
                 startTime: startTime,
                 endTime: endTime,
-                status: "scheduled",
+                status: "scheduled" as const,  // Fix the type error by specifying literal type
                 meetingLink: meetingLink
               },
               selectedMentor?.email || "mentor@example.com",
@@ -156,7 +155,7 @@ export const BookSessionDialog = ({ open, setOpen, onSessionBooked }: BookSessio
         studentId: user?.id || "",
         startTime: startTime,
         endTime: endTime,
-        status: "scheduled",
+        status: "scheduled" as const,  // Fix the type error by using const assertion
         meetingLink: meetingLink,
         calendarEventId: calendarEventId,
         meetProvider: isGoogleConnected && addToCalendar ? 'google' : 'other'

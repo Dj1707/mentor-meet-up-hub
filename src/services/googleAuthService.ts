@@ -7,6 +7,7 @@ const GOOGLE_AUTH_CONFIG = {
   apiKey: import.meta.env.VITE_GOOGLE_API_KEY || '',
   scope: 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events',
   discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
+  redirectUri: import.meta.env.VITE_GOOGLE_REDIRECT_URI || `${window.location.origin}/auth/google/callback`
 };
 
 // Token storage keys
@@ -39,16 +40,39 @@ class GoogleAuthService {
     if (this.isInitialized) return true;
     
     try {
-      // In a real implementation, this would load the Google API client library
-      // For now, we're simulating it
-      console.log('Initializing Google API client');
-      
-      // Simulate loading the Google API client
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      this.isInitialized = true;
-      this.loadStoredToken();
-      return true;
+      // Check if Google API client is available
+      if (typeof gapi !== 'undefined' && gapi.client) {
+        await new Promise<void>((resolve, reject) => {
+          gapi.load('client:auth2', {
+            callback: () => {
+              gapi.client.init({
+                apiKey: GOOGLE_AUTH_CONFIG.apiKey,
+                clientId: GOOGLE_AUTH_CONFIG.clientId,
+                discoveryDocs: GOOGLE_AUTH_CONFIG.discoveryDocs,
+                scope: GOOGLE_AUTH_CONFIG.scope
+              }).then(() => {
+                this.authInstance = gapi.auth2.getAuthInstance();
+                this.isInitialized = true;
+                resolve();
+              }).catch((error: any) => {
+                console.error('Error initializing Google API client:', error);
+                reject(error);
+              });
+            },
+            onerror: (error: any) => {
+              console.error('Error loading Google API client:', error);
+              reject(error);
+            }
+          });
+        });
+        
+        return true;
+      } else {
+        // Fallback if gapi isn't available
+        console.log('Google API client not available, using OAuth redirect flow');
+        this.isInitialized = true;
+        return true;
+      }
     } catch (error) {
       console.error('Failed to initialize Google API client:', error);
       toast({
@@ -67,27 +91,43 @@ class GoogleAuthService {
     if (!this.isInitialized) await this.init();
     
     try {
-      // Simulate Google sign in process
-      console.log('Signing in to Google');
-      
-      // In a real implementation, this would redirect to Google OAuth
-      // and handle the callback with a token
-      
-      // Simulate successful authentication
-      this.token = {
-        accessToken: 'simulated-access-token-' + Math.random().toString(36).substring(2, 15),
-        refreshToken: 'simulated-refresh-token-' + Math.random().toString(36).substring(2, 15),
-        expiresAt: Date.now() + 3600000, // 1 hour expiry
-      };
-      
-      this.storeToken();
-      
-      toast({
-        title: "Google Calendar Connected",
-        description: "Successfully connected to your Google Calendar.",
-      });
-      
-      return true;
+      // If gapi auth2 is available, use it
+      if (this.authInstance) {
+        const googleUser = await this.authInstance.signIn();
+        const authResponse = googleUser.getAuthResponse(true);
+        
+        this.token = {
+          accessToken: authResponse.access_token,
+          refreshToken: authResponse.refresh_token,
+          expiresAt: Date.now() + authResponse.expires_in * 1000
+        };
+        
+        this.storeToken();
+        
+        toast({
+          title: "Google Calendar Connected",
+          description: "Successfully connected to your Google Calendar.",
+        });
+        
+        return true;
+      } else {
+        // Use OAuth redirect flow
+        const state = Math.random().toString(36).substring(2, 15);
+        localStorage.setItem('googleOAuthState', state);
+        
+        const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+        authUrl.searchParams.append('client_id', GOOGLE_AUTH_CONFIG.clientId);
+        authUrl.searchParams.append('redirect_uri', GOOGLE_AUTH_CONFIG.redirectUri);
+        authUrl.searchParams.append('response_type', 'code');
+        authUrl.searchParams.append('scope', GOOGLE_AUTH_CONFIG.scope);
+        authUrl.searchParams.append('access_type', 'offline');
+        authUrl.searchParams.append('prompt', 'consent');
+        authUrl.searchParams.append('state', state);
+        
+        // Redirect to Google OAuth
+        window.location.href = authUrl.toString();
+        return false; // This will actually not return as we're redirecting
+      }
     } catch (error) {
       console.error('Google sign in error:', error);
       toast({
@@ -100,9 +140,113 @@ class GoogleAuthService {
   }
 
   /**
+   * Handle OAuth callback
+   */
+  async handleCallback(search: string): Promise<boolean> {
+    const urlParams = new URLSearchParams(search);
+    const code = urlParams.get('code');
+    const state = urlParams.get('state');
+    const error = urlParams.get('error');
+    
+    // Check if there was an error
+    if (error) {
+      console.error('OAuth error:', error);
+      toast({
+        title: "Authentication Failed",
+        description: "Google authentication failed: " + error,
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    // Validate state to prevent CSRF attacks
+    const savedState = localStorage.getItem('googleOAuthState');
+    if (!state || state !== savedState) {
+      console.error('Invalid OAuth state');
+      toast({
+        title: "Authentication Failed",
+        description: "Invalid authentication state. Please try again.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    // Clean up state
+    localStorage.removeItem('googleOAuthState');
+    
+    if (!code) {
+      console.error('No authorization code received');
+      toast({
+        title: "Authentication Failed",
+        description: "No authorization code received from Google.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    // Exchange code for token
+    try {
+      // In a production app, this should be done server-side
+      // For this demo, we'll simulate it as if we received the token
+      console.log('Exchanging authorization code for tokens...');
+      
+      // Simulate token exchange - in a real app, this would be an API call
+      // to your backend which would securely exchange the code for tokens
+      const tokenResponse = await this.simulateTokenExchange(code);
+      
+      this.token = {
+        accessToken: tokenResponse.access_token,
+        refreshToken: tokenResponse.refresh_token,
+        expiresAt: Date.now() + tokenResponse.expires_in * 1000
+      };
+      
+      this.storeToken();
+      
+      toast({
+        title: "Google Calendar Connected",
+        description: "Successfully connected to your Google Calendar.",
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Failed to exchange code for tokens:', error);
+      toast({
+        title: "Authentication Failed",
+        description: "Failed to complete Google authentication.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Simulate token exchange (in a real app this would be a server call)
+   * This is a placeholder for demo purposes only
+   */
+  private async simulateTokenExchange(code: string): Promise<any> {
+    // This would normally be a fetch call to your backend
+    console.log(`Simulating token exchange for code: ${code}`);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    return {
+      access_token: 'simulated-access-token-' + Math.random().toString(36).substring(2, 15),
+      refresh_token: 'simulated-refresh-token-' + Math.random().toString(36).substring(2, 15),
+      expires_in: 3600,
+      token_type: 'Bearer'
+    };
+  }
+
+  /**
    * Sign out from Google
    */
   signOut(): void {
+    // If using gapi, sign out from there too
+    if (this.authInstance) {
+      this.authInstance.signOut().catch((error: any) => {
+        console.error('Error signing out from Google:', error);
+      });
+    }
+    
     this.token = null;
     localStorage.removeItem(TOKEN_STORAGE_KEY);
     localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
@@ -122,7 +266,8 @@ class GoogleAuthService {
     
     // Check if token is expired
     if (Date.now() > this.token.expiresAt) {
-      // In real implementation, this would try to refresh the token
+      // Try to refresh the token if available
+      // For now, we'll just consider it not authenticated
       return false;
     }
     
@@ -152,10 +297,12 @@ class GoogleAuthService {
     if (!this.token?.refreshToken) return false;
     
     try {
-      // In real implementation, this would make an API call to refresh the token
+      // In a real implementation, this would make an API call to refresh the token
       console.log('Refreshing access token');
       
-      // Simulate token refresh
+      // Simulate token refresh - in a real app this would be a server-side API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       this.token = {
         ...this.token,
         accessToken: 'refreshed-access-token-' + Math.random().toString(36).substring(2, 15),

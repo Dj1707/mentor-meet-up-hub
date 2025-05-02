@@ -2,15 +2,15 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Video } from "lucide-react";
+import { Calendar, Video, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CalendarSyncSettingsDialog } from "@/components/shared/CalendarSyncSettingsDialog";
-import googleAuthService from "@/services/googleAuthService";
 import { CalendarSettings as CalendarSettingsType } from "@/types/calendar.types";
+import useGoogleAuth from "@/hooks/useGoogleAuth";
 
 export const CalendarSettings = () => {
-  const [isGoogleConnected, setIsGoogleConnected] = useState(false);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const { isConnected, isInitializing, connectGoogle } = useGoogleAuth();
   const [calendarSettings, setCalendarSettings] = useState<CalendarSettingsType>({
     provider: 'none',
     syncEnabled: false,
@@ -22,48 +22,30 @@ export const CalendarSettings = () => {
   });
   
   useEffect(() => {
-    // Check if user is authenticated with Google
-    const checkAuth = async () => {
-      const authenticated = googleAuthService.isAuthenticated();
-      setIsGoogleConnected(authenticated);
-      
-      if (authenticated) {
-        setCalendarSettings(prev => ({
-          ...prev,
-          provider: 'google',
-          syncEnabled: true
-        }));
-      }
-    };
-    
-    checkAuth();
-  }, []);
+    // Update settings when connection status changes
+    if (isConnected) {
+      setCalendarSettings(prev => ({
+        ...prev,
+        provider: 'google',
+        syncEnabled: true
+      }));
+    }
+  }, [isConnected]);
 
   const handleSaveSettings = (settings: CalendarSettingsType) => {
     setCalendarSettings(settings);
     
     // In a real app, this would save to backend
     console.log("Calendar settings saved:", settings);
-    
-    // Update authentication status
-    setIsGoogleConnected(settings.provider === 'google');
   };
 
   const handleConnectGoogle = async () => {
-    if (isGoogleConnected) {
+    if (isConnected) {
       // Show settings dialog if already connected
       setSettingsDialogOpen(true);
     } else {
       // Connect to Google
-      const success = await googleAuthService.signIn();
-      if (success) {
-        setIsGoogleConnected(true);
-        setCalendarSettings(prev => ({
-          ...prev,
-          provider: 'google',
-          syncEnabled: true
-        }));
-      }
+      await connectGoogle();
     }
   };
 
@@ -83,17 +65,24 @@ export const CalendarSettings = () => {
               <div>
                 <h4 className="text-sm font-medium">Google Calendar</h4>
                 <p className="text-sm text-muted-foreground">
-                  {isGoogleConnected ? 'Connected' : 'Not connected'}
+                  {isInitializing ? 'Checking status...' : (isConnected ? 'Connected' : 'Not connected')}
                 </p>
               </div>
-              {isGoogleConnected && calendarSettings.syncEnabled && (
+              {isConnected && calendarSettings.syncEnabled && (
                 <Badge variant="outline" className="ml-2 bg-green-50 text-green-600 hover:bg-green-50">
                   Active
                 </Badge>
               )}
             </div>
-            <Button onClick={handleConnectGoogle}>
-              {isGoogleConnected ? 'Manage Settings' : 'Connect'}
+            <Button onClick={handleConnectGoogle} disabled={isInitializing}>
+              {isInitializing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Initializing
+                </>
+              ) : (
+                isConnected ? 'Manage Settings' : 'Connect'
+              )}
             </Button>
           </div>
           
@@ -103,13 +92,13 @@ export const CalendarSettings = () => {
               <div>
                 <h4 className="text-sm font-medium">Google Meet</h4>
                 <p className="text-sm text-muted-foreground">
-                  {isGoogleConnected ? 'Enabled for sessions' : 'Not enabled'}
+                  {isConnected ? 'Enabled for sessions' : 'Not enabled'}
                 </p>
               </div>
             </div>
           </div>
           
-          {isGoogleConnected && (
+          {isConnected && (
             <div className="text-sm text-muted-foreground mt-4 p-3 bg-muted rounded border">
               <p>Your calendar is synced automatically when you book, reschedule, or cancel sessions.</p>
             </div>
