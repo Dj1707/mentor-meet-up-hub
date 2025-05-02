@@ -3,14 +3,14 @@ import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, BookOpen, Check, Star, Linkedin, FileText } from "lucide-react";
+import { Calendar, Clock, BookOpen, Check, Star, Linkedin, FileText, Link as LinkIcon } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { BookSessionDialog } from "@/components/student/sessions/BookSessionDialog";
 import { sessionTypes, getSessionTypeById } from "@/data/sessionTypes";
 
