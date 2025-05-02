@@ -53,6 +53,14 @@ export interface Session {
   feedbackId?: string;
   meetingLink?: string;
   submission?: SessionSubmission;
+  // New fields for Google Calendar integration
+  calendarEventId?: string;
+  meetProvider?: 'google' | 'other';
+  conferenceData?: {
+    conferenceId: string;
+    meetingLink: string;
+    accessCode?: string;
+  }
 }
 
 export interface TimeSlot {
@@ -65,6 +73,8 @@ export interface TimeSlot {
   sessionTypeIds: string[];
   meetingLink?: string;
   recurring?: "none" | "daily" | "weekly" | "biweekly";
+  // New fields for Google Calendar integration
+  calendarEventId?: string;
 }
 
 export interface SessionFeedback {

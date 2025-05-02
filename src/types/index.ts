@@ -15,3 +15,4 @@ export * from './analytics.types';
 export * from './action.types';
 export * from './payment.types';
 export * from './reminder.types';
+export * from './calendar.types';

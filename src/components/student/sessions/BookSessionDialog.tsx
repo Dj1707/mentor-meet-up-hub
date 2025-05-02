@@ -1,16 +1,22 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { sessionTypes } from "@/data/sessionTypes";
-import { Search } from "lucide-react";
+import { Search, Calendar, Video } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { FileText, Link as LinkIcon, File, ExternalLink } from "lucide-react";
 import { SessionSubmissionUpload } from "./SessionSubmissionUpload";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
+import googleAuthService from "@/services/googleAuthService";
+import googleCalendarService from "@/services/googleCalendarService";
+import googleMeetService from "@/services/googleMeetService";
+import { sendSessionBookingEmails } from "@/services/emailService";
+import { useAuth } from "@/context/AuthContext";
 
 interface BookSessionDialogProps {
   open: boolean;
@@ -19,11 +25,27 @@ interface BookSessionDialogProps {
 }
 
 export const BookSessionDialog = ({ open, setOpen, onSessionBooked }: BookSessionDialogProps) => {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [selectedSessionType, setSelectedSessionType] = useState("");
   const [mentor, setMentor] = useState("");
   const [showSubmission, setShowSubmission] = useState(false);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
+  const [isGoogleConnected] = useState(googleAuthService.isAuthenticated());
+  const [addToCalendar, setAddToCalendar] = useState(true);
+  const [isBooking, setIsBooking] = useState(false);
+  
+  // Reset state when dialog opens
+  useEffect(() => {
+    if (open) {
+      setStep(1);
+      setSelectedSessionType("");
+      setMentor("");
+      setShowSubmission(false);
+      setSelectedTimeSlot("");
+    }
+  }, [open]);
   
   const handleNext = () => {
     setStep(step + 1);
@@ -46,28 +68,142 @@ export const BookSessionDialog = ({ open, setOpen, onSessionBooked }: BookSessio
     }
   };
   
-  const handleBooking = () => {
-    // Handle booking logic
-    toast({
-      title: "Session Booked",
-      description: "Your session has been successfully booked. You'll receive a confirmation email shortly.",
-    });
-    
-    if (onSessionBooked) {
-      onSessionBooked();
+  const handleBooking = async () => {
+    if (!selectedSessionType || !mentor || !selectedTimeSlot) {
+      toast({
+        title: "Missing Information",
+        description: "Please complete all required selections.",
+        variant: "destructive"
+      });
+      return;
     }
     
-    setOpen(false);
-    setStep(1);
-    setSelectedSessionType("");
-    setMentor("");
-    setShowSubmission(false);
+    setIsBooking(true);
+    
+    try {
+      // Get the selected session type
+      const sessionTypeObj = sessionTypes.find(type => type.id === selectedSessionType);
+      
+      // Get the selected mentor
+      const selectedMentor = mentors.find(m => m.id === mentor);
+      
+      // Parse the selected time slot
+      const [date, timeRange] = selectedTimeSlot.split('|');
+      const [startTimeStr, endTimeStr] = timeRange.split('-');
+      
+      // Create Date objects for start and end times
+      const startTime = new Date(`${date} ${startTimeStr.trim()}`);
+      const endTime = new Date(`${date} ${endTimeStr.trim()}`);
+      
+      // Generate session ID
+      const sessionId = `session-${Date.now()}`;
+      
+      // Default meeting link (in case Google Meet creation fails)
+      let meetingLink = `https://meet.google.com/simulated-${Math.random().toString(36).substring(2, 9)}`;
+      let calendarEventId = null;
+      
+      // If Google Calendar is connected and user wants to add to calendar
+      if (isGoogleConnected && addToCalendar) {
+        try {
+          // Create Google Meet link
+          const meetResult = await googleMeetService.createMeeting(
+            sessionTypeObj?.name || "Mentoring Session",
+            startTime,
+            endTime
+          );
+          
+          if (meetResult) {
+            meetingLink = meetResult.meetLink;
+            
+            // Create calendar event with the meet link
+            const eventResult = await googleCalendarService.createEventFromSession(
+              {
+                id: sessionId,
+                sessionTypeId: selectedSessionType,
+                sessionType: sessionTypeObj,
+                mentorId: selectedMentor?.id || "",
+                studentId: user?.id || "",
+                startTime: startTime,
+                endTime: endTime,
+                status: "scheduled",
+                meetingLink: meetingLink
+              },
+              selectedMentor?.email || "mentor@example.com",
+              user?.email || "student@example.com"
+            );
+            
+            if (eventResult) {
+              calendarEventId = eventResult.eventId;
+              
+              // If the calendar event has its own meet link, use that instead
+              if (eventResult.meetLink) {
+                meetingLink = eventResult.meetLink;
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error creating Google Calendar event or Meet:", error);
+          // Continue with booking even if Google integration fails
+        }
+      }
+      
+      // Prepare session data
+      const newSession = {
+        id: sessionId,
+        sessionTypeId: selectedSessionType,
+        sessionType: sessionTypeObj,
+        mentorId: selectedMentor?.id || "",
+        studentId: user?.id || "",
+        startTime: startTime,
+        endTime: endTime,
+        status: "scheduled",
+        meetingLink: meetingLink,
+        calendarEventId: calendarEventId,
+        meetProvider: isGoogleConnected && addToCalendar ? 'google' : 'other'
+      };
+      
+      console.log("New session booked:", newSession);
+      
+      // Send confirmation emails with calendar invites
+      await sendSessionBookingEmails(
+        newSession,
+        user?.email || "student@example.com",
+        selectedMentor?.email || "mentor@example.com",
+        meetingLink
+      );
+      
+      toast({
+        title: "Session Booked",
+        description: "Your session has been successfully booked. You'll receive a confirmation email shortly.",
+      });
+      
+      if (onSessionBooked) {
+        onSessionBooked();
+      }
+      
+      setOpen(false);
+      setStep(1);
+      setSelectedSessionType("");
+      setMentor("");
+      setShowSubmission(false);
+      setSelectedTimeSlot("");
+      
+    } catch (error) {
+      console.error("Error booking session:", error);
+      toast({
+        title: "Booking Error",
+        description: "There was an error booking your session. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsBooking(false);
+    }
   };
   
   const mentors = [
-    { id: "1", name: "Taylor Smith", expertise: "Career Guidance", image: "" },
-    { id: "2", name: "Jordan Lee", expertise: "Technical Interviews", image: "" },
-    { id: "3", name: "Morgan Jones", expertise: "Resume Review", image: "" },
+    { id: "1", name: "Taylor Smith", email: "taylor.smith@example.com", expertise: "Career Guidance", image: "" },
+    { id: "2", name: "Jordan Lee", email: "jordan.lee@example.com", expertise: "Technical Interviews", image: "" },
+    { id: "3", name: "Morgan Jones", email: "morgan.jones@example.com", expertise: "Resume Review", image: "" },
   ];
 
   const getSelectedSessionType = () => {
@@ -116,6 +252,14 @@ export const BookSessionDialog = ({ open, setOpen, onSessionBooked }: BookSessio
     setShowSubmission(false);
     setStep(3);
   };
+  
+  // Available time slots (would be fetched from an API in a real app)
+  const timeSlots = [
+    { id: "1", date: "2025-05-16", startTime: "3:00 PM", endTime: "3:45 PM" },
+    { id: "2", date: "2025-05-16", startTime: "4:00 PM", endTime: "4:45 PM" },
+    { id: "3", date: "2025-05-17", startTime: "10:00 AM", endTime: "10:45 AM" },
+    { id: "4", date: "2025-05-17", startTime: "2:00 PM", endTime: "2:45 PM" },
+  ];
   
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -225,27 +369,50 @@ export const BookSessionDialog = ({ open, setOpen, onSessionBooked }: BookSessio
           <ScrollArea className="max-h-[60vh]">
             <div className="space-y-4 pr-4">
               <div className="grid grid-cols-1 gap-4">
-                <div className="p-4 border rounded-md cursor-pointer hover:border-primary/50">
-                  <div className="font-medium">May 16, 2025</div>
-                  <div className="text-sm text-muted-foreground">3:00 PM - 3:45 PM</div>
-                </div>
-                <div className="p-4 border rounded-md cursor-pointer hover:border-primary/50">
-                  <div className="font-medium">May 16, 2025</div>
-                  <div className="text-sm text-muted-foreground">4:00 PM - 4:45 PM</div>
-                </div>
-                <div className="p-4 border rounded-md cursor-pointer hover:border-primary/50">
-                  <div className="font-medium">May 17, 2025</div>
-                  <div className="text-sm text-muted-foreground">10:00 AM - 10:45 AM</div>
-                </div>
-                <div className="p-4 border rounded-md cursor-pointer hover:border-primary/50">
-                  <div className="font-medium">May 17, 2025</div>
-                  <div className="text-sm text-muted-foreground">2:00 PM - 2:45 PM</div>
-                </div>
+                {timeSlots.map((slot) => {
+                  const formattedDate = new Date(slot.date).toLocaleDateString('en-US', {
+                    month: 'long', day: 'numeric', year: 'numeric'
+                  });
+                  const timeValue = `${slot.date}|${slot.startTime} - ${slot.endTime}`;
+                  
+                  return (
+                    <div 
+                      key={slot.id}
+                      className={`p-4 border rounded-md cursor-pointer transition-colors ${
+                        selectedTimeSlot === timeValue ? "border-primary bg-primary/5" : "hover:border-primary/50"
+                      }`}
+                      onClick={() => setSelectedTimeSlot(timeValue)}
+                    >
+                      <div className="font-medium">{formattedDate}</div>
+                      <div className="text-sm text-muted-foreground">{slot.startTime} - {slot.endTime}</div>
+                    </div>
+                  );
+                })}
               </div>
+              
+              {/* Google Calendar integration option */}
+              {isGoogleConnected && (
+                <div className="flex items-center space-x-2 py-2">
+                  <Switch 
+                    id="add-to-calendar" 
+                    checked={addToCalendar}
+                    onCheckedChange={setAddToCalendar}
+                  />
+                  <div className="flex items-center">
+                    <Label htmlFor="add-to-calendar" className="mr-2">Add to Google Calendar</Label>
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </div>
+              )}
               
               <div className="flex justify-between">
                 <Button variant="outline" onClick={handlePrevious}>Previous</Button>
-                <Button onClick={handleBooking}>Book Session</Button>
+                <Button 
+                  onClick={handleBooking} 
+                  disabled={!selectedTimeSlot || isBooking}
+                >
+                  {isBooking ? "Booking..." : "Book Session"}
+                </Button>
               </div>
             </div>
           </ScrollArea>

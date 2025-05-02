@@ -7,6 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { sessionTypes } from "@/data/sessionTypes";
+import { Switch } from "@/components/ui/switch";
+import googleAuthService from "@/services/googleAuthService";
+import googleCalendarService from "@/services/googleCalendarService";
+import googleMeetService from "@/services/googleMeetService";
 
 interface AddAvailabilityDialogProps {
   open: boolean;
@@ -20,6 +24,9 @@ export const AddAvailabilityDialog = ({ open, setOpen }: AddAvailabilityDialogPr
   const [endTime, setEndTime] = useState("");
   const [selectedSessionTypes, setSelectedSessionTypes] = useState<string[]>([]);
   const [recurringSchedule, setRecurringSchedule] = useState("none");
+  const [addToCalendar, setAddToCalendar] = useState(true);
+  const [generateMeetLink, setGenerateMeetLink] = useState(true);
+  const [isGoogleConnected] = useState(googleAuthService.isAuthenticated());
   
   const toggleSessionType = (id: string) => {
     setSelectedSessionTypes(prev => 
@@ -29,7 +36,7 @@ export const AddAvailabilityDialog = ({ open, setOpen }: AddAvailabilityDialogPr
     );
   };
   
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!selectedDate || !startTime || !endTime) {
       toast({
         title: "Missing Information",
@@ -39,17 +46,96 @@ export const AddAvailabilityDialog = ({ open, setOpen }: AddAvailabilityDialogPr
       return;
     }
     
-    toast({
-      title: "Availability Added",
-      description: `Your availability for ${selectedDate} has been added successfully.`
-    });
-    
-    setSelectedDate("");
-    setStartTime("");
-    setEndTime("");
-    setSelectedSessionTypes([]);
-    setRecurringSchedule("none");
-    setOpen(false);
+    try {
+      // Convert inputs to Date objects
+      const startDateTime = new Date(`${selectedDate}T${startTime}`);
+      const endDateTime = new Date(`${selectedDate}T${endTime}`);
+      
+      // Check if the end time is after the start time
+      if (endDateTime <= startDateTime) {
+        toast({
+          title: "Invalid Time Range",
+          description: "End time must be after start time.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // If Google Calendar is connected and adding to calendar is enabled
+      let calendarEventId = undefined;
+      let meetingLink = undefined;
+      
+      if (isGoogleConnected && addToCalendar) {
+        // Check calendar availability
+        const isAvailable = await googleCalendarService.checkAvailability(startDateTime, endDateTime);
+        
+        if (!isAvailable) {
+          const proceed = window.confirm("This time conflicts with an existing event in your calendar. Do you want to proceed anyway?");
+          if (!proceed) return;
+        }
+        
+        // If generating Meet link is enabled
+        if (generateMeetLink) {
+          const meetResult = await googleMeetService.createMeeting(
+            "Office Hours", 
+            startDateTime, 
+            endDateTime
+          );
+          
+          if (meetResult) {
+            meetingLink = meetResult.meetLink;
+          }
+        }
+        
+        // Create a calendar event for this availability slot
+        // In a real implementation, this would create an actual calendar event
+        console.log("Would create calendar event:", {
+          startDateTime,
+          endDateTime,
+          meetingLink
+        });
+        
+        // Simulate event creation
+        calendarEventId = `event-${Date.now()}`;
+      }
+      
+      // Format the data for display/storage
+      const availabilityData = {
+        date: selectedDate,
+        startTime: startTime,
+        endTime: endTime,
+        sessionTypes: selectedSessionTypes.map(id => {
+          const type = sessionTypes.find(t => t.id === id);
+          return type ? type.name : id;
+        }),
+        recurring: recurringSchedule,
+        calendarEventId,
+        meetingLink
+      };
+      
+      console.log("Availability data:", availabilityData);
+      
+      toast({
+        title: "Availability Added",
+        description: `Your availability for ${selectedDate} has been added successfully.`,
+      });
+      
+      // Reset the form
+      setSelectedDate("");
+      setStartTime("");
+      setEndTime("");
+      setSelectedSessionTypes([]);
+      setRecurringSchedule("none");
+      setOpen(false);
+      
+    } catch (error) {
+      console.error("Error saving availability:", error);
+      toast({
+        title: "Error",
+        description: "There was an error saving your availability. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
   
   return (
@@ -135,6 +221,32 @@ export const AddAvailabilityDialog = ({ open, setOpen }: AddAvailabilityDialogPr
               </SelectContent>
             </Select>
           </div>
+          
+          {/* New calendar integration options */}
+          {isGoogleConnected && (
+            <div className="space-y-4 pt-2 border-t">
+              <div className="text-sm font-medium">Google Calendar Options</div>
+              
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  id="add-to-calendar" 
+                  checked={addToCalendar}
+                  onCheckedChange={setAddToCalendar}
+                />
+                <Label htmlFor="add-to-calendar">Add to my Google Calendar</Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  id="generate-meet" 
+                  checked={generateMeetLink}
+                  onCheckedChange={setGenerateMeetLink}
+                  disabled={!addToCalendar}
+                />
+                <Label htmlFor="generate-meet">Generate Google Meet link</Label>
+              </div>
+            </div>
+          )}
           
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
