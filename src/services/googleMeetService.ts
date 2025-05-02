@@ -8,6 +8,10 @@ import googleAuthService from "./googleAuthService";
 class GoogleMeetService {
   /**
    * Create a new Google Meet conference
+   * 
+   * Note: This functionality is typically handled within the Calendar API
+   * by setting conferenceData in the event creation. This method is a fallback
+   * for direct Meet creation if needed.
    */
   async createMeeting(title: string, startTime: Date, endTime: Date): Promise<{ meetLink: string, conferenceId: string } | null> {
     try {
@@ -18,19 +22,73 @@ class GoogleMeetService {
         return null;
       }
       
-      // In a real implementation, this would make an API call to create a Meet conference
-      console.log('Creating Google Meet conference:', title, startTime, endTime);
+      // Creating Meet conferences via Calendar API is the recommended approach
+      // For standalone Meet conferences, we need to use the Google Calendar API to create a minimal event
+      const event = {
+        summary: title,
+        start: {
+          dateTime: startTime.toISOString(),
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        },
+        end: {
+          dateTime: endTime.toISOString(),
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        },
+        conferenceData: {
+          createRequest: {
+            requestId: `meet-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+          }
+        }
+      };
       
-      // Simulate API call with a delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(event)
+      });
       
-      // Generate a random meeting ID for simulation
-      const meetingId = Math.random().toString(36).substring(2, 9);
-      const meetLink = `https://meet.google.com/${meetingId}`;
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to create Google Meet conference:', errorData);
+        throw new Error(`Failed to create Google Meet conference: ${errorData.error?.message || response.statusText}`);
+      }
+      
+      const eventData = await response.json();
+      console.log('Google Meet conference created via calendar event:', eventData);
+      
+      // Extract Google Meet link
+      let meetLink = '';
+      let conferenceId = '';
+      
+      if (eventData.conferenceData) {
+        conferenceId = eventData.conferenceData.conferenceId || '';
+        
+        // Find the video entry point
+        if (eventData.conferenceData.entryPoints) {
+          const videoEntry = eventData.conferenceData.entryPoints.find(
+            (entry: any) => entry.entryPointType === 'video'
+          );
+          if (videoEntry) {
+            meetLink = videoEntry.uri;
+          }
+        }
+        
+        // Fallback to hangoutLink
+        if (!meetLink && eventData.hangoutLink) {
+          meetLink = eventData.hangoutLink;
+        }
+      }
+      
+      if (!meetLink) {
+        throw new Error('Failed to extract Google Meet link from the created event');
+      }
       
       return {
         meetLink,
-        conferenceId: meetingId
+        conferenceId
       };
     } catch (error) {
       console.error('Failed to create Google Meet conference:', error);
@@ -55,15 +113,12 @@ class GoogleMeetService {
         return null;
       }
       
-      // In a real implementation, this would make an API call to get meeting details
-      console.log('Getting Google Meet details:', conferenceId);
+      // Unfortunately, there's no direct API to get Meet conference details.
+      // We'd need to find the associated calendar event.
+      // This is a simplified approach that assumes the Meet link follows a pattern.
+      const meetLink = `https://meet.google.com/${conferenceId}`;
       
-      // Simulate API call with a delay
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      return {
-        meetLink: `https://meet.google.com/${conferenceId}`
-      };
+      return { meetLink };
     } catch (error) {
       console.error('Failed to get Google Meet details:', error);
       return null;

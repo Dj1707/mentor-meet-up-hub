@@ -62,14 +62,42 @@ declare global {
           discoveryDocs?: string[];
           scope?: string;
         }) => Promise<void>;
+        calendar: {
+          events: {
+            insert: (params: any) => Promise<any>;
+            update: (params: any) => Promise<any>;
+            delete: (params: any) => Promise<any>;
+            list: (params: any) => Promise<any>;
+          };
+          calendarList: {
+            list: (params: any) => Promise<any>;
+          };
+          freebusy: {
+            query: (params: any) => Promise<any>;
+          };
+        };
       };
       auth2: {
         getAuthInstance: () => {
           isSignedIn: {
             get: () => boolean;
+            listen: (callback: (isSignedIn: boolean) => void) => void;
           };
           signIn: () => Promise<any>;
           signOut: () => Promise<void>;
+          currentUser: {
+            get: () => {
+              getAuthResponse: (includeAuthorizationData?: boolean) => {
+                access_token: string;
+                id_token: string;
+                scope: string;
+                expires_in: number;
+                first_issued_at: number;
+                expires_at: number;
+                refresh_token?: string;
+              };
+            };
+          };
         };
       };
     };

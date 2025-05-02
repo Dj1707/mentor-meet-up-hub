@@ -42,7 +42,7 @@ class GoogleCalendarService {
         }
       ];
       
-      // Create the event payload
+      // Create the event payload with Google Meet conferencing data
       const event: GoogleCalendarEvent = {
         summary: eventTitle,
         description: `${sessionType}\n\nThis is an automatically scheduled session through Mentor Connect.`,
@@ -61,25 +61,54 @@ class GoogleCalendarService {
             { method: 'email', minutes: 60 },
             { method: 'popup', minutes: 15 }
           ]
+        },
+        // Add conferencing data to automatically create a Google Meet link
+        conferenceData: {
+          createRequest: {
+            requestId: `mc-session-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+          }
         }
       };
       
-      // In a real implementation, this would make an API call to create the event
-      console.log('Creating Google Calendar event:', event);
+      // Make an actual API call to create the event
+      const response = await fetch(`${this.apiBase}/calendars/primary/events?conferenceDataVersion=1`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(event)
+      });
       
-      // Simulate API call with a delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to create calendar event:', errorData);
+        throw new Error(`Failed to create calendar event: ${errorData.error?.message || response.statusText}`);
+      }
       
-      // Simulate successful event creation
-      const eventId = 'event-' + Math.random().toString(36).substring(2, 15);
-      const meetLink = 'https://meet.google.com/' + Math.random().toString(36).substring(2, 9);
+      const eventData = await response.json();
+      console.log('Calendar event created:', eventData);
+      
+      // Extract the Google Meet link if available
+      let meetLink = '';
+      if (eventData.conferenceData?.entryPoints) {
+        const videoEntry = eventData.conferenceData.entryPoints.find(
+          (entry: any) => entry.entryPointType === 'video'
+        );
+        if (videoEntry) {
+          meetLink = videoEntry.uri;
+        }
+      }
       
       toast({
         title: "Session Scheduled",
         description: "Calendar invitation has been sent to all participants."
       });
       
-      return { eventId, meetLink };
+      return { 
+        eventId: eventData.id, 
+        meetLink: meetLink || eventData.hangoutLink || '' 
+      };
     } catch (error) {
       console.error('Failed to create calendar event:', error);
       toast({
@@ -115,14 +144,37 @@ class GoogleCalendarService {
         end: {
           dateTime: endTime.toISOString(),
           timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-        }
+        },
+        attendees: [
+          {
+            email: mentorEmail,
+            responseStatus: 'accepted'
+          },
+          {
+            email: studentEmail,
+            responseStatus: 'needsAction'
+          }
+        ]
       };
       
-      // In a real implementation, this would make an API call to update the event
-      console.log('Updating Google Calendar event:', eventId, eventUpdate);
+      // Make an actual API call to update the event
+      const response = await fetch(`${this.apiBase}/calendars/primary/events/${eventId}?sendUpdates=all`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(eventUpdate)
+      });
       
-      // Simulate API call with a delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to update calendar event:', errorData);
+        throw new Error(`Failed to update calendar event: ${errorData.error?.message || response.statusText}`);
+      }
+      
+      const eventData = await response.json();
+      console.log('Calendar event updated:', eventData);
       
       toast({
         title: "Session Updated",
@@ -153,11 +205,21 @@ class GoogleCalendarService {
         return false;
       }
       
-      // In a real implementation, this would make an API call to delete the event
-      console.log('Deleting Google Calendar event:', eventId);
+      // Make an actual API call to delete the event
+      const response = await fetch(`${this.apiBase}/calendars/primary/events/${eventId}?sendUpdates=all`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
-      // Simulate API call with a delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      if (!response.ok && response.status !== 204) {
+        const errorData = await response.text();
+        console.error('Failed to delete calendar event:', errorData);
+        throw new Error(`Failed to delete calendar event: ${errorData || response.statusText}`);
+      }
+      
+      console.log('Calendar event deleted:', eventId);
       
       toast({
         title: "Session Cancelled",
@@ -188,18 +250,29 @@ class GoogleCalendarService {
         return [];
       }
       
-      // In a real implementation, this would make an API call to list calendars
-      console.log('Listing Google Calendars');
+      // Make an actual API call to list calendars
+      const response = await fetch(`${this.apiBase}/users/me/calendarList`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
-      // Simulate API call with a delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to list calendars:', errorData);
+        throw new Error(`Failed to list calendars: ${errorData.error?.message || response.statusText}`);
+      }
       
-      // Return mock data
-      return [
-        { id: 'primary', summary: 'Primary Calendar' },
-        { id: 'work', summary: 'Work Calendar' },
-        { id: 'personal', summary: 'Personal Calendar' }
-      ];
+      const data = await response.json();
+      
+      // Map the response to the expected format
+      const calendars = data.items.map((item: any) => ({
+        id: item.id,
+        summary: item.summary
+      }));
+      
+      return calendars;
     } catch (error) {
       console.error('Failed to list calendars:', error);
       return [];
@@ -218,14 +291,37 @@ class GoogleCalendarService {
         return true; // Assume available if we can't check
       }
       
-      // In a real implementation, this would make an API call to check availability
-      console.log('Checking availability:', startTime, endTime);
+      // Format the time range for the FreeBusy request
+      const timeMin = startTime.toISOString();
+      const timeMax = endTime.toISOString();
       
-      // Simulate API call with a delay
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Make an actual API call to check availability
+      const response = await fetch(`${this.apiBase}/freeBusy`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          timeMin,
+          timeMax,
+          items: [{ id: 'primary' }]
+        })
+      });
       
-      // Simulate random availability (90% chance of being available)
-      return Math.random() < 0.9;
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to check availability:', errorData);
+        throw new Error(`Failed to check availability: ${errorData.error?.message || response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      // Check if there are any busy periods in the requested time range
+      const busyPeriods = data.calendars.primary.busy || [];
+      
+      // If there are no busy periods, the time slot is available
+      return busyPeriods.length === 0;
     } catch (error) {
       console.error('Failed to check availability:', error);
       return true; // Assume available if we can't check

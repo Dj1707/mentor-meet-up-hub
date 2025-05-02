@@ -66,9 +66,9 @@ const generateICSContent = (session: Session, meetingLink?: string): string => {
   return ics.join('\r\n');
 };
 
+// In a production environment, this would use a proper email service API
+// For demonstration purposes, we are logging to the console
 export const sendMentorInviteEmail = async (mentorData: MentorInvite): Promise<boolean> => {
-  // In a real app, this would make an API call to your email service
-  
   try {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));

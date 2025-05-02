@@ -26,6 +26,12 @@ export interface GoogleCalendarAttendee {
 
 export interface GoogleCalendarConferenceData {
   conferenceId?: string;
+  createRequest?: {
+    requestId: string;
+    conferenceSolutionKey?: {
+      type: string;
+    };
+  };
   conferenceSolution?: {
     key: {
       type: string;
