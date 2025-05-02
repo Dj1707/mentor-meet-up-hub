@@ -9,24 +9,41 @@ import { sessionTypes } from "@/data/sessionTypes";
 import { Search } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { FileText, Link as LinkIcon, File, ExternalLink } from "lucide-react";
+import { SessionSubmissionUpload } from "./SessionSubmissionUpload";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface BookSessionDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
+  onSessionBooked?: () => void;
 }
 
-export const BookSessionDialog = ({ open, setOpen }: BookSessionDialogProps) => {
+export const BookSessionDialog = ({ open, setOpen, onSessionBooked }: BookSessionDialogProps) => {
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [selectedSessionType, setSelectedSessionType] = useState("");
   const [mentor, setMentor] = useState("");
+  const [showSubmission, setShowSubmission] = useState(false);
   
   const handleNext = () => {
     setStep(step + 1);
+    
+    // If we're moving to step 3 and session type requires submission, show submission form
+    if (step === 2) {
+      const sessionType = sessionTypes.find(type => type.id === selectedSessionType);
+      if (sessionType?.submissionType && sessionType.submissionType !== "none") {
+        setShowSubmission(true);
+      }
+    }
   };
   
   const handlePrevious = () => {
     setStep(step - 1);
+    
+    // If going back from submission step
+    if (step === 3 && showSubmission) {
+      setShowSubmission(false);
+    }
   };
   
   const handleBooking = () => {
@@ -36,10 +53,15 @@ export const BookSessionDialog = ({ open, setOpen }: BookSessionDialogProps) => 
       description: "Your session has been successfully booked. You'll receive a confirmation email shortly.",
     });
     
+    if (onSessionBooked) {
+      onSessionBooked();
+    }
+    
     setOpen(false);
     setStep(1);
     setSelectedSessionType("");
     setMentor("");
+    setShowSubmission(false);
   };
   
   const mentors = [
@@ -81,6 +103,19 @@ export const BookSessionDialog = ({ open, setOpen }: BookSessionDialogProps) => 
         return null;
     }
   };
+
+  const selectedTypeObject = getSelectedSessionType();
+
+  const handleSubmission = (data: any) => {
+    toast({
+      title: "Submission Uploaded",
+      description: "Your materials have been uploaded successfully.",
+    });
+    
+    // Move to next step after submission
+    setShowSubmission(false);
+    setStep(3);
+  };
   
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -95,99 +130,125 @@ export const BookSessionDialog = ({ open, setOpen }: BookSessionDialogProps) => 
         </DialogHeader>
         
         {step === 1 && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-              {sessionTypes.map((type) => (
-                <div 
-                  key={type.id}
-                  className={`p-4 border rounded-md cursor-pointer transition-colors ${
-                    selectedSessionType === type.id ? "border-primary bg-primary/5" : "hover:border-primary/50"
-                  }`}
-                  onClick={() => setSelectedSessionType(type.id)}
-                >
-                  <div className="font-medium">{type.name}</div>
-                  <div className="text-sm text-muted-foreground">Duration: {type.duration} min</div>
-                  <div className="text-sm text-muted-foreground">Price: ₹{type.price}</div>
-                  {type.submissionType && type.submissionType !== "none" && (
-                    <div className="mt-2 flex items-center gap-2 text-sm">
-                      {getSubmissionTypeIcon(type.submissionType)}
-                      <span className="text-blue-600">{getSubmissionTypeText(type.submissionType)}</span>
-                    </div>
-                  )}
-                </div>
-              ))}
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 pr-4">
+              <div className="grid grid-cols-1 gap-4">
+                {sessionTypes.map((type) => (
+                  <div 
+                    key={type.id}
+                    className={`p-4 border rounded-md cursor-pointer transition-colors ${
+                      selectedSessionType === type.id ? "border-primary bg-primary/5" : "hover:border-primary/50"
+                    }`}
+                    onClick={() => setSelectedSessionType(type.id)}
+                  >
+                    <div className="font-medium">{type.name}</div>
+                    <div className="text-sm text-muted-foreground">Duration: {type.duration} min</div>
+                    <div className="text-sm text-muted-foreground">Price: ₹{type.price}</div>
+                    {type.submissionType && type.submissionType !== "none" && (
+                      <div className="mt-2 flex items-center gap-2 text-sm">
+                        {getSubmissionTypeIcon(type.submissionType)}
+                        <span className="text-blue-600">{getSubmissionTypeText(type.submissionType)}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-end">
+                <Button onClick={handleNext} disabled={!selectedSessionType}>Next</Button>
+              </div>
             </div>
-            <div className="flex justify-end">
-              <Button onClick={handleNext} disabled={!selectedSessionType}>Next</Button>
-            </div>
-          </div>
+          </ScrollArea>
         )}
         
         {step === 2 && (
-          <div className="space-y-4">
-            <div className="mb-4">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search mentors..." className="pl-8" />
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 pr-4">
+              <div className="mb-4">
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Search mentors..." className="pl-8" />
+                </div>
               </div>
-            </div>
-            
-            <div className="grid grid-cols-1 gap-4">
-              {mentors.map((m) => (
-                <div 
-                  key={m.id}
-                  className={`p-4 border rounded-md cursor-pointer transition-colors ${
-                    mentor === m.id ? "border-primary bg-primary/5" : "hover:border-primary/50"
-                  }`}
-                  onClick={() => setMentor(m.id)}
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={m.image} alt={m.name} />
-                      <AvatarFallback>{m.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-medium">{m.name}</div>
-                      <div className="text-sm text-muted-foreground">Expertise: {m.expertise}</div>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {mentors.map((m) => (
+                  <div 
+                    key={m.id}
+                    className={`p-4 border rounded-md cursor-pointer transition-colors ${
+                      mentor === m.id ? "border-primary bg-primary/5" : "hover:border-primary/50"
+                    }`}
+                    onClick={() => setMentor(m.id)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarImage src={m.image} alt={m.name} />
+                        <AvatarFallback>{m.name[0]}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">{m.name}</div>
+                        <div className="text-sm text-muted-foreground">Expertise: {m.expertise}</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={handlePrevious}>Previous</Button>
+                <Button onClick={handleNext} disabled={!mentor}>Next</Button>
+              </div>
             </div>
-            
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={handlePrevious}>Previous</Button>
-              <Button onClick={handleNext} disabled={!mentor}>Next</Button>
+          </ScrollArea>
+        )}
+
+        {showSubmission && selectedTypeObject && (
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 pr-4">
+              <SessionSubmissionUpload
+                sessionType={selectedTypeObject}
+                sessionId="temp-session-id"
+                onSubmit={handleSubmission}
+              />
+              
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={handlePrevious}>Previous</Button>
+                <Button onClick={() => {
+                  setShowSubmission(false);
+                  setStep(3);
+                }}>Skip for now</Button>
+              </div>
             </div>
-          </div>
+          </ScrollArea>
         )}
         
-        {step === 3 && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="p-4 border rounded-md cursor-pointer hover:border-primary/50">
-                <div className="font-medium">May 16, 2025</div>
-                <div className="text-sm text-muted-foreground">3:00 PM - 3:45 PM</div>
+        {step === 3 && !showSubmission && (
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 pr-4">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="p-4 border rounded-md cursor-pointer hover:border-primary/50">
+                  <div className="font-medium">May 16, 2025</div>
+                  <div className="text-sm text-muted-foreground">3:00 PM - 3:45 PM</div>
+                </div>
+                <div className="p-4 border rounded-md cursor-pointer hover:border-primary/50">
+                  <div className="font-medium">May 16, 2025</div>
+                  <div className="text-sm text-muted-foreground">4:00 PM - 4:45 PM</div>
+                </div>
+                <div className="p-4 border rounded-md cursor-pointer hover:border-primary/50">
+                  <div className="font-medium">May 17, 2025</div>
+                  <div className="text-sm text-muted-foreground">10:00 AM - 10:45 AM</div>
+                </div>
+                <div className="p-4 border rounded-md cursor-pointer hover:border-primary/50">
+                  <div className="font-medium">May 17, 2025</div>
+                  <div className="text-sm text-muted-foreground">2:00 PM - 2:45 PM</div>
+                </div>
               </div>
-              <div className="p-4 border rounded-md cursor-pointer hover:border-primary/50">
-                <div className="font-medium">May 16, 2025</div>
-                <div className="text-sm text-muted-foreground">4:00 PM - 4:45 PM</div>
-              </div>
-              <div className="p-4 border rounded-md cursor-pointer hover:border-primary/50">
-                <div className="font-medium">May 17, 2025</div>
-                <div className="text-sm text-muted-foreground">10:00 AM - 10:45 AM</div>
-              </div>
-              <div className="p-4 border rounded-md cursor-pointer hover:border-primary/50">
-                <div className="font-medium">May 17, 2025</div>
-                <div className="text-sm text-muted-foreground">2:00 PM - 2:45 PM</div>
+              
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={handlePrevious}>Previous</Button>
+                <Button onClick={handleBooking}>Book Session</Button>
               </div>
             </div>
-            
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={handlePrevious}>Previous</Button>
-              <Button onClick={handleBooking}>Book Session</Button>
-            </div>
-          </div>
+          </ScrollArea>
         )}
       </DialogContent>
     </Dialog>

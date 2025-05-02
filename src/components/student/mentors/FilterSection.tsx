@@ -3,14 +3,23 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { sessionTypes } from "@/data/sessionTypes";
 
 interface FilterSectionProps {
   expertiseFilter: string;
   setExpertiseFilter: (value: string) => void;
+  sessionTypeFilter: string;
+  setSessionTypeFilter: (value: string) => void;
   showFilters: boolean;
 }
 
-const FilterSection = ({ expertiseFilter, setExpertiseFilter, showFilters }: FilterSectionProps) => {
+const FilterSection = ({ 
+  expertiseFilter, 
+  setExpertiseFilter, 
+  sessionTypeFilter,
+  setSessionTypeFilter,
+  showFilters 
+}: FilterSectionProps) => {
   if (!showFilters) return null;
   
   return (
@@ -30,6 +39,23 @@ const FilterSection = ({ expertiseFilter, setExpertiseFilter, showFilters }: Fil
                 <SelectItem value="Resume Review">Resume Review</SelectItem>
                 <SelectItem value="Career Transition">Career Transition</SelectItem>
                 <SelectItem value="Leadership Development">Leadership Development</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="sessionType">Session Type</Label>
+            <Select value={sessionTypeFilter} onValueChange={setSessionTypeFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All session types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All session types</SelectItem>
+                {sessionTypes.map(type => (
+                  <SelectItem key={type.id} value={type.id}>
+                    {type.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

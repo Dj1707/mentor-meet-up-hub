@@ -66,3 +66,10 @@ export interface TimeSlot {
   meetingLink?: string;
   recurring?: "none" | "daily" | "weekly" | "biweekly";
 }
+
+export interface SessionFeedback {
+  rating: number;
+  notes: string;
+  actionItems: string[];
+  timestamp: number | Date;
+}
