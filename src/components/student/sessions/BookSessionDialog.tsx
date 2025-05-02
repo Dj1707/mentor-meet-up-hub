@@ -158,7 +158,7 @@ export const BookSessionDialog = ({ open, setOpen, onSessionBooked }: BookSessio
         status: "scheduled" as const,  // Fix the type error by using const assertion
         meetingLink: meetingLink,
         calendarEventId: calendarEventId,
-        meetProvider: isGoogleConnected && addToCalendar ? 'google' : 'other'
+        meetProvider: (isGoogleConnected && addToCalendar ? 'google' : 'other') as 'google' | 'other'
       };
       
       console.log("New session booked:", newSession);

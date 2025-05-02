@@ -50,6 +50,28 @@ export const loadGoogleApiScript = (): Promise<void> => {
  */
 declare global {
   interface Window {
-    gapi: any;
+    gapi: {
+      load: (apiName: string, callback: { 
+        callback: () => void, 
+        onerror: (error: any) => void 
+      }) => void;
+      client: {
+        init: (config: {
+          apiKey: string;
+          clientId: string;
+          discoveryDocs?: string[];
+          scope?: string;
+        }) => Promise<void>;
+      };
+      auth2: {
+        getAuthInstance: () => {
+          isSignedIn: {
+            get: () => boolean;
+          };
+          signIn: () => Promise<any>;
+          signOut: () => Promise<void>;
+        };
+      };
+    };
   }
 }

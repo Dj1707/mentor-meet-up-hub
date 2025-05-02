@@ -3,8 +3,8 @@ import { toast } from "@/hooks/use-toast";
 
 // OAuth 2.0 configuration
 const GOOGLE_AUTH_CONFIG = {
-  clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
-  apiKey: import.meta.env.VITE_GOOGLE_API_KEY || '',
+  clientId: "1064934162615-2sstbp9jriv6npgklt57qso1691svm3s.apps.googleusercontent.com",
+  apiKey: "AIzaSyCDjknu3G65T6JrfCgzabr8s72eX_6dP6U",
   scope: 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events',
   discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
   redirectUri: import.meta.env.VITE_GOOGLE_REDIRECT_URI || `${window.location.origin}/auth/google/callback`
@@ -41,17 +41,17 @@ class GoogleAuthService {
     
     try {
       // Check if Google API client is available
-      if (typeof gapi !== 'undefined' && gapi.client) {
+      if (typeof window.gapi !== 'undefined') {
         await new Promise<void>((resolve, reject) => {
-          gapi.load('client:auth2', {
+          window.gapi.load('client:auth2', {
             callback: () => {
-              gapi.client.init({
+              window.gapi.client.init({
                 apiKey: GOOGLE_AUTH_CONFIG.apiKey,
                 clientId: GOOGLE_AUTH_CONFIG.clientId,
                 discoveryDocs: GOOGLE_AUTH_CONFIG.discoveryDocs,
                 scope: GOOGLE_AUTH_CONFIG.scope
               }).then(() => {
-                this.authInstance = gapi.auth2.getAuthInstance();
+                this.authInstance = window.gapi.auth2.getAuthInstance();
                 this.isInitialized = true;
                 resolve();
               }).catch((error: any) => {

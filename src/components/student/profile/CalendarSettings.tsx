@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,7 +43,7 @@ export const CalendarSettings = () => {
       // Show settings dialog if already connected
       setSettingsDialogOpen(true);
     } else {
-      // Connect to Google
+      // Connect to Google using the updated credentials
       await connectGoogle();
     }
   };
