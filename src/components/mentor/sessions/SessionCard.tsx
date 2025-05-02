@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -115,11 +116,11 @@ export const SessionCard = ({
               size="sm" 
               onClick={() => {
                 // This is just a placeholder. In a real app, you would open a dialog to collect feedback
-                const feedback = {
+                const feedback: SessionFeedback = {
                   rating: 5,
-                  comment: "Great session!",
-                  strengths: ["Communication", "Preparation"],
-                  improvements: ["Time management"]
+                  notes: "Great session!", // Changed from 'comment' to 'notes'
+                  actionItems: ["Review resume format", "Practice interview questions"], // Added actionItems
+                  timestamp: Date.now(),
                 };
                 onFeedbackSubmit(id, feedback);
               }}
@@ -134,3 +135,4 @@ export const SessionCard = ({
     </Card>
   );
 };
+
